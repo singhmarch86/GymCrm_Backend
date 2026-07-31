@@ -6,13 +6,15 @@ import '../../widgets/dashboard_kpi_card.dart';
 class DashboardStatsGrid extends StatelessWidget {
   final int totalMembers;
   final int activeMembers;
-  final int expiredMembers;
+  final int expiring7Days;
+  final int revenueThisMonthPaise;
 
   const DashboardStatsGrid({
     super.key,
     required this.totalMembers,
     required this.activeMembers,
-    required this.expiredMembers,
+    required this.expiring7Days,
+    required this.revenueThisMonthPaise,
   });
 
   @override
@@ -77,7 +79,7 @@ class DashboardStatsGrid extends StatelessWidget {
       title: 'Active',
       value: activeMembers.toString(),
       icon: Icons.check_circle_outline_rounded,
-      color: Colors.green,
+      color: AppColors.success,
       subtitle: 'Currently active',
     );
   }
@@ -85,20 +87,20 @@ class DashboardStatsGrid extends StatelessWidget {
   Widget _expiringCard() {
     return DashboardKpiCard(
       title: 'Expiring',
-      value: expiredMembers.toString(),
+      value: expiring7Days.toString(),
       icon: Icons.schedule_rounded,
-      color: Colors.orange,
-      subtitle: 'Need renewal',
+      color: AppColors.warning,
+      subtitle: 'Due in 7 days',
     );
   }
 
   Widget _revenueCard() {
     return DashboardKpiCard(
       title: 'Revenue',
-      value: 'Coming Soon',
+      value: '₹${(revenueThisMonthPaise / 100).toStringAsFixed(0)}',
       icon: Icons.currency_rupee_rounded,
-      color: Colors.deepPurple,
-      subtitle: 'Next Sprint',
+      color: AppColors.info,
+      subtitle: 'This month',
     );
   }
 }

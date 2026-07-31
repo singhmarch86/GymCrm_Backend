@@ -1,34 +1,25 @@
-import 'dart:convert';
+import 'api_config.dart';
+import 'api_response.dart';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/dashboard_response.dart';
-import 'storage_service.dart';
+import 'token_manager.dart';
 
 class DashboardService {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = kBaseUrl;
 
-  Future getDashboard() async {
-    final token = await StorageService.getAccessToken();
+  Future<DashboardResponse> getDashboard() async {
+    // Routed through TokenManager so a token that is about to expire is
+    // refreshed before the request goes out, instead of failing with a 401.
+    final headers = await TokenManager.authHeaders();
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/v1/dashboard'),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null)
-          'Authorization': 'Bearer $token',
-      },
-    );
+    final response = await guardRequest(() => http.get(
+          Uri.parse('$baseUrl/api/v1/dashboard'),
+          headers: headers,
+        ));
 
-    debugPrint('Dashboard Status: ${response.statusCode}');
-    debugPrint('Dashboard Body: ${response.body}');
-
-    final json = jsonDecode(response.body);
-
-    return DashboardResponse.fromJson(
-      json['data'],
-    );
-
+    final json = unwrapJson(response);
+    return DashboardResponse.fromJson(json['data']);
   }
 }

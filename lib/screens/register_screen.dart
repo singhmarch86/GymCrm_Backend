@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../services/api_response.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
-import 'dashboards_screen.dart';
+import '../theme/app_colors.dart';
+import '../utils/validators.dart';
+import '../widgets/error_banner.dart';
+import 'dashboard/dashboard_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,6 +16,8 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   final gymNameController = TextEditingController();
   final ownerNameController = TextEditingController();
   final phoneController = TextEditingController();
@@ -21,12 +27,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final stateController = TextEditingController();
   final addressController = TextEditingController();
 
+  final _ownerNameFocus = FocusNode();
+  final _phoneFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  final _emailFocus = FocusNode();
+  final _cityFocus = FocusNode();
+  final _stateFocus = FocusNode();
+  final _addressFocus = FocusNode();
+
   bool isLoading = false;
+  String? _error;
 
   Future<void> register() async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => _error = null);
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => isLoading = true);
 
     try {
       final result = await AuthService().register(
@@ -41,54 +57,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (!mounted) return;
+      final data = result['data'];
 
-      if (result['success'] == true) {
-        final data = result['data'];
+      await StorageService.saveAuthData(
+        accessToken: data['access_token'],
+        refreshToken: data['refresh_token'],
+        userId: data['user']['id'],
+        gymId: data['user']['gym_id'],
+        userName: data['user']['name'],
+        role: data['user']['role'],
+      );
 
-        await StorageService.saveAuthData(
-          accessToken: data['access_token'],
-          refreshToken: data['refresh_token'],
-          userId: data['user']['id'],
-          gymId: data['user']['gym_id'],
-          userName: data['user']['name'],
-          role: data['user']['role'],
-        );
-
-        if (!mounted) return;
-
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const DashboardScreen(),
-          ),
-              (route) => false,
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              result['error']['message'],
-            ),
-          ),
-        );
-      }
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        (route) => false,
+      );
     } catch (e) {
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString(),
-          ),
-        ),
-      );
+      setState(() {
+        _error = e is ApiException ? e.message : 'Something went wrong. Please try again.';
+      });
     }
 
     if (!mounted) return;
-
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
 
   @override
@@ -101,19 +95,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
     cityController.dispose();
     stateController.dispose();
     addressController.dispose();
+
+    _ownerNameFocus.dispose();
+    _phoneFocus.dispose();
+    _passwordFocus.dispose();
+    _emailFocus.dispose();
+    _cityFocus.dispose();
+    _stateFocus.dispose();
+    _addressFocus.dispose();
     super.dispose();
   }
 
   Widget field(
-      TextEditingController controller,
-      String label, {
-        bool obscure = false,
-      }) {
+    TextEditingController controller,
+    String label, {
+    bool obscure = false,
+    FocusNode? focusNode,
+    FocusNode? nextFocus,
+    TextInputAction textInputAction = TextInputAction.next,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         obscureText: obscure,
+        focusNode: focusNode,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        validator: validator,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        onFieldSubmitted: (_) {
+          if (nextFocus != null) {
+            nextFocus.requestFocus();
+          } else {
+            register();
+          }
+        },
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
@@ -130,30 +149,80 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            field(gymNameController, 'Gym Name'),
-            field(ownerNameController, 'Owner Name'),
-            field(phoneController, 'Phone'),
-            field(passwordController, 'Password', obscure: true),
-            field(emailController, 'Email'),
-            field(cityController, 'City'),
-            field(stateController, 'State'),
-            field(addressController, 'Address'),
-
-            const SizedBox(height: 10),
-
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: isLoading ? null : register,
-                child: isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Register'),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              field(
+                gymNameController,
+                'Gym Name',
+                nextFocus: _ownerNameFocus,
+                validator: (v) => Validators.required(v, 'Gym name'),
               ),
-            ),
-          ],
+              field(
+                ownerNameController,
+                'Owner Name',
+                focusNode: _ownerNameFocus,
+                nextFocus: _phoneFocus,
+                validator: (v) => Validators.required(v, 'Owner name'),
+              ),
+              field(
+                phoneController,
+                'Phone',
+                focusNode: _phoneFocus,
+                nextFocus: _passwordFocus,
+                keyboardType: TextInputType.phone,
+                validator: Validators.phone,
+              ),
+              field(
+                passwordController,
+                'Password',
+                obscure: true,
+                focusNode: _passwordFocus,
+                nextFocus: _emailFocus,
+                validator: (v) => Validators.required(v, 'Password'),
+              ),
+              field(
+                emailController,
+                'Email',
+                focusNode: _emailFocus,
+                nextFocus: _cityFocus,
+                keyboardType: TextInputType.emailAddress,
+                validator: Validators.emailOptional,
+              ),
+              field(cityController, 'City', focusNode: _cityFocus, nextFocus: _stateFocus),
+              field(stateController, 'State', focusNode: _stateFocus, nextFocus: _addressFocus),
+              field(
+                addressController,
+                'Address',
+                focusNode: _addressFocus,
+                textInputAction: TextInputAction.done,
+              ),
+
+              if (_error != null) ...[
+                const SizedBox(height: 4),
+                ErrorBanner.inline(message: _error!),
+              ],
+
+              const SizedBox(height: 16),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : register,
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                        )
+                      : const Text('Register'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

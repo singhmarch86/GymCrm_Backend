@@ -1,13 +1,20 @@
+import 'api_config.dart';
+import 'api_response.dart';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/renewal_due.dart';
-import 'storage_service.dart';
+import 'token_manager.dart';
 
 class RenewalService {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = kBaseUrl;
+
+  Future<Map<String, String>> _authHeaders() async {
+    // Routed through TokenManager so a token that is about to expire is
+    // refreshed before the request goes out, instead of failing with a 401.
+    return TokenManager.authHeaders();
+  }
 
   /// =========================
   /// GET MEMBERS DUE FOR RENEWAL
@@ -16,7 +23,7 @@ class RenewalService {
     String filter = 'all',
     String search = '',
   }) async {
-    final token = await StorageService.getAccessToken();
+    final headers = await _authHeaders();
 
     final query = <String, String>{
       if (filter.isNotEmpty && filter != 'all') 'filter': filter,
@@ -26,32 +33,11 @@ class RenewalService {
     final uri = Uri.parse('$baseUrl/api/v1/members/renewals')
         .replace(queryParameters: query.isEmpty ? null : query);
 
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
-
-    debugPrint('RENEWALS DUE STATUS: ${response.statusCode}');
-    debugPrint('RENEWALS DUE BODY: ${response.body}');
-
-    if (response.statusCode == 401) {
-      throw Exception('Unauthorized');
-    }
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to load renewals');
-    }
-
-    final json = jsonDecode(response.body);
-
+    final response = await guardRequest(() => http.get(uri, headers: headers));
+    final json = unwrapJson(response);
     final List renewalsJson = json['data']['renewals'] as List;
 
-    return renewalsJson
-        .map((e) => RenewalDue.fromJson(e))
-        .toList();
+    return renewalsJson.map((e) => RenewalDue.fromJson(e)).toList();
   }
 
   /// =========================
@@ -64,39 +50,22 @@ class RenewalService {
     String? startDate,
     String notes = '',
   }) async {
-    final token = await StorageService.getAccessToken();
+    final headers = await _authHeaders();
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/v1/members/$memberId/renew'),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'plan_id': planId,
+    final response = await guardRequest(() => http.post(
+          Uri.parse('$baseUrl/api/v1/members/$memberId/renew'),
+          headers: headers,
+          body: jsonEncode({
+            'plan_id': planId,
 
-        // Backend expects paise
-        'amount_paid_in_paise': (amountPaidInRupees * 100).round(),
+            // Backend expects paise
+            'amount_paid_in_paise': (amountPaidInRupees * 100).round(),
 
-        if (startDate != null) 'start_date': startDate,
-        'notes': notes,
-      }),
-    );
+            if (startDate != null) 'start_date': startDate,
+            'notes': notes,
+          }),
+        ));
 
-    debugPrint('RENEW STATUS: ${response.statusCode}');
-    debugPrint('RENEW BODY: ${response.body}');
-
-    if (response.statusCode == 401) {
-      throw Exception('Unauthorized');
-    }
-
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      String message = 'Failed to renew membership';
-      try {
-        final json = jsonDecode(response.body);
-        message = json['error']?['message'] ?? message;
-      } catch (_) {}
-      throw Exception(message);
-    }
+    unwrapJson(response);
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/renewal_due.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/status_chip.dart';
 
 class RenewalCard extends StatelessWidget {
   final RenewalDue renewal;
@@ -16,33 +17,21 @@ class RenewalCard extends StatelessWidget {
     this.onTap,
   });
 
-  /// Color-coded urgency:
-  /// Green (>30 days) / Orange (7-30 days) / Red (<=7 days) / Grey (Expired)
+  /// Canonical application-wide status color mapping — must stay identical
+  /// to StatusChip's internal mapping (lib/widgets/status_chip.dart) so the
+  /// badge and this card's other urgency indicators (expiry-row icon/text)
+  /// never disagree on color for the same status.
   Color get urgencyColor {
     switch (renewal.status) {
       case 'EXPIRED':
-        return Colors.grey.shade600;
+        return AppColors.danger;
       case 'DUE_TODAY':
       case 'EXPIRING_SOON':
-        return AppColors.danger;
+        return AppColors.warning;
       case 'UPCOMING':
         return AppColors.warning;
       default:
         return AppColors.success;
-    }
-  }
-
-  IconData get statusIcon {
-    switch (renewal.status) {
-      case 'EXPIRED':
-        return Icons.cancel_rounded;
-      case 'DUE_TODAY':
-      case 'EXPIRING_SOON':
-        return Icons.schedule_rounded;
-      case 'UPCOMING':
-        return Icons.event_rounded;
-      default:
-        return Icons.check_circle_rounded;
     }
   }
 
@@ -126,34 +115,9 @@ class RenewalCard extends StatelessWidget {
                 ),
               ),
 
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: urgencyColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      statusIcon,
-                      size: 14,
-                      color: urgencyColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      statusLabel,
-                      style: TextStyle(
-                        color: urgencyColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+              StatusChip(
+                status: renewal.status,
+                label: statusLabel,
               ),
             ],
           ),

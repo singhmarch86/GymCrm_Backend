@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/member.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/status_chip.dart';
 
 class MemberCard extends StatelessWidget {
   final Member member;
@@ -14,29 +15,18 @@ class MemberCard extends StatelessWidget {
     this.onTap,
   });
 
+  /// Canonical application-wide status color mapping — must stay identical
+  /// to StatusChip's internal mapping (lib/widgets/status_chip.dart).
   Color getStatusColor() {
     switch (member.status.toLowerCase()) {
       case 'active':
-        return Colors.green;
+        return AppColors.success;
 
       case 'expired':
-        return Colors.red;
+        return AppColors.danger;
 
       default:
-        return Colors.orange;
-    }
-  }
-
-  IconData getStatusIcon() {
-    switch (member.status.toLowerCase()) {
-      case 'active':
-        return Icons.check_circle;
-
-      case 'expired':
-        return Icons.cancel;
-
-      default:
-        return Icons.schedule;
+        return AppColors.warning;
     }
   }
 
@@ -149,44 +139,7 @@ class MemberCard extends StatelessWidget {
                 ),
               ),
 
-              Container(
-                padding:
-                const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: getStatusColor()
-                      .withValues(alpha: 0.12),
-                  borderRadius:
-                  BorderRadius.circular(30),
-                ),
-                child: Row(
-                  mainAxisSize:
-                  MainAxisSize.min,
-                  children: [
-
-                    Icon(
-                      getStatusIcon(),
-                      size: 16,
-                      color:
-                      getStatusColor(),
-                    ),
-
-                    const SizedBox(width: 5),
-
-                    Text(
-                      member.status,
-                      style: TextStyle(
-                        color:
-                        getStatusColor(),
-                        fontWeight:
-                        FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              StatusChip(status: member.status),
             ],
           ),
 

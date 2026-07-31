@@ -1,45 +1,81 @@
+import 'api_config.dart';
+import 'api_response.dart';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/member.dart';
-import 'storage_service.dart';
+import 'token_manager.dart';
 
 class MemberService {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = kBaseUrl;
+
+  Future<Map<String, String>> _authHeaders() async {
+    // Routed through TokenManager so a token that is about to expire is
+    // refreshed before the request goes out, instead of failing with a 401.
+    return TokenManager.authHeaders();
+  }
 
   Future<List<Member>> getMembers() async {
-    final token = await StorageService.getAccessToken();
+    final headers = await _authHeaders();
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/v1/members'),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null)
-          'Authorization': 'Bearer $token',
-      },
+    final response = await guardRequest(
+      () => http.get(Uri.parse('$baseUrl/api/v1/members'), headers: headers),
     );
 
-    debugPrint('Members Status: ${response.statusCode}');
-    debugPrint('Members Body: ${response.body}');
+    final json = unwrapJson(response);
+    final List membersJson = json['data']['members'] as List;
+    return membersJson.map((e) => Member.fromJson(e)).toList();
+  }
 
-    final json = jsonDecode(response.body);
+  /// Searches members by name or phone. Used by the transfer dialog to find a
+  /// receiving member without listing everyone.
+  Future<List<Member>> searchMembers(String query) async {
+    final headers = await _authHeaders();
 
-    if (response.statusCode == 401) {
-      throw Exception('Unauthorized');
-    }
+    final uri = Uri.parse('$baseUrl/api/v1/members/search')
+        .replace(queryParameters: {'q': query});
+    final response = await guardRequest(() => http.get(uri, headers: headers));
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to load members');
-    }
+    final json = unwrapJson(response);
+    final List membersJson = json['data']['members'] as List;
+    return membersJson.map((e) => Member.fromJson(e)).toList();
+  }
 
-    final List membersJson =
-    json['data']['members'] as List;
+  /// Creates a member and returns the created record — callers that need the
+  /// new member's id (e.g. transferring a membership to them immediately)
+  /// don't have to refetch.
+  Future<Member> createMember({
+    required String firstName,
+    required String lastName,
+    required String phone,
+    String? email,
+    String? address,
+    String? gender,
+    int? membershipPlanId,
+    DateTime? startDate,
+    DateTime? expiryDate,
+  }) async {
+    final headers = await _authHeaders();
 
-    return membersJson
-        .map((e) => Member.fromJson(e))
-        .toList();
+    final response = await guardRequest(() => http.post(
+          Uri.parse('$baseUrl/api/v1/members'),
+          headers: headers,
+          body: jsonEncode({
+            'first_name': firstName,
+            'last_name': lastName,
+            'phone': phone,
+            if (email != null && email.isNotEmpty) 'email': email,
+            if (address != null && address.isNotEmpty) 'address': address,
+            if (gender != null) 'gender': gender,
+            if (membershipPlanId != null) 'membership_plan_id': membershipPlanId,
+            if (startDate != null) 'start_date': _dateOnly(startDate),
+            if (expiryDate != null) 'expiry_date': _dateOnly(expiryDate),
+          }),
+        ));
+
+    final json = unwrapJson(response);
+    return Member.fromJson(json['data']);
   }
 
   Future<void> updateMember({
@@ -50,71 +86,35 @@ class MemberService {
     required String status,
     int? membershipPlanId,
   }) async {
-    final token =
-    await StorageService.getAccessToken();
+    final headers = await _authHeaders();
 
-    final response = await http.put(
-      Uri.parse(
-        '$baseUrl/api/v1/members/$memberId',
-      ),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null)
-          'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'first_name': firstName,
-        'last_name': lastName,
-        'phone': phone,
-        'status': status,
-        'membership_plan_id': membershipPlanId,
-      }),
+    final response = await guardRequest(() => http.put(
+          Uri.parse('$baseUrl/api/v1/members/$memberId'),
+          headers: headers,
+          body: jsonEncode({
+            'first_name': firstName,
+            'last_name': lastName,
+            'phone': phone,
+            'status': status,
+            'membership_plan_id': membershipPlanId,
+          }),
+        ));
+
+    unwrapJson(response);
+  }
+
+  Future<void> deleteMember(int memberId) async {
+    final headers = await _authHeaders();
+
+    final response = await guardRequest(
+      () => http.delete(Uri.parse('$baseUrl/api/v1/members/$memberId'), headers: headers),
     );
 
-    debugPrint(
-      'UPDATE STATUS: ${response.statusCode}',
-    );
-
-    debugPrint(
-      'UPDATE BODY: ${response.body}',
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Failed to update member',
-      );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      unwrapJson(response);
     }
   }
 
-  Future<void> deleteMember(
-      int memberId,
-      ) async {
-    final token =
-    await StorageService.getAccessToken();
-
-    final response = await http.delete(
-      Uri.parse(
-        '$baseUrl/api/v1/members/$memberId',
-      ),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null)
-          'Authorization': 'Bearer $token',
-      },
-    );
-
-    debugPrint(
-      'DELETE STATUS: ${response.statusCode}',
-    );
-
-    debugPrint(
-      'DELETE BODY: ${response.body}',
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Failed to delete member',
-      );
-    }
-  }
+  String _dateOnly(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }

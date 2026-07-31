@@ -11,6 +11,10 @@ class DashboardActionCard extends StatelessWidget {
 
   final Color color;
 
+  /// Optional small pill shown next to the chevron — e.g. "3 today" —
+  /// for surfacing a time-sensitive count without opening the screen.
+  final String? badge;
+
   const DashboardActionCard({
     super.key,
     required this.title,
@@ -18,6 +22,7 @@ class DashboardActionCard extends StatelessWidget {
     required this.icon,
     required this.onTap,
     required this.color,
+    this.badge,
   });
 
   @override
@@ -66,6 +71,25 @@ class DashboardActionCard extends StatelessWidget {
               ],
             ),
           ),
+
+          if (badge != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                badge!,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
 
           const Icon(
             Icons.arrow_forward_ios_rounded,

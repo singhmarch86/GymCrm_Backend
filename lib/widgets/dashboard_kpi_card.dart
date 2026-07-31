@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import 'app_card.dart';
 
 class DashboardKpiCard extends StatelessWidget {
@@ -26,7 +25,11 @@ class DashboardKpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return Semantics(
+      label: subtitle != null ? '$title: $value, $subtitle' : '$title: $value',
+      button: onTap != null,
+      excludeSemantics: true,
+      child: AppCard(
       onTap: onTap,
       child: Column(
         crossAxisAlignment:
@@ -80,6 +83,7 @@ class DashboardKpiCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
       ),
     );
   }

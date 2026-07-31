@@ -1,15 +1,30 @@
 import 'package:flutter/material.dart';
 
+import '../services/api_response.dart';
 import '../services/plan_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_spacing.dart';
+import '../utils/validators.dart';
+import '../widgets/error_banner.dart';
 
-class AddPlanScreen extends StatefulWidget {
-  const AddPlanScreen({super.key});
-
-  @override
-  State<AddPlanScreen> createState() => _AddPlanScreenState();
+/// Shows the "add plan" form as a centered modal dialog, matching the
+/// CollectPaymentDialog/AddMemberDialog convention.
+Future<bool?> showAddPlanDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (_) => const AddPlanDialog(),
+  );
 }
 
-class _AddPlanScreenState extends State<AddPlanScreen> {
+class AddPlanDialog extends StatefulWidget {
+  const AddPlanDialog({super.key});
+
+  @override
+  State<AddPlanDialog> createState() => _AddPlanDialogState();
+}
+
+class _AddPlanDialogState extends State<AddPlanDialog> {
   final _formKey = GlobalKey<FormState>();
 
   final nameController = TextEditingController();
@@ -18,44 +33,31 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   final descriptionController = TextEditingController();
 
   bool isLoading = false;
+  String? _error;
 
   Future<void> savePlan() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    setState(() => _error = null);
+    if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     try {
       await PlanService().createPlan(
         name: nameController.text.trim(),
-        priceInRupees:
-        double.parse(priceController.text.trim()),
-        durationDays:
-        int.parse(durationController.text.trim()),
-        description:
-        descriptionController.text.trim(),
+        priceInRupees: double.parse(priceController.text.trim()),
+        durationDays: int.parse(durationController.text.trim()),
+        description: descriptionController.text.trim(),
       );
 
       if (!mounted) return;
-
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-        ),
-      );
+      setState(() {
+        _error = e is ApiException ? e.message : "Couldn't create this plan. Please try again.";
+      });
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -65,120 +67,98 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     priceController.dispose();
     durationController.dispose();
     descriptionController.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Add Membership Plan"),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: "Plan Name",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Plan name is required";
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: priceController,
-                keyboardType:
-                const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: "Price (₹)",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Price is required";
-                  }
-
-                  if (double.tryParse(value) == null) {
-                    return "Invalid price";
-                  }
-
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: durationController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: "Duration (Days)",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Duration is required";
-                  }
-
-                  if (int.tryParse(value) == null) {
-                    return "Invalid duration";
-                  }
-
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: descriptionController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: "Description",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed:
-                  isLoading ? null : savePlan,
-                  child: isLoading
-                      ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child:
-                    CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
-                  )
-                      : const Text(
-                    "SAVE PLAN",
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440, maxHeight: 600),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.workspace_premium_rounded, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text('Add Membership Plan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                    ],
                   ),
-                ),
+
+                  AppSpacing.gapLg,
+
+                  TextFormField(
+                    controller: nameController,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(labelText: 'Plan Name'),
+                    validator: (v) => Validators.required(v, 'Plan name'),
+                  ),
+                  AppSpacing.gapMd,
+
+                  TextFormField(
+                    controller: priceController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(labelText: 'Price (₹)'),
+                    validator: (v) => Validators.positiveNumber(v, 'Price'),
+                  ),
+                  AppSpacing.gapMd,
+
+                  TextFormField(
+                    controller: durationController,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(labelText: 'Duration (Days)'),
+                    validator: (v) => Validators.positiveInteger(v, 'Duration'),
+                  ),
+                  AppSpacing.gapMd,
+
+                  TextFormField(
+                    controller: descriptionController,
+                    maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(labelText: 'Description (optional)'),
+                  ),
+
+                  if (_error != null) ...[
+                    AppSpacing.gapMd,
+                    ErrorBanner.inline(message: _error!),
+                  ],
+
+                  AppSpacing.gapXl,
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: isLoading ? null : () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      AppSpacing.hGapSm,
+                      ElevatedButton(
+                        style: AppTheme.dialogActionButton,
+                        onPressed: isLoading ? null : savePlan,
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Text('Save Plan'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

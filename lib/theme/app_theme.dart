@@ -3,6 +3,21 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTheme {
+  /// Style for an ElevatedButton placed inside a horizontal action row
+  /// (dialog footers, AlertDialog actions).
+  ///
+  /// The global elevatedButtonTheme below sets `minimumSize` to
+  /// `Size(double.infinity, 52)` so full-width page buttons (login, register)
+  /// need no extra styling. That default is actively harmful in a Row: a Row
+  /// lays out non-flexible children with an *unbounded* width constraint, so
+  /// an infinite minimum width makes the button overflow the dialog and get
+  /// clipped out of view entirely — the button is still there and still
+  /// tappable in theory, but the user simply cannot see it. Any button in a
+  /// row must therefore opt out with a finite minimum size.
+  static final ButtonStyle dialogActionButton = ElevatedButton.styleFrom(
+    minimumSize: const Size(120, 48),
+  );
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
 

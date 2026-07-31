@@ -11,11 +11,19 @@ class MemberBody extends StatefulWidget {
   final bool isLoading;
   final Future<void> Function() onRefresh;
 
+  /// Called whenever an edit/delete inside this screen's MemberList
+  /// succeeds, so the parent MembersScreen can mark itself as having
+  /// changed business data (see member_screen.dart's PopScope handling).
+  /// Optional so MemberBody can still be used anywhere it was before
+  /// without callers needing to supply this.
+  final VoidCallback? onMemberChanged;
+
   const MemberBody({
     super.key,
     required this.members,
     required this.isLoading,
     required this.onRefresh,
+    this.onMemberChanged,
   });
 
   @override
@@ -184,6 +192,8 @@ class _MemberBodyState
             widget.isLoading,
             onRefresh:
             widget.onRefresh,
+            onMemberChanged:
+            widget.onMemberChanged,
           ),
         ),
       ],

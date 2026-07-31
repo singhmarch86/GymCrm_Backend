@@ -1,28 +1,29 @@
+import 'api_config.dart';
+import 'api_response.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = kBaseUrl;
 
   Future<Map<String, dynamic>> login({
     required String phone,
     required String password,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/v1/auth/login'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'phone': phone,
-        'password': password,
-      }),
-    );
+    final response = await guardRequest(() => http.post(
+          Uri.parse('$baseUrl/api/v1/auth/login'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'phone': phone,
+            'password': password,
+          }),
+        ));
 
-    return jsonDecode(response.body);
-
+    return unwrapJson(response);
   }
 
   Future<Map<String, dynamic>> register({
@@ -35,35 +36,27 @@ class AuthService {
     required String address,
     required String email,
   }) async {
-    try {
-      debugPrint('Calling: $baseUrl/api/v1/auth/register');
+    final response = await guardRequest(() => http.post(
+          Uri.parse('$baseUrl/api/v1/auth/register'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'gym_name': gymName,
+            'owner_name': ownerName,
+            'phone': phone,
+            'password': password,
+            'city': city,
+            'state': state,
+            'address': address,
+            'email': email,
+          }),
+        ));
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/v1/auth/register'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'gym_name': gymName,
-          'owner_name': ownerName,
-          'phone': phone,
-          'password': password,
-          'city': city,
-          'state': state,
-          'address': address,
-          'email': email,
-        }),
-      );
-
-      return jsonDecode(response.body);
-    } catch (e) {
-      debugPrint('REGISTER ERROR: $e');
-      rethrow;
-    }
-
+    return unwrapJson(response);
   }
 
-  Future logout(String accessToken) async {
+  Future<bool> logout(String accessToken) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/v1/auth/logout'),
@@ -78,6 +71,5 @@ class AuthService {
       debugPrint('LOGOUT ERROR: $e');
       return false;
     }
-
   }
 }

@@ -2,24 +2,34 @@ import 'package:flutter/material.dart';
 
 import '../models/member.dart';
 import '../models/plan.dart';
+import '../services/api_response.dart';
 import '../services/member_service.dart';
 import '../services/plan_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_spacing.dart' show AppSpacing;
+import '../utils/validators.dart';
+import '../widgets/error_banner.dart';
 
-class EditMemberScreen extends StatefulWidget {
-  final Member member;
-
-  const EditMemberScreen({
-    super.key,
-    required this.member,
-  });
-
-  @override
-  State<EditMemberScreen> createState() =>
-          _EditMemberScreenState();
+/// Shows the "edit member" form as a centered modal dialog, matching the
+/// CollectPaymentDialog/AddMemberDialog convention.
+Future<bool?> showEditMemberDialog(BuildContext context, Member member) {
+  return showDialog<bool>(
+    context: context,
+    builder: (_) => EditMemberDialog(member: member),
+  );
 }
 
-class _EditMemberScreenState
-    extends State<EditMemberScreen>  {
+class EditMemberDialog extends StatefulWidget {
+  final Member member;
+
+  const EditMemberDialog({super.key, required this.member});
+
+  @override
+  State<EditMemberDialog> createState() => _EditMemberDialogState();
+}
+
+class _EditMemberDialogState extends State<EditMemberDialog> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController firstNameController;
@@ -27,99 +37,67 @@ class _EditMemberScreenState
   late TextEditingController phoneController;
 
   bool isLoading = false;
+  String? _error;
 
   String status = 'active';
-
-  List plans = [];
-
+  List<Plan> plans = [];
+  bool _loadingPlans = true;
   int? selectedPlanId;
 
   @override
   void initState() {
     super.initState();
 
-    firstNameController = TextEditingController(
-      text: widget.member.firstName,
-    );
-
-    lastNameController = TextEditingController(
-      text: widget.member.lastName,
-    );
-
-    phoneController = TextEditingController(
-      text: widget.member.phone,
-    );
+    firstNameController = TextEditingController(text: widget.member.firstName);
+    lastNameController = TextEditingController(text: widget.member.lastName);
+    phoneController = TextEditingController(text: widget.member.phone);
 
     status = widget.member.status;
+    selectedPlanId = widget.member.membershipPlanId;
 
-    selectedPlanId =
-        widget.member.membershipPlanId;
-
-    loadPlans();
-
+    _loadPlans();
   }
 
-  Future loadPlans() async {
+  Future<void> _loadPlans() async {
     try {
-      final data =
-      await PlanService().getActivePlans();
-
+      final data = await PlanService().getActivePlans();
       if (!mounted) return;
-
       setState(() {
         plans = data;
+        _loadingPlans = false;
       });
-    } catch (e) {
-      debugPrint('PLAN ERROR: $e');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingPlans = false);
     }
-
   }
 
-  Future updateMember() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  Future<void> updateMember() async {
+    setState(() => _error = null);
+    if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     try {
       await MemberService().updateMember(
         memberId: widget.member.id,
-        firstName:
-        firstNameController.text.trim(),
-        lastName:
-        lastNameController.text.trim(),
-        phone:
-        phoneController.text.trim(),
+        firstName: firstNameController.text.trim(),
+        lastName: lastNameController.text.trim(),
+        phone: phoneController.text.trim(),
         status: status,
-        membershipPlanId:
-        selectedPlanId,
+        membershipPlanId: selectedPlanId,
       );
 
       if (!mounted) return;
-
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString(),
-          ),
-        ),
-      );
+      setState(() {
+        _error = e is ApiException ? e.message : "Couldn't update this member. Please try again.";
+      });
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      if (mounted) setState(() => isLoading = false);
     }
-
   }
 
   @override
@@ -132,159 +110,128 @@ class _EditMemberScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Edit Member',
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding:
-        const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller:
-                firstNameController,
-                decoration:
-                const InputDecoration(
-                  labelText:
-                  'First Name',
-                ),
-                validator: (value) {
-                  if (value == null ||
-                      value.isEmpty) {
-                    return 'Required';
-                  }
-                  return null;
-                },
-              ),
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480, maxHeight: 640),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.edit_rounded, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text('Edit Member', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
 
-              const SizedBox(height: 16),
+                  AppSpacing.gapLg,
 
-              TextFormField(
-                controller:
-                lastNameController,
-                decoration:
-                const InputDecoration(
-                  labelText:
-                  'Last Name',
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller:
-                phoneController,
-                decoration:
-                const InputDecoration(
-                  labelText: 'Phone',
-                ),
-                validator: (value) {
-                  if (value == null ||
-                      value.isEmpty) {
-                    return 'Required';
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              DropdownButtonFormField<int>(
-                initialValue:
-                selectedPlanId,
-                decoration:
-                const InputDecoration(
-                  labelText:
-                  'Membership Plan',
-                ),
-                items: plans
-                    .map(
-                      (plan) =>
-                      DropdownMenuItem<
-                          int>(
-                        value: plan.id,
-                        child: Text(
-                          '${plan.name} (₹${plan.priceInRupees})',
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: firstNameController,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(labelText: 'First Name'),
+                          validator: (v) => Validators.required(v, 'First name'),
                         ),
                       ),
-                )
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedPlanId =
-                        value;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              DropdownButtonFormField<
-                  String>(
-                initialValue: status,
-                decoration:
-                const InputDecoration(
-                  labelText: 'Status',
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'active',
-                    child: Text(
-                      'Active',
-                    ),
+                      AppSpacing.hGapMd,
+                      Expanded(
+                        child: TextFormField(
+                          controller: lastNameController,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(labelText: 'Last Name'),
+                          validator: (v) => Validators.required(v, 'Last name'),
+                        ),
+                      ),
+                    ],
                   ),
-                  DropdownMenuItem(
-                    value: 'expired',
-                    child: Text(
-                      'Expired',
-                    ),
+                  AppSpacing.gapMd,
+
+                  TextFormField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(labelText: 'Phone'),
+                    validator: Validators.phone,
+                    onFieldSubmitted: (_) => updateMember(),
                   ),
-                  DropdownMenuItem(
-                    value: 'inactive',
-                    child: Text(
-                      'Inactive',
-                    ),
+                  AppSpacing.gapMd,
+
+                  _loadingPlans
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                        )
+                      : DropdownButtonFormField<int>(
+                          initialValue: selectedPlanId,
+                          decoration: const InputDecoration(labelText: 'Membership Plan'),
+                          items: plans
+                              .map((plan) => DropdownMenuItem(
+                                    value: plan.id,
+                                    child: Text('${plan.name} (₹${plan.priceInRupees.toStringAsFixed(0)})'),
+                                  ))
+                              .toList(),
+                          onChanged: (value) => setState(() => selectedPlanId = value),
+                        ),
+
+                  AppSpacing.gapMd,
+
+                  DropdownButtonFormField<String>(
+                    initialValue: status,
+                    decoration: const InputDecoration(labelText: 'Status'),
+                    items: const [
+                      DropdownMenuItem(value: 'active', child: Text('Active')),
+                      DropdownMenuItem(value: 'expired', child: Text('Expired')),
+                      DropdownMenuItem(value: 'inactive', child: Text('Inactive')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) setState(() => status = value);
+                    },
+                  ),
+
+                  if (_error != null) ...[
+                    AppSpacing.gapMd,
+                    ErrorBanner.inline(message: _error!),
+                  ],
+
+                  AppSpacing.gapXl,
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: isLoading ? null : () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      AppSpacing.hGapSm,
+                      ElevatedButton(
+                        style: AppTheme.dialogActionButton,
+                        onPressed: isLoading ? null : updateMember,
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Text('Update Member'),
+                      ),
+                    ],
                   ),
                 ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      status = value;
-                    });
-                  }
-                },
               ),
-
-              const SizedBox(height: 30),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading
-                      ? null
-                      : updateMember,
-                  child: isLoading
-                      ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child:
-                    CircularProgressIndicator(),
-                  )
-                      : const Text(
-                    'Update Member',
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
-
   }
 }

@@ -27,6 +27,7 @@ class RenewalSearchBar extends StatelessWidget {
           icon: const Icon(
             Icons.close_rounded,
           ),
+          tooltip: 'Clear search',
           onPressed: () {
             controller.clear();
 

@@ -29,6 +29,17 @@ class StorageService {
     await prefs.setString(userNameKey, userName);
   }
 
+  /// Replaces just the token pair, leaving the user/gym/role fields intact.
+  /// Used by TokenManager after a refresh, where only the tokens change.
+  static Future<void> saveTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(accessTokenKey, accessToken);
+    await prefs.setString(refreshTokenKey, refreshToken);
+  }
+
   static Future<String?> getAccessToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(accessTokenKey);

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../models/plan.dart';
 import '../../models/renewal_due.dart';
+import '../../services/api_response.dart';
+import '../../services/payment_service.dart';
 import '../../services/plan_service.dart';
-import '../../services/renewal_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_spacing.dart';
 
@@ -36,6 +38,7 @@ class RenewDialog extends StatefulWidget {
 class _RenewDialogState extends State<RenewDialog> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _referenceController = TextEditingController();
   final _notesController = TextEditingController();
 
   List<Plan> plans = [];
@@ -44,8 +47,17 @@ class _RenewDialogState extends State<RenewDialog> {
 
   int? selectedPlanId;
   DateTime startDate = DateTime.now();
+  String _paymentMode = 'cash';
 
   String? errorText;
+
+  static const _modes = [
+    ('cash', 'Cash'),
+    ('upi', 'UPI'),
+    ('credit_card', 'Credit Card'),
+    ('debit_card', 'Debit Card'),
+    ('bank_transfer', 'Bank Transfer'),
+  ];
 
   @override
   void initState() {
@@ -134,20 +146,10 @@ class _RenewDialogState extends State<RenewDialog> {
   }
 
   Future<void> save() async {
-    if (selectedPlanId == null) {
-      setState(() {
-        errorText = "Please select a plan";
-      });
-      return;
-    }
+    setState(() => errorText = null);
+    if (!_formKey.currentState!.validate()) return;
 
-    final amount = double.tryParse(_amountController.text.trim());
-    if (amount == null || amount <= 0) {
-      setState(() {
-        errorText = "Enter a valid amount";
-      });
-      return;
-    }
+    final amount = double.parse(_amountController.text.trim());
 
     setState(() {
       saving = true;
@@ -155,11 +157,20 @@ class _RenewDialogState extends State<RenewDialog> {
     });
 
     try {
-      await RenewalService().renewMember(
+      // Single atomic backend transaction:
+      //   1. Create Payment record (status = paid)
+      //   2. Create Renewal linked to that payment
+      //   3. Update Member expiry date
+      // POST /api/v1/payments is the correct endpoint — it owns the
+      // transaction. POST /api/v1/members/{id}/renew is the old sequential
+      // path that creates a renewal only, with no payment record.
+      await PaymentService().collectPayment(
         memberId: widget.renewal.id,
         planId: selectedPlanId!,
-        amountPaidInRupees: amount,
-        startDate: isoDate(startDate),
+        amountInRupees: amount,
+        paymentMode: _paymentMode,
+        paymentDate: isoDate(startDate),
+        referenceNumber: _referenceController.text.trim(),
         notes: _notesController.text.trim(),
       );
 
@@ -169,7 +180,7 @@ class _RenewDialogState extends State<RenewDialog> {
       if (!mounted) return;
       setState(() {
         saving = false;
-        errorText = e.toString().replaceFirst('Exception: ', '');
+        errorText = e is ApiException ? e.message : "Couldn't renew this membership. Please try again.";
       });
     }
   }
@@ -177,6 +188,7 @@ class _RenewDialogState extends State<RenewDialog> {
   @override
   void dispose() {
     _amountController.dispose();
+    _referenceController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -260,6 +272,7 @@ class _RenewDialogState extends State<RenewDialog> {
                           )
                           .toList(),
                       onChanged: onPlanChanged,
+                      validator: (v) => v == null ? "Please select a plan" : null,
                     ),
 
                   AppSpacing.gapLg,
@@ -280,9 +293,44 @@ class _RenewDialogState extends State<RenewDialog> {
                     controller: _amountController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
+                    textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
                       labelText: "Amount Paid (₹)",
                       prefixIcon: Icon(Icons.currency_rupee_rounded),
+                    ),
+                    validator: (v) => Validators.positiveNumber(v, 'Amount'),
+                  ),
+
+                  AppSpacing.gapLg,
+
+                  // Payment mode — required for the Payment record
+                  DropdownButtonFormField<String>(
+                    initialValue: _paymentMode,
+                    decoration: const InputDecoration(
+                      labelText: "Payment Mode",
+                    ),
+                    items: _modes
+                        .map(
+                          (m) => DropdownMenuItem(
+                            value: m.$1,
+                            child: Text(m.$2),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) setState(() => _paymentMode = v);
+                    },
+                  ),
+
+                  AppSpacing.gapLg,
+
+                  // Reference number — optional, useful for UPI / bank
+                  TextFormField(
+                    controller: _referenceController,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      labelText: "Reference Number (optional)",
+                      hintText: "UPI / bank transaction ID",
                     ),
                   ),
 

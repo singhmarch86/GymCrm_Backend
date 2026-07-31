@@ -4,6 +4,7 @@ import '../../features/renewals/renewals_screen.dart';
 import '../../services/renewal_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/dashboard_card_stat.dart';
 
 /// Dashboard summary card for renewals, matching the PRD mock:
 ///   Renewals
@@ -14,7 +15,14 @@ import '../../widgets/app_card.dart';
 /// is no dedicated summary endpoint yet. If/when GET /api/v1/dashboard adds
 /// renewal-bucket counts, swap this widget's data source for that instead.
 class DashboardRenewalsCard extends StatefulWidget {
-  const DashboardRenewalsCard({super.key});
+  /// Called when the Renewals screen reports that business data changed,
+  /// so the parent Dashboard can refresh its own KPI tiles. This card
+  /// always refreshes its own counts on return regardless of this callback
+  /// (see openRenewals below) — onDataChanged is purely for the dashboard's
+  /// separate totalMembers/activeMembers/expiredMembers state.
+  final VoidCallback? onDataChanged;
+
+  const DashboardRenewalsCard({super.key, this.onDataChanged});
 
   @override
   State<DashboardRenewalsCard> createState() =>
@@ -60,13 +68,24 @@ class _DashboardRenewalsCardState extends State<DashboardRenewalsCard> {
     }
   }
 
-  void openRenewals() {
-    Navigator.push(
+  Future<void> openRenewals() async {
+    final changed = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => const RenewalsScreen(),
       ),
     );
+
+    // This card's own counts can be stale even if `changed` isn't strictly
+    // true (e.g. a renewal happened, screen popped via the system back
+    // gesture) — refreshing unconditionally here is cheap (one request)
+    // and guarantees correctness without depending on the caller's exact
+    // pop path.
+    await loadCounts();
+
+    if (changed == true) {
+      widget.onDataChanged?.call();
+    }
   }
 
   @override
@@ -117,24 +136,24 @@ class _DashboardRenewalsCardState extends State<DashboardRenewalsCard> {
             Row(
               children: [
                 Expanded(
-                  child: _Stat(
-                    value: dueToday,
+                  child: DashboardCardStat(
+                    value: dueToday.toString(),
                     label: "Due Today",
                     color: AppColors.danger,
                   ),
                 ),
-                _divider(),
+                const DashboardCardDivider(),
                 Expanded(
-                  child: _Stat(
-                    value: dueThisWeek,
+                  child: DashboardCardStat(
+                    value: dueThisWeek.toString(),
                     label: "Due This Week",
                     color: AppColors.warning,
                   ),
                 ),
-                _divider(),
+                const DashboardCardDivider(),
                 Expanded(
-                  child: _Stat(
-                    value: overdue,
+                  child: DashboardCardStat(
+                    value: overdue.toString(),
                     label: "Overdue",
                     color: Colors.grey.shade600,
                   ),
@@ -143,52 +162,6 @@ class _DashboardRenewalsCardState extends State<DashboardRenewalsCard> {
             ),
         ],
       ),
-    );
-  }
-
-  Widget _divider() {
-    return Container(
-      width: 1,
-      height: 40,
-      color: Colors.grey.shade200,
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  final int value;
-  final String label;
-  final Color color;
-
-  const _Stat({
-    required this.value,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value.toString(),
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 }
