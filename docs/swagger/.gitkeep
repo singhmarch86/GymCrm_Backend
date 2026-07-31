@@ -1,0 +1,3 @@
+# This directory is populated by "swag init" at build time.
+# The generated files (docs.go, swagger.json, swagger.yaml) are gitignored.
+# They are regenerated inside Docker during every build.

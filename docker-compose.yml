@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8089:8080"
+    environment:
+      PORT: "8080"
+      APP_ENV: "development"
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      DB_USER: "gymcrm"
+      DB_PASSWORD: "gymcrm_dev"
+      DB_NAME: "gymcrm"
+      DB_SSLMODE: "disable"
+      JWT_SECRET: "dev-secret-change-this-in-production-32chars"
+      JWT_ACCESS_TOKEN_MINUTES: "15"
+      JWT_REFRESH_TOKEN_DAYS: "30"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gymcrm
+      POSTGRES_PASSWORD: gymcrm_dev
+      POSTGRES_DB: gymcrm
+    ports:
+      - "5439:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql
+      - ./migrations/002_members_update.sql:/docker-entrypoint-initdb.d/002_members_update.sql
+      - ./migrations/003_fix_gym_email_index.sql:/docker-entrypoint-initdb.d/003_fix_gym_email_index.sql
+      - ./migrations/004_plans_indexes.sql:/docker-entrypoint-initdb.d/004_plans_indexes.sql
+      - ./migrations/005_renewals_redesign.sql:/docker-entrypoint-initdb.d/005_renewals_redesign.sql
+      - ./migrations/006_attendance_redesign.sql:/docker-entrypoint-initdb.d/006_attendance_redesign.sql
+      - ./migrations/007_payments.sql:/docker-entrypoint-initdb.d/007_payments.sql
+      - ./migrations/008_renewals_add_payment_id.sql:/docker-entrypoint-initdb.d/008_renewals_add_payment_id.sql
+      - ./migrations/009_leads.sql:/docker-entrypoint-initdb.d/009_leads.sql
+      - ./migrations/010_lead_activities.sql:/docker-entrypoint-initdb.d/010_lead_activities.sql
+      - ./migrations/011_retention_alert_accountability.sql:/docker-entrypoint-initdb.d/011_retention_alert_accountability.sql
+      - ./migrations/012_membership_lifecycle.sql:/docker-entrypoint-initdb.d/012_membership_lifecycle.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gymcrm -d gymcrm"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  pgdata:

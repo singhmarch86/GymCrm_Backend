@@ -1,0 +1,137 @@
+// Package devseed populates a freshly created development database with a
+// realistic demo dataset: one gym, an owner login, membership plans, 150
+// members across active/expiring/expired states, 90 days of attendance,
+// renewal + payment history, and a lead pipeline.
+//
+// It is gated by two things, enforced at two different layers on purpose:
+//   - the caller (cmd/server/main.go) only invokes Run when APP_ENV=development
+//   - Run itself refuses to do anything unless the users table is empty
+//
+// The second gate is what makes this idempotent: every run either seeds a
+// gym+owner+users (making later runs a no-op) or seeds nothing at all. The
+// whole seed happens inside one transaction, so a crash partway through
+// leaves users empty and the next boot retries cleanly instead of leaving a
+// half-seeded gym behind with duplicate-prone data.
+package devseed
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"math/rand"
+	"time"
+
+	"gorm.io/gorm"
+
+	"gymcrm/internal/plans"
+	"gymcrm/internal/users"
+)
+
+// seeder carries shared state across the seed phases (gym.go, plans.go,
+// members.go, attendance.go, billing.go, leads.go). A fixed RNG seed keeps
+// a from-scratch reseed reproducible for debugging.
+type seeder struct {
+	tx  *gorm.DB
+	rng *rand.Rand
+	now time.Time // today, truncated to midnight UTC
+
+	gymID       int64
+	ownerUserID int64
+
+	plans   []plans.MembershipPlan
+	members []seedMember
+
+	// counts for the closing summary log
+	memberCount     int
+	attendanceCount int
+	renewalCount    int
+	paymentCount    int
+	leadCount       int
+}
+
+// Run seeds the database if it looks fresh. Safe to call on every startup —
+// it is a no-op once the users table has any row in it.
+func Run(ctx context.Context, db *gorm.DB) error {
+	var userCount int64
+	if err := db.WithContext(ctx).Model(&users.User{}).Count(&userCount).Error; err != nil {
+		return fmt.Errorf("devseed: count users: %w", err)
+	}
+	if userCount > 0 {
+		log.Println("devseed: users table is not empty, skipping (already seeded)")
+		return nil
+	}
+
+	s := &seeder{
+		rng: rand.New(rand.NewSource(42)),
+		now: time.Now().UTC().Truncate(24 * time.Hour),
+	}
+
+	err := db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		s.tx = tx
+
+		if err := s.seedGymAndOwner(); err != nil {
+			return fmt.Errorf("gym+owner: %w", err)
+		}
+		if err := s.seedPlans(); err != nil {
+			return fmt.Errorf("plans: %w", err)
+		}
+		if err := s.seedMembers(); err != nil {
+			return fmt.Errorf("members: %w", err)
+		}
+		if err := s.seedAttendance(); err != nil {
+			return fmt.Errorf("attendance: %w", err)
+		}
+		if err := s.seedBilling(); err != nil {
+			return fmt.Errorf("billing: %w", err)
+		}
+		if err := s.seedLeads(); err != nil {
+			return fmt.Errorf("leads: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("devseed: %w", err)
+	}
+
+	log.Printf("devseed: seeded demo gym %q — owner login phone=9876543210 password=secure123", "Demo Fitness Gym")
+	log.Printf("devseed: %d members, %d attendance records, %d renewals, %d payments, %d leads",
+		s.memberCount, s.attendanceCount, s.renewalCount, s.paymentCount, s.leadCount)
+	return nil
+}
+
+// ─── Small shared helpers ──────────────────────────────────────────────────
+
+func strPtr(s string) *string        { return &s }
+func timePtr(t time.Time) *time.Time { return &t }
+func int64Ptr(v int64) *int64        { return &v }
+
+// pick returns a random element of a non-empty slice.
+func pick[T any](rng *rand.Rand, items []T) T {
+	return items[rng.Intn(len(items))]
+}
+
+// weightedIndex returns an index into weights chosen proportionally to the
+// weight values (which need not sum to 1).
+func weightedIndex(rng *rand.Rand, weights []float64) int {
+	total := 0.0
+	for _, w := range weights {
+		total += w
+	}
+	r := rng.Float64() * total
+	for i, w := range weights {
+		if r < w {
+			return i
+		}
+		r -= w
+	}
+	return len(weights) - 1
+}
+
+// min returns the smaller of two ints (local helper — avoids depending on
+// Go 1.21's builtin min in case the toolchain here predates it).
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

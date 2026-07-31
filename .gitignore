@@ -1,0 +1,25 @@
+# Environment — never commit
+.env
+
+# Build output
+bin/
+*.exe
+
+# Database dumps — contain real member PII (names, phone, email, address)
+backups/
+
+# Stale local snapshots from earlier iteration — superseded by the live
+# project (last touched at migration 008; current is at 012+lifecycle).
+# Kept on disk, excluded from history.
+gymcrm-backend-routing-fix/
+gymcrm-backend-sprint4-final/
+gymcrm-backend-sprint4-fixed/
+gymcrm-backend.zip
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store

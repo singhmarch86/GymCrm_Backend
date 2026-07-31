@@ -1,0 +1,332 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "GymCRM API",
+    "description": "Multi-tenant gym SaaS. All business endpoints require Bearer JWT. gym_id is extracted from JWT — every query is automatically scoped to the authenticated gym.",
+    "version": "1.0"
+  },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "schemes": ["http"],
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter: Bearer <access_token>"
+    }
+  },
+  "tags": [
+    { "name": "auth",    "description": "Authentication and session management" },
+    { "name": "members", "description": "Gym member management" },
+    { "name": "plans",   "description": "Membership plan catalogue" },
+    { "name": "system",  "description": "Health and diagnostics" }
+  ],
+  "paths": {
+    "/health": {
+      "get": { "tags": ["system"], "summary": "Health check",
+        "responses": { "200": { "description": "OK" } } }
+    },
+    "/api/v1/auth/register": {
+      "post": { "tags": ["auth"], "summary": "Register a new gym",
+        "consumes": ["application/json"], "produces": ["application/json"],
+        "parameters": [{ "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/RegisterGymRequest" } }],
+        "responses": { "201": { "description": "Created", "schema": { "$ref": "#/definitions/RegisterResponse" } }, "409": { "description": "Phone already registered" }, "422": { "description": "Validation error" } } }
+    },
+    "/api/v1/auth/login": {
+      "post": { "tags": ["auth"], "summary": "Login",
+        "consumes": ["application/json"], "produces": ["application/json"],
+        "parameters": [{ "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/LoginRequest" } }],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/AuthResponse" } }, "401": { "description": "Invalid credentials" } } }
+    },
+    "/api/v1/auth/refresh": {
+      "post": { "tags": ["auth"], "summary": "Refresh access token",
+        "consumes": ["application/json"], "produces": ["application/json"],
+        "parameters": [{ "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/RefreshRequest" } }],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/AuthResponse" } }, "401": { "description": "Invalid token" } } }
+    },
+    "/api/v1/auth/me": {
+      "get": { "tags": ["auth"], "summary": "Get current user and gym",
+        "security": [{ "BearerAuth": [] }], "produces": ["application/json"],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/MeResponse" } }, "401": { "description": "Not authenticated" } } }
+    },
+    "/api/v1/auth/logout": {
+      "post": { "tags": ["auth"], "summary": "Logout",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Logged out" } } }
+    },
+    "/api/v1/members": {
+      "post": { "tags": ["members"], "summary": "Add a new member",
+        "security": [{ "BearerAuth": [] }], "consumes": ["application/json"], "produces": ["application/json"],
+        "parameters": [{ "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/CreateMemberRequest" } }],
+        "responses": { "201": { "description": "Created", "schema": { "$ref": "#/definitions/MemberResponse" } }, "409": { "description": "Phone exists" }, "422": { "description": "Validation error" } } },
+      "get": { "tags": ["members"], "summary": "List members",
+        "security": [{ "BearerAuth": [] }], "produces": ["application/json"],
+        "parameters": [
+          { "in": "query", "name": "page", "type": "integer" },
+          { "in": "query", "name": "per_page", "type": "integer" },
+          { "in": "query", "name": "status", "type": "string", "description": "active | expired | inactive | churned" },
+          { "in": "query", "name": "search", "type": "string" }
+        ],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/MemberListResponse" } } } }
+    },
+    "/api/v1/members/search": {
+      "get": { "tags": ["members"], "summary": "Search members",
+        "security": [{ "BearerAuth": [] }], "produces": ["application/json"],
+        "parameters": [
+          { "in": "query", "name": "q", "type": "string", "required": true },
+          { "in": "query", "name": "page", "type": "integer" },
+          { "in": "query", "name": "per_page", "type": "integer" }
+        ],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/MemberListResponse" } } } }
+    },
+    "/api/v1/members/expiring": {
+      "get": { "tags": ["members"], "summary": "Get expiring members",
+        "description": "Members expiring within N days. Sorted by expiry date ascending.",
+        "security": [{ "BearerAuth": [] }], "produces": ["application/json"],
+        "parameters": [
+          { "in": "query", "name": "days", "type": "integer", "description": "Days ahead (default: 7, max: 90)" },
+          { "in": "query", "name": "page", "type": "integer" },
+          { "in": "query", "name": "per_page", "type": "integer" }
+        ],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/MemberListResponse" } } } }
+    },
+    "/api/v1/members/{id}": {
+      "get": { "tags": ["members"], "summary": "Get member by ID",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "type": "integer", "required": true }],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/MemberResponse" } }, "404": { "description": "Not found" } } },
+      "put": { "tags": ["members"], "summary": "Update member",
+        "security": [{ "BearerAuth": [] }], "consumes": ["application/json"],
+        "parameters": [
+          { "in": "path", "name": "id", "type": "integer", "required": true },
+          { "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/UpdateMemberRequest" } }
+        ],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/MemberResponse" } }, "404": { "description": "Not found" } } },
+      "delete": { "tags": ["members"], "summary": "Delete member (soft delete)",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "type": "integer", "required": true }],
+        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not found" } } }
+    },
+    "/api/v1/plans": {
+      "post": { "tags": ["plans"], "summary": "Create a membership plan",
+        "description": "Plan names are case-insensitively unique within a gym. Price in paise (₹1,500 = 150000).",
+        "security": [{ "BearerAuth": [] }], "consumes": ["application/json"], "produces": ["application/json"],
+        "parameters": [{ "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/CreatePlanRequest" } }],
+        "responses": {
+          "201": { "description": "Created", "schema": { "$ref": "#/definitions/PlanResponse" } },
+          "409": { "description": "Plan name already exists in this gym" },
+          "422": { "description": "Validation error" },
+          "401": { "description": "Not authenticated" }
+        }
+      },
+      "get": { "tags": ["plans"], "summary": "List membership plans",
+        "description": "Paginated list. Filter by active status or search by name.",
+        "security": [{ "BearerAuth": [] }], "produces": ["application/json"],
+        "parameters": [
+          { "in": "query", "name": "page", "type": "integer" },
+          { "in": "query", "name": "per_page", "type": "integer" },
+          { "in": "query", "name": "search", "type": "string", "description": "Search by plan name" },
+          { "in": "query", "name": "active", "type": "boolean", "description": "Filter by active status" }
+        ],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/PlanListResponse" } } }
+      }
+    },
+    "/api/v1/plans/active": {
+      "get": { "tags": ["plans"], "summary": "List active plans",
+        "description": "Returns only active, assignable plans. Use to populate plan dropdowns in Flutter. Sorted alphabetically.",
+        "security": [{ "BearerAuth": [] }], "produces": ["application/json"],
+        "parameters": [
+          { "in": "query", "name": "page", "type": "integer" },
+          { "in": "query", "name": "per_page", "type": "integer" }
+        ],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/PlanListResponse" } } }
+      }
+    },
+    "/api/v1/plans/{id}": {
+      "get": { "tags": ["plans"], "summary": "Get plan by ID",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "type": "integer", "required": true }],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/PlanResponse" } }, "404": { "description": "Not found" } }
+      },
+      "put": { "tags": ["plans"], "summary": "Update a plan",
+        "description": "Updates plan fields. Setting is_active=false hides the plan. Existing members and renewals are unaffected.",
+        "security": [{ "BearerAuth": [] }], "consumes": ["application/json"],
+        "parameters": [
+          { "in": "path", "name": "id", "type": "integer", "required": true },
+          { "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/UpdatePlanRequest" } }
+        ],
+        "responses": { "200": { "description": "OK", "schema": { "$ref": "#/definitions/PlanResponse" } }, "404": { "description": "Not found" }, "409": { "description": "Name taken" } }
+      },
+      "delete": { "tags": ["plans"], "summary": "Delete a plan (soft delete)",
+        "description": "Soft-deletes the plan. Existing member and renewal records are preserved. Plan name becomes reusable.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "type": "integer", "required": true }],
+        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not found" } }
+      }
+    }
+  },
+  "definitions": {
+    "RegisterGymRequest": {
+      "type": "object", "required": ["gym_name", "owner_name", "phone", "password", "city", "state"],
+      "properties": {
+        "gym_name": { "type": "string", "example": "Singh Fitness" },
+        "owner_name": { "type": "string", "example": "Gurpreet Singh" },
+        "phone": { "type": "string", "example": "9876543210" },
+        "password": { "type": "string", "example": "secure123" },
+        "city": { "type": "string", "example": "Ludhiana" },
+        "state": { "type": "string", "example": "Punjab" },
+        "address": { "type": "string" }, "email": { "type": "string" }
+      }
+    },
+    "LoginRequest": {
+      "type": "object", "required": ["phone", "password"],
+      "properties": { "phone": { "type": "string", "example": "9876543210" }, "password": { "type": "string", "example": "secure123" } }
+    },
+    "RefreshRequest": {
+      "type": "object", "required": ["refresh_token"],
+      "properties": { "refresh_token": { "type": "string" } }
+    },
+    "AuthResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "data": { "type": "object", "properties": {
+          "access_token": { "type": "string" }, "refresh_token": { "type": "string" },
+          "token_type": { "type": "string", "example": "Bearer" }, "expires_in": { "type": "integer", "example": 900 },
+          "user": { "$ref": "#/definitions/UserDTO" }
+        }}
+      }
+    },
+    "RegisterResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "data": { "type": "object", "properties": {
+          "gym": { "$ref": "#/definitions/GymDTO" }, "user": { "$ref": "#/definitions/UserDTO" },
+          "access_token": { "type": "string" }, "refresh_token": { "type": "string" },
+          "token_type": { "type": "string" }, "expires_in": { "type": "integer" }
+        }}
+      }
+    },
+    "MeResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "data": { "type": "object", "properties": {
+          "user": { "$ref": "#/definitions/UserDTO" }, "gym": { "$ref": "#/definitions/GymDTO" }
+        }}
+      }
+    },
+    "UserDTO": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }, "gym_id": { "type": "integer" },
+        "name": { "type": "string" }, "phone": { "type": "string" },
+        "email": { "type": "string" }, "role": { "type": "string", "enum": ["owner", "staff"] }
+      }
+    },
+    "GymDTO": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }, "name": { "type": "string" },
+        "city": { "type": "string" }, "state": { "type": "string" }, "status": { "type": "string" }
+      }
+    },
+    "CreateMemberRequest": {
+      "type": "object", "required": ["first_name", "last_name", "phone"],
+      "properties": {
+        "first_name": { "type": "string", "example": "Harpreet" },
+        "last_name": { "type": "string", "example": "Kaur" },
+        "phone": { "type": "string", "example": "9876500001" },
+        "email": { "type": "string" }, "gender": { "type": "string", "enum": ["male", "female", "other"] },
+        "date_of_birth": { "type": "string", "example": "1995-06-15" },
+        "address": { "type": "string" },
+        "membership_plan_id": { "type": "integer" },
+        "start_date": { "type": "string", "example": "2026-06-01" },
+        "expiry_date": { "type": "string", "example": "2026-06-30" },
+        "notes": { "type": "string" }
+      }
+    },
+    "UpdateMemberRequest": {
+      "type": "object",
+      "properties": {
+        "first_name": { "type": "string" }, "last_name": { "type": "string" },
+        "phone": { "type": "string" }, "email": { "type": "string" },
+        "gender": { "type": "string", "enum": ["male", "female", "other"] },
+        "address": { "type": "string" }, "membership_plan_id": { "type": "integer" },
+        "start_date": { "type": "string" }, "expiry_date": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "expired", "inactive", "churned"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "MemberResponse": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }, "gym_id": { "type": "integer" },
+        "first_name": { "type": "string" }, "last_name": { "type": "string" }, "full_name": { "type": "string" },
+        "phone": { "type": "string" }, "email": { "type": "string" }, "gender": { "type": "string" },
+        "date_of_birth": { "type": "string" }, "address": { "type": "string" },
+        "membership_plan_id": { "type": "integer" },
+        "start_date": { "type": "string" }, "expiry_date": { "type": "string" },
+        "status": { "type": "string" }, "notes": { "type": "string" },
+        "created_at": { "type": "string" }, "updated_at": { "type": "string" }
+      }
+    },
+    "MemberListResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "data": { "type": "object", "properties": {
+          "members": { "type": "array", "items": { "$ref": "#/definitions/MemberResponse" } }
+        }},
+        "meta": { "type": "object", "properties": {
+          "page": { "type": "integer" }, "per_page": { "type": "integer" },
+          "total": { "type": "integer" }, "total_pages": { "type": "integer" }
+        }}
+      }
+    },
+    "CreatePlanRequest": {
+      "type": "object", "required": ["name", "duration_days", "price_in_paise"],
+      "properties": {
+        "name": { "type": "string", "example": "Monthly Basic" },
+        "description": { "type": "string", "example": "Access to all equipment" },
+        "duration_days": { "type": "integer", "example": 30, "description": "Must be > 0" },
+        "price_in_paise": { "type": "integer", "example": 150000, "description": "In paise. ₹1,500 = 150000" }
+      }
+    },
+    "UpdatePlanRequest": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" }, "description": { "type": "string" },
+        "duration_days": { "type": "integer" }, "price_in_paise": { "type": "integer" },
+        "is_active": { "type": "boolean" }
+      }
+    },
+    "PlanResponse": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }, "gym_id": { "type": "integer" },
+        "name": { "type": "string" }, "description": { "type": "string" },
+        "duration_days": { "type": "integer" },
+        "price_in_paise": { "type": "integer", "example": 150000 },
+        "price_in_rupees": { "type": "number", "example": 1500.0, "description": "Display only — use price_in_paise for calculations" },
+        "is_active": { "type": "boolean" },
+        "created_at": { "type": "string" }, "updated_at": { "type": "string" }
+      }
+    },
+    "PlanListResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "data": { "type": "object", "properties": {
+          "plans": { "type": "array", "items": { "$ref": "#/definitions/PlanResponse" } }
+        }},
+        "meta": { "type": "object", "properties": {
+          "page": { "type": "integer" }, "per_page": { "type": "integer" },
+          "total": { "type": "integer" }, "total_pages": { "type": "integer" }
+        }}
+      }
+    }
+  }
+}
