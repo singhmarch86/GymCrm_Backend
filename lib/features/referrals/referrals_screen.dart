@@ -64,7 +64,11 @@ class _ReferralsScreenState extends State<ReferralsScreen> {
   }
 
   Future<void> _markJoined(Referral r) async {
-    final memberId = await _pickMember(context, excludeMemberId: r.referrerMemberId);
+    final memberId = await _pickMember(
+      context,
+      excludeMemberId: r.referrerMemberId,
+      initialQuery: r.referredPhone.isNotEmpty ? r.referredPhone : r.referredName,
+    );
     if (memberId == null) return;
     try {
       await _service.markJoined(r.id, referredMemberId: memberId);
@@ -399,16 +403,21 @@ class _CreateReferralDialogState extends State<_CreateReferralDialog> {
 
 // ─── Small helpers ───────────────────────────────────────────────────────────
 
-Future<int?> _pickMember(BuildContext context, {required int excludeMemberId}) {
+Future<int?> _pickMember(
+  BuildContext context, {
+  required int excludeMemberId,
+  String initialQuery = '',
+}) {
   return showDialog<int>(
     context: context,
-    builder: (_) => _MemberPickerDialog(excludeMemberId: excludeMemberId),
+    builder: (_) => _MemberPickerDialog(excludeMemberId: excludeMemberId, initialQuery: initialQuery),
   );
 }
 
 class _MemberPickerDialog extends StatefulWidget {
   final int excludeMemberId;
-  const _MemberPickerDialog({required this.excludeMemberId});
+  final String initialQuery;
+  const _MemberPickerDialog({required this.excludeMemberId, this.initialQuery = ''});
 
   @override
   State<_MemberPickerDialog> createState() => _MemberPickerDialogState();
@@ -416,10 +425,25 @@ class _MemberPickerDialog extends StatefulWidget {
 
 class _MemberPickerDialogState extends State<_MemberPickerDialog> {
   final _memberService = MemberService();
-  final _controller = TextEditingController();
+  late final _controller = TextEditingController(text: widget.initialQuery);
   Timer? _debounce;
   List<Member> _results = [];
   bool _searching = false;
+  // Distinguishes "haven't searched yet" from "searched, found nothing" —
+  // the latter needs an explicit explanation, not a blank dialog that looks
+  // frozen. The referred person must already exist as a Member before they
+  // can be linked here; "Mark joined" doesn't create one.
+  bool _searchedAtLeastOnce = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill from the referral's own phone/name and search immediately —
+    // staff shouldn't have to retype what we already recorded at creation.
+    if (widget.initialQuery.trim().isNotEmpty) {
+      _runSearch(widget.initialQuery.trim());
+    }
+  }
 
   @override
   void dispose() {
@@ -431,17 +455,23 @@ class _MemberPickerDialogState extends State<_MemberPickerDialog> {
   void _onChanged(String q) {
     _debounce?.cancel();
     if (q.trim().length < 2) {
-      setState(() => _results = []);
+      setState(() {
+        _results = [];
+        _searchedAtLeastOnce = false;
+      });
       return;
     }
-    _debounce = Timer(const Duration(milliseconds: 350), () async {
-      setState(() => _searching = true);
-      final all = await _memberService.searchMembers(q.trim());
-      if (!mounted) return;
-      setState(() {
-        _results = all.where((m) => m.id != widget.excludeMemberId).take(6).toList();
-        _searching = false;
-      });
+    _debounce = Timer(const Duration(milliseconds: 350), () => _runSearch(q.trim()));
+  }
+
+  Future<void> _runSearch(String q) async {
+    setState(() => _searching = true);
+    final all = await _memberService.searchMembers(q);
+    if (!mounted) return;
+    setState(() {
+      _results = all.where((m) => m.id != widget.excludeMemberId).take(6).toList();
+      _searching = false;
+      _searchedAtLeastOnce = true;
     });
   }
 
@@ -461,6 +491,7 @@ class _MemberPickerDialogState extends State<_MemberPickerDialog> {
           TextField(
             controller: _controller,
             onChanged: _onChanged,
+            autofillHints: const [],
             decoration: InputDecoration(
               hintText: 'Search by name or phone…',
               prefixIcon: const Icon(Icons.search, size: 18),
@@ -473,6 +504,13 @@ class _MemberPickerDialogState extends State<_MemberPickerDialog> {
             ),
           ),
           AppSpacing.gapSm,
+          if (!_searching && _searchedAtLeastOnce && _results.isEmpty)
+            LifecycleNotice(
+              tone: LifecycleTone.warning,
+              text: 'No matching member found. The referred person needs to be '
+                  'added as a Member first — go to Members → Add Member, then '
+                  'come back here to link them.',
+            ),
           for (final m in _results) ...[
             InkWell(
               onTap: () => Navigator.pop(context, m.id),
