@@ -8,10 +8,12 @@ import '../../features/classes/classes_screen.dart';
 import '../../features/leads/leads_screen.dart';
 import '../../features/members/member_screen.dart';
 import '../../features/payments/payments_screen.dart';
+import '../../features/referrals/referrals_screen.dart';
 import '../../features/renewals/renewals_screen.dart';
 import '../../features/reports/reports_screen.dart';
 import '../../features/retention/at_risk_screen.dart';
 import '../../features/staff/staff_screen.dart';
+import '../../features/visitors/visitors_screen.dart';
 import '../plans_screen.dart';
 
 /// One navigation entry, so the list can be laid out by the grid below rather
@@ -144,6 +146,20 @@ class DashboardQuickActions extends StatelessWidget {
           icon: Icons.badge_rounded,
           color: AppColors.textSecondary,
           screen: () => const StaffScreen(),
+        ),
+        _Action(
+          title: 'Visitors',
+          subtitle: 'Walk-ins, trials, tours',
+          icon: Icons.groups_2_rounded,
+          color: AppColors.info,
+          screen: () => const VisitorsScreen(),
+        ),
+        _Action(
+          title: 'Referrals',
+          subtitle: 'Member-to-member referrals',
+          icon: Icons.diversity_3_rounded,
+          color: AppColors.warning,
+          screen: () => const ReferralsScreen(),
         ),
       ];
 
