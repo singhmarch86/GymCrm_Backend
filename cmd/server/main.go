@@ -24,9 +24,11 @@ import (
 	"gymcrm/internal/payments"
 	"gymcrm/internal/plans"
 	"gymcrm/internal/renewals"
+	"gymcrm/internal/referrals"
 	"gymcrm/internal/reports"
 	"gymcrm/internal/retention"
 	"gymcrm/internal/users"
+	"gymcrm/internal/visitors"
 )
 
 //go:embed docs/swagger.json
@@ -118,6 +120,14 @@ func main() {
 	leadsRepo := leads.NewRepository(db)
 	leadsSvc := leads.NewService(leadsRepo)
 	leadsHandler := leads.NewHandler(leadsSvc)
+
+	visitorsRepo := visitors.NewRepository(db)
+	visitorsSvc := visitors.NewService(visitorsRepo, leadsSvc)
+	visitorsHandler := visitors.NewHandler(visitorsSvc)
+
+	referralsRepo := referrals.NewRepository(db)
+	referralsSvc := referrals.NewService(referralsRepo)
+	referralsHandler := referrals.NewHandler(referralsSvc)
 
 	usersRepo := users.NewRepository(db)
 	usersSvc := users.NewService(usersRepo)
@@ -285,6 +295,20 @@ func main() {
 	mux.Handle("POST /api/v1/bookings/{id}/cancel", jwt(http.HandlerFunc(classesHandler.CancelBooking)))
 	mux.Handle("POST /api/v1/bookings/{id}/attendance", jwt(http.HandlerFunc(classesHandler.MarkAttendance)))
 	mux.Handle("GET /api/v1/members/{member_id}/bookings", jwt(http.HandlerFunc(classesHandler.MemberBookings)))
+
+	// ── Visitors (walk-ins) ─────────────────────────────────────────────────
+	mux.Handle("POST /api/v1/visitors/check-in", jwt(http.HandlerFunc(visitorsHandler.CheckIn)))
+	mux.Handle("POST /api/v1/visitors/{id}/check-out", jwt(http.HandlerFunc(visitorsHandler.CheckOut)))
+	mux.Handle("POST /api/v1/visitors/{id}/convert-to-lead", jwt(http.HandlerFunc(visitorsHandler.ConvertToLead)))
+	mux.Handle("GET /api/v1/visitors", jwt(http.HandlerFunc(visitorsHandler.List)))
+
+	// ── Referrals ───────────────────────────────────────────────────────────
+	mux.Handle("POST /api/v1/referrals", jwt(http.HandlerFunc(referralsHandler.Create)))
+	mux.Handle("GET /api/v1/referrals", jwt(http.HandlerFunc(referralsHandler.List)))
+	mux.Handle("POST /api/v1/referrals/{id}/mark-joined", jwt(http.HandlerFunc(referralsHandler.MarkJoined)))
+	mux.Handle("POST /api/v1/referrals/{id}/reward", jwt(http.HandlerFunc(referralsHandler.Reward)))
+	mux.Handle("POST /api/v1/referrals/{id}/expire", jwt(http.HandlerFunc(referralsHandler.Expire)))
+	mux.Handle("GET /api/v1/members/{member_id}/referrals", jwt(http.HandlerFunc(referralsHandler.MemberReferrals)))
 
 	// ── Reports ────────────────────────────────────────────────────────────
 	mux.Handle("GET /api/v1/reports/revenue", jwt(http.HandlerFunc(reportsHandler.Revenue)))

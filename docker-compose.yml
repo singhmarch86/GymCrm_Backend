@@ -45,6 +45,7 @@ services:
       - ./migrations/011_retention_alert_accountability.sql:/docker-entrypoint-initdb.d/011_retention_alert_accountability.sql
       - ./migrations/012_membership_lifecycle.sql:/docker-entrypoint-initdb.d/012_membership_lifecycle.sql
       - ./migrations/013_classes_booking.sql:/docker-entrypoint-initdb.d/013_classes_booking.sql
+      - ./migrations/014_visitors_referrals.sql:/docker-entrypoint-initdb.d/014_visitors_referrals.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gymcrm -d gymcrm"]
       interval: 3s
