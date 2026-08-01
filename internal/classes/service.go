@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -39,6 +40,51 @@ func (s *Service) CreateClassType(ctx context.Context, req CreateClassTypeReques
 		return nil, fmt.Errorf("create class type: %w", err)
 	}
 	return toClassTypeResponse(*ct), nil
+}
+
+// UpdateClassType edits a class type. Only provided fields change. This never
+// touches any schedule or session already created from it — those hold their
+// own snapshot of duration/capacity taken at creation time (FR-02 §0.1), so
+// editing the class type only affects what gets created from it going forward.
+func (s *Service) UpdateClassType(ctx context.Context, id int64, req UpdateClassTypeRequest) (*ClassTypeResponse, error) {
+	if err := validateUpdateClassType(req); err != nil {
+		return nil, err
+	}
+	existing, err := s.repo.FindClassType(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("update class type: find: %w", err)
+	}
+	if existing == nil {
+		return nil, ErrClassTypeNotFound
+	}
+
+	mut := map[string]any{}
+	if req.Name != nil {
+		mut["name"] = strings.TrimSpace(*req.Name)
+	}
+	if req.Description != nil {
+		mut["description"] = optionalText(*req.Description)
+	}
+	if req.DurationMinutes != nil {
+		mut["duration_minutes"] = *req.DurationMinutes
+	}
+	if req.DefaultCapacity != nil {
+		mut["default_capacity"] = *req.DefaultCapacity
+	}
+	if req.IsActive != nil {
+		mut["is_active"] = *req.IsActive
+	}
+	if len(mut) > 0 {
+		if err := s.repo.UpdateClassType(ctx, id, mut); err != nil {
+			return nil, fmt.Errorf("update class type: %w", err)
+		}
+	}
+
+	updated, err := s.repo.FindClassType(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("update class type: reload: %w", err)
+	}
+	return toClassTypeResponse(*updated), nil
 }
 
 func (s *Service) ListClassTypes(ctx context.Context, activeOnly bool) ([]ClassTypeResponse, error) {

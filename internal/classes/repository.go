@@ -48,6 +48,16 @@ func (r *Repository) FindClassType(ctx context.Context, id int64) (*ClassType, e
 	return &ct, err
 }
 
+// UpdateClassType edits a class type in place. Callers should never touch
+// this from a session generation path — a class type's fields are only
+// snapshotted onto a schedule/session at creation time, so editing here has
+// no effect on anything already materialized. FR-02 §0.1.
+func (r *Repository) UpdateClassType(ctx context.Context, id int64, mut map[string]any) error {
+	mut["updated_at"] = time.Now()
+	return database.ScopedDB(ctx, r.db).
+		Table("class_types").Where("id = ?", id).Updates(mut).Error
+}
+
 func (r *Repository) ListClassTypes(ctx context.Context, activeOnly bool) ([]ClassType, error) {
 	q := database.ScopedDB(ctx, r.db).Where("deleted_at IS NULL")
 	if activeOnly {

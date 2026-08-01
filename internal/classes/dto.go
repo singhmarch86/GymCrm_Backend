@@ -13,6 +13,21 @@ type CreateClassTypeRequest struct {
 	DefaultCapacity int    `json:"default_capacity"`  // required, > 0
 }
 
+// UpdateClassTypeRequest is the payload for PUT /api/v1/class-types/{id}.
+// All fields are optional — only the ones present are changed. Editing a
+// class type never touches sessions already generated from it (FR-02 §0.1):
+// this only affects new schedules/sessions created after the edit.
+// @Description Edit a class type. Only provided fields are changed.
+type UpdateClassTypeRequest struct {
+	Name            *string `json:"name"`
+	Description     *string `json:"description"`
+	DurationMinutes *int    `json:"duration_minutes"`
+	DefaultCapacity *int    `json:"default_capacity"`
+	// IsActive toggles whether this type can be scheduled going forward.
+	// Deactivating never cancels existing schedules or sessions.
+	IsActive *bool `json:"is_active"`
+}
+
 // ClassTypeResponse is the full class type record.
 // @Description A class type.
 type ClassTypeResponse struct {

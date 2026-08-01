@@ -22,6 +22,7 @@ func NewHandler(svc *Service) *Handler { return &Handler{svc: svc} }
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/class-types", h.CreateClassType)
 	mux.HandleFunc("GET /api/v1/class-types", h.ListClassTypes)
+	mux.HandleFunc("PUT /api/v1/class-types/{id}", h.UpdateClassType)
 
 	mux.HandleFunc("POST /api/v1/class-schedules", h.CreateSchedule)
 	mux.HandleFunc("GET /api/v1/class-schedules", h.ListSchedules)
@@ -80,6 +81,35 @@ func (h *Handler) ListClassTypes(w http.ResponseWriter, r *http.Request) {
 	res, err := h.svc.ListClassTypes(r.Context(), activeOnly)
 	if err != nil {
 		writeErr(w, err, "list class types")
+		return
+	}
+	response.OK(w, res)
+}
+
+// UpdateClassType godoc
+// @Summary      Edit a class type
+// @Description  Only provided fields change. Never affects schedules or sessions already created from it.
+// @Tags         classes
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      int                     true  "Class type ID"
+// @Param        body  body      UpdateClassTypeRequest  true  "Fields to change"
+// @Success      200   {object}  ClassTypeResponse
+// @Failure      404   {object}  response.Envelope
+// @Router       /api/v1/class-types/{id} [put]
+func (h *Handler) UpdateClassType(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathID(w, r, "id")
+	if !ok {
+		return
+	}
+	var req UpdateClassTypeRequest
+	if !decode(w, r, &req) {
+		return
+	}
+	res, err := h.svc.UpdateClassType(r.Context(), id, req)
+	if err != nil {
+		writeErr(w, err, "update class type")
 		return
 	}
 	response.OK(w, res)

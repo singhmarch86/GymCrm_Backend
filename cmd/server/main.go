@@ -267,6 +267,7 @@ func main() {
 	// bookings with waitlist. Rules: docs/FR-02-classes-booking.md
 	mux.Handle("POST /api/v1/class-types", jwt(http.HandlerFunc(classesHandler.CreateClassType)))
 	mux.Handle("GET /api/v1/class-types", jwt(http.HandlerFunc(classesHandler.ListClassTypes)))
+	mux.Handle("PUT /api/v1/class-types/{id}", jwt(http.HandlerFunc(classesHandler.UpdateClassType)))
 
 	mux.Handle("POST /api/v1/class-schedules", jwt(http.HandlerFunc(classesHandler.CreateSchedule)))
 	mux.Handle("GET /api/v1/class-schedules", jwt(http.HandlerFunc(classesHandler.ListSchedules)))

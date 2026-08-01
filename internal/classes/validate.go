@@ -80,6 +80,22 @@ func validateCreateClassType(req CreateClassTypeRequest) error {
 	return nil
 }
 
+// validateUpdateClassType only checks fields that were actually provided —
+// unlike create, every field here is optional, so an absent field is not an
+// error.
+func validateUpdateClassType(req UpdateClassTypeRequest) error {
+	if req.Name != nil && strings.TrimSpace(*req.Name) == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	if req.DurationMinutes != nil && *req.DurationMinutes <= 0 {
+		return fmt.Errorf("duration_minutes must be greater than 0")
+	}
+	if req.DefaultCapacity != nil && *req.DefaultCapacity <= 0 {
+		return fmt.Errorf("default_capacity must be greater than 0")
+	}
+	return nil
+}
+
 // validateCreateSchedule checks bounds that don't need a DB lookup. Defaults
 // from the class type (duration/capacity) are resolved in the service, which
 // has the class type loaded.
