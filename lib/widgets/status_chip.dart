@@ -17,6 +17,18 @@ enum AppStatus {
   cancelled,
   frozen,
   terminated,
+
+  // Classes & booking (internal/classes) — see FR-02. A session's lifecycle
+  // and a booking's lifecycle share this chip but need distinct buckets:
+  // 'scheduled' is routine, 'completed' is a done-state distinct from
+  // 'paid', and a booking's 'attended'/'no_show' matter for different
+  // reasons than any existing bucket (attendance record, not urgency).
+  scheduled,
+  completed,
+  booked,
+  waitlisted,
+  attended,
+  noShow,
 }
 
 /// Generic status badge used across Members, Renewals, Payments, and any
@@ -97,6 +109,20 @@ class StatusChip extends StatelessWidget {
       case 'TERMINATED':
         return AppStatus.terminated;
 
+      // Classes & booking (internal/classes) — see FR-02.
+      case 'SCHEDULED':
+        return AppStatus.scheduled;
+      case 'COMPLETED':
+        return AppStatus.completed;
+      case 'BOOKED':
+        return AppStatus.booked;
+      case 'WAITLISTED':
+        return AppStatus.waitlisted;
+      case 'ATTENDED':
+        return AppStatus.attended;
+      case 'NO_SHOW':
+        return AppStatus.noShow;
+
       default:
         return AppStatus.pending; // unrecognised value — neutral, non-alarming fallback
     }
@@ -124,6 +150,17 @@ class StatusChip extends StatelessWidget {
 
       case AppStatus.terminated:
         return AppColors.danger;
+
+      case AppStatus.scheduled:
+        return AppColors.info;
+      case AppStatus.completed:
+      case AppStatus.booked:
+      case AppStatus.attended:
+        return AppColors.success;
+      case AppStatus.waitlisted:
+        return AppColors.warning;
+      case AppStatus.noShow:
+        return AppColors.danger;
     }
   }
 
@@ -149,6 +186,19 @@ class StatusChip extends StatelessWidget {
 
       case AppStatus.terminated:
         return Icons.cancel_rounded;
+
+      case AppStatus.scheduled:
+        return Icons.event_rounded;
+      case AppStatus.completed:
+        return Icons.check_circle_rounded;
+      case AppStatus.booked:
+        return Icons.event_available_rounded;
+      case AppStatus.waitlisted:
+        return Icons.hourglass_bottom_rounded;
+      case AppStatus.attended:
+        return Icons.how_to_reg_rounded;
+      case AppStatus.noShow:
+        return Icons.person_off_rounded;
     }
   }
 
@@ -174,6 +224,19 @@ class StatusChip extends StatelessWidget {
 
       case AppStatus.terminated:
         return 'Terminated';
+
+      case AppStatus.scheduled:
+        return 'Scheduled';
+      case AppStatus.completed:
+        return 'Completed';
+      case AppStatus.booked:
+        return 'Booked';
+      case AppStatus.waitlisted:
+        return 'Waitlisted';
+      case AppStatus.attended:
+        return 'Attended';
+      case AppStatus.noShow:
+        return 'No-show';
     }
   }
 

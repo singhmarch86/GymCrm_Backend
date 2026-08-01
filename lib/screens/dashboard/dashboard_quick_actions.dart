@@ -4,6 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/dashboard_action_card.dart';
 
 import '../../features/attendance/attendance_screen.dart';
+import '../../features/classes/classes_screen.dart';
 import '../../features/leads/leads_screen.dart';
 import '../../features/members/member_screen.dart';
 import '../../features/payments/payments_screen.dart';
@@ -115,6 +116,13 @@ class DashboardQuickActions extends StatelessWidget {
           icon: Icons.how_to_reg_rounded,
           color: AppColors.info,
           screen: () => const AttendanceScreen(),
+        ),
+        _Action(
+          title: 'Classes',
+          subtitle: 'Schedules, sessions, bookings',
+          icon: Icons.self_improvement_rounded,
+          color: AppColors.success,
+          screen: () => const ClassesScreen(),
         ),
         _Action(
           title: 'Plans',
