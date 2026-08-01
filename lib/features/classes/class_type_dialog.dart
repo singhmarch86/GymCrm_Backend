@@ -61,13 +61,33 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
     super.dispose();
   }
 
-  bool get _canSubmit =>
-      _nameController.text.trim().isNotEmpty &&
-      (int.tryParse(_durationController.text.trim()) ?? 0) > 0 &&
-      (int.tryParse(_capacityController.text.trim()) ?? 0) > 0 &&
-      !_saving;
+  /// Never gate the button purely on live onChanged/setState reactivity — a
+  /// browser autofilling a field (as this one hit: the Name field visibly
+  /// showing "Yoga" from autofill while Flutter's controller still thought it
+  /// was empty) can set the DOM value without firing the event Flutter
+  /// listens for, leaving the button permanently disabled even though the
+  /// field looks filled in. _submit() re-reads the controllers directly at
+  /// tap time instead, so it's correct regardless of whether onChanged fired.
+  bool get _canSubmit => !_saving;
 
   Future<void> _submit() async {
+    final name = _nameController.text.trim();
+    final duration = int.tryParse(_durationController.text.trim()) ?? 0;
+    final capacity = int.tryParse(_capacityController.text.trim()) ?? 0;
+
+    if (name.isEmpty) {
+      setState(() => _error = 'Name is required');
+      return;
+    }
+    if (duration <= 0) {
+      setState(() => _error = 'Duration must be greater than 0');
+      return;
+    }
+    if (capacity <= 0) {
+      setState(() => _error = 'Default capacity must be greater than 0');
+      return;
+    }
+
     setState(() {
       _saving = true;
       _error = null;
@@ -76,16 +96,16 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
       final ct = widget.isEdit
           ? await _service.updateClassType(
               widget.existing!.id,
-              name: _nameController.text.trim(),
-              durationMinutes: int.parse(_durationController.text.trim()),
-              defaultCapacity: int.parse(_capacityController.text.trim()),
+              name: name,
+              durationMinutes: duration,
+              defaultCapacity: capacity,
               description: _descriptionController.text.trim(),
               isActive: _isActive,
             )
           : await _service.createClassType(
-              name: _nameController.text.trim(),
-              durationMinutes: int.parse(_durationController.text.trim()),
-              defaultCapacity: int.parse(_capacityController.text.trim()),
+              name: name,
+              durationMinutes: duration,
+              defaultCapacity: capacity,
               description: _descriptionController.text.trim(),
             );
       if (!mounted) return;
@@ -126,6 +146,11 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
           TextField(
             controller: _nameController,
             onChanged: (_) => setState(() {}),
+            // Browsers will otherwise offer to autofill this from saved form
+            // data — seen in practice filling in a previous class type's name
+            // without notifying Flutter, leaving the field looking populated
+            // while the app still thought it was empty.
+            autofillHints: const [],
             decoration: const InputDecoration(hintText: 'Yoga'),
           ),
           AppSpacing.gapLg,
@@ -141,6 +166,7 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
                     TextField(
                       controller: _durationController,
                       keyboardType: TextInputType.number,
+                      autofillHints: const [],
                       onChanged: (_) => setState(() {}),
                     ),
                   ],
@@ -156,6 +182,7 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
                     TextField(
                       controller: _capacityController,
                       keyboardType: TextInputType.number,
+                      autofillHints: const [],
                       onChanged: (_) => setState(() {}),
                     ),
                   ],
@@ -169,6 +196,7 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
           AppSpacing.gapXs,
           TextField(
             controller: _descriptionController,
+            autofillHints: const [],
             decoration: const InputDecoration(hintText: 'What members should expect'),
           ),
 
