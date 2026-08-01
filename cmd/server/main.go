@@ -14,6 +14,7 @@ import (
 	"gymcrm/internal/attendance"
 	"gymcrm/internal/auth"
 	"gymcrm/internal/dashboard"
+	"gymcrm/internal/classes"
 	"gymcrm/internal/database"
 	"gymcrm/internal/devseed"
 	"gymcrm/internal/leads"
@@ -129,6 +130,10 @@ func main() {
 	lifecycleRepo := lifecycle.NewRepository(db)
 	lifecycleSvc := lifecycle.NewService(lifecycleRepo)
 	lifecycleHandler := lifecycle.NewHandler(lifecycleSvc)
+
+	classesRepo := classes.NewRepository(db)
+	classesSvc := classes.NewService(classesRepo)
+	classesHandler := classes.NewHandler(classesSvc)
 
 	// ── Router ────────────────────────────────────────────────────────────
 	// Single mux. JWT applied per-handler via the jwt() helper below.
@@ -256,6 +261,29 @@ func main() {
 	mux.Handle("GET /api/v1/members/{id}/upgrade-quote", jwt(http.HandlerFunc(lifecycleHandler.UpgradeQuote)))
 	mux.Handle("GET /api/v1/members/{id}/termination-quote", jwt(http.HandlerFunc(lifecycleHandler.TerminationQuote)))
 	mux.Handle("GET /api/v1/members/{id}/lifecycle-events", jwt(http.HandlerFunc(lifecycleHandler.Timeline)))
+
+	// ── Classes & booking ──────────────────────────────────────────────────
+	// Class types, recurring schedules, materialized sessions, and member
+	// bookings with waitlist. Rules: docs/FR-02-classes-booking.md
+	mux.Handle("POST /api/v1/class-types", jwt(http.HandlerFunc(classesHandler.CreateClassType)))
+	mux.Handle("GET /api/v1/class-types", jwt(http.HandlerFunc(classesHandler.ListClassTypes)))
+
+	mux.Handle("POST /api/v1/class-schedules", jwt(http.HandlerFunc(classesHandler.CreateSchedule)))
+	mux.Handle("GET /api/v1/class-schedules", jwt(http.HandlerFunc(classesHandler.ListSchedules)))
+	mux.Handle("POST /api/v1/class-schedules/generate", jwt(http.HandlerFunc(classesHandler.GenerateUpcomingSessions)))
+
+	mux.Handle("POST /api/v1/class-sessions", jwt(http.HandlerFunc(classesHandler.CreateAdHocSession)))
+	mux.Handle("GET /api/v1/class-sessions", jwt(http.HandlerFunc(classesHandler.ListSessions)))
+	mux.Handle("GET /api/v1/class-sessions/{id}", jwt(http.HandlerFunc(classesHandler.GetSession)))
+	mux.Handle("PUT /api/v1/class-sessions/{id}", jwt(http.HandlerFunc(classesHandler.UpdateSession)))
+	mux.Handle("POST /api/v1/class-sessions/{id}/cancel", jwt(http.HandlerFunc(classesHandler.CancelSession)))
+	mux.Handle("POST /api/v1/class-sessions/{id}/complete", jwt(http.HandlerFunc(classesHandler.CompleteSession)))
+
+	mux.Handle("POST /api/v1/class-sessions/{id}/bookings", jwt(http.HandlerFunc(classesHandler.Book)))
+	mux.Handle("GET /api/v1/class-sessions/{id}/bookings", jwt(http.HandlerFunc(classesHandler.SessionBookings)))
+	mux.Handle("POST /api/v1/bookings/{id}/cancel", jwt(http.HandlerFunc(classesHandler.CancelBooking)))
+	mux.Handle("POST /api/v1/bookings/{id}/attendance", jwt(http.HandlerFunc(classesHandler.MarkAttendance)))
+	mux.Handle("GET /api/v1/members/{member_id}/bookings", jwt(http.HandlerFunc(classesHandler.MemberBookings)))
 
 	// ── Reports ────────────────────────────────────────────────────────────
 	mux.Handle("GET /api/v1/reports/revenue", jwt(http.HandlerFunc(reportsHandler.Revenue)))
