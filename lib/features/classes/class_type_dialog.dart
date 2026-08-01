@@ -17,8 +17,22 @@ Future<ClassType?> showCreateClassTypeDialog(BuildContext context) {
   );
 }
 
+/// Edit-class-type dialog — same form, pre-filled, plus an active/inactive
+/// toggle. Editing never touches schedules or sessions already created from
+/// this type; they hold their own snapshot taken at creation time
+/// (FR-02 §0.1), so this only changes what happens from here on.
+Future<ClassType?> showEditClassTypeDialog(BuildContext context, ClassType existing) {
+  return showDialog<ClassType>(
+    context: context,
+    builder: (_) => CreateClassTypeDialog(existing: existing),
+  );
+}
+
 class CreateClassTypeDialog extends StatefulWidget {
-  const CreateClassTypeDialog({super.key});
+  final ClassType? existing;
+  const CreateClassTypeDialog({super.key, this.existing});
+
+  bool get isEdit => existing != null;
 
   @override
   State<CreateClassTypeDialog> createState() => _CreateClassTypeDialogState();
@@ -26,10 +40,14 @@ class CreateClassTypeDialog extends StatefulWidget {
 
 class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
   final _service = ClassesService();
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _durationController = TextEditingController(text: '60');
-  final _capacityController = TextEditingController(text: '12');
+  late final _nameController = TextEditingController(text: widget.existing?.name ?? '');
+  late final _descriptionController =
+      TextEditingController(text: widget.existing?.description ?? '');
+  late final _durationController =
+      TextEditingController(text: '${widget.existing?.durationMinutes ?? 60}');
+  late final _capacityController =
+      TextEditingController(text: '${widget.existing?.defaultCapacity ?? 12}');
+  late bool _isActive = widget.existing?.isActive ?? true;
 
   bool _saving = false;
   String? _error;
@@ -55,12 +73,21 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
       _error = null;
     });
     try {
-      final ct = await _service.createClassType(
-        name: _nameController.text.trim(),
-        durationMinutes: int.parse(_durationController.text.trim()),
-        defaultCapacity: int.parse(_capacityController.text.trim()),
-        description: _descriptionController.text.trim(),
-      );
+      final ct = widget.isEdit
+          ? await _service.updateClassType(
+              widget.existing!.id,
+              name: _nameController.text.trim(),
+              durationMinutes: int.parse(_durationController.text.trim()),
+              defaultCapacity: int.parse(_capacityController.text.trim()),
+              description: _descriptionController.text.trim(),
+              isActive: _isActive,
+            )
+          : await _service.createClassType(
+              name: _nameController.text.trim(),
+              durationMinutes: int.parse(_durationController.text.trim()),
+              defaultCapacity: int.parse(_capacityController.text.trim()),
+              description: _descriptionController.text.trim(),
+            );
       if (!mounted) return;
       Navigator.pop(context, ct);
     } on ApiException catch (e) {
@@ -75,8 +102,8 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
   @override
   Widget build(BuildContext context) {
     return LifecycleDialogShell(
-      title: 'New class type',
-      subtitle: 'The offering — Yoga, Zumba, HIIT',
+      title: widget.isEdit ? 'Edit class type' : 'New class type',
+      subtitle: widget.isEdit ? widget.existing!.name : 'The offering — Yoga, Zumba, HIIT',
       icon: Icons.self_improvement,
       accent: AppColors.primary,
       error: _error,
@@ -86,7 +113,7 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
           child: const Text('Cancel'),
         ),
         AppButton(
-          text: 'Create',
+          text: widget.isEdit ? 'Save' : 'Create',
           loading: _saving,
           onPressed: _canSubmit ? _submit : null,
         ),
@@ -144,6 +171,23 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
             controller: _descriptionController,
             decoration: const InputDecoration(hintText: 'What members should expect'),
           ),
+
+          if (widget.isEdit) ...[
+            AppSpacing.gapLg,
+            LifecycleNotice(
+              tone: _isActive ? LifecycleTone.info : LifecycleTone.warning,
+              text: _isActive
+                  ? 'Active — can be used for new schedules.'
+                  : 'Inactive — cannot be scheduled going forward. Existing schedules and sessions are unaffected.',
+            ),
+            AppSpacing.gapSm,
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Active', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500)),
+              value: _isActive,
+              onChanged: (v) => setState(() => _isActive = v),
+            ),
+          ],
         ],
       ),
     );

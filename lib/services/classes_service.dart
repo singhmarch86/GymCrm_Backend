@@ -45,6 +45,32 @@ class ClassesService {
     return ClassType.fromJson(unwrapJson(response)['data']);
   }
 
+  /// Edits a class type. Only the fields passed are changed — omit a
+  /// parameter to leave it as-is. Never affects schedules or sessions
+  /// already created from this type; they hold their own snapshot.
+  Future<ClassType> updateClassType(
+    int id, {
+    String? name,
+    String? description,
+    int? durationMinutes,
+    int? defaultCapacity,
+    bool? isActive,
+  }) async {
+    final headers = await _headers();
+    final response = await guardRequest(() => http.put(
+          Uri.parse('$kBaseUrl/api/v1/class-types/$id'),
+          headers: headers,
+          body: jsonEncode({
+            if (name != null) 'name': name,
+            if (description != null) 'description': description,
+            if (durationMinutes != null) 'duration_minutes': durationMinutes,
+            if (defaultCapacity != null) 'default_capacity': defaultCapacity,
+            if (isActive != null) 'is_active': isActive,
+          }),
+        ));
+    return ClassType.fromJson(unwrapJson(response)['data']);
+  }
+
   // ── Schedules ──────────────────────────────────────────────────────────────
 
   Future<List<ClassSchedule>> getSchedules({bool activeOnly = false}) async {

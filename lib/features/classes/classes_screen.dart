@@ -394,6 +394,14 @@ class _ClassTypesTabState extends State<_ClassTypesTab> {
     }
   }
 
+  Future<void> _edit(ClassType classType) async {
+    final updated = await showEditClassTypeDialog(context, classType);
+    if (updated != null) {
+      widget.onChanged();
+      _load();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -419,7 +427,10 @@ class _ClassTypesTabState extends State<_ClassTypesTab> {
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
                         itemCount: _classTypes.length,
                         separatorBuilder: (_, __) => AppSpacing.gapSm,
-                        itemBuilder: (_, i) => _ClassTypeCard(classType: _classTypes[i]),
+                        itemBuilder: (_, i) => _ClassTypeCard(
+                          classType: _classTypes[i],
+                          onTap: () => _edit(_classTypes[i]),
+                        ),
                       ),
                     ),
     );
@@ -428,11 +439,15 @@ class _ClassTypesTabState extends State<_ClassTypesTab> {
 
 class _ClassTypeCard extends StatelessWidget {
   final ClassType classType;
-  const _ClassTypeCard({required this.classType});
+  final VoidCallback onTap;
+  const _ClassTypeCard({required this.classType, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -459,8 +474,13 @@ class _ClassTypeCard extends StatelessWidget {
               ],
             ),
           ),
-          if (!classType.isActive) const StatusChip(status: 'cancelled', label: 'Inactive'),
+          if (!classType.isActive) ...[
+            const StatusChip(status: 'cancelled', label: 'Inactive'),
+            const SizedBox(width: 8),
+          ],
+          const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
         ],
+      ),
       ),
     );
   }
