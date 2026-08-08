@@ -10,7 +10,12 @@ import (
 	"gymcrm/internal/plans"
 )
 
-const memberCountTarget = 150
+// Sized for a large club rather than a small studio, so list screens, search
+// and the reporting queries are exercised under realistic pressure. Note this
+// does not make any of the analytics "smarter" — they are per-member
+// statistics, not trained models — it only makes the demo look like a real
+// business and surfaces performance problems that 150 rows would hide.
+const memberCountTarget = 800
 
 // segment buckets a seeded member's renewal urgency at seed time. It maps
 // onto members.dto.go's ExpiryStatus, which is computed at request time

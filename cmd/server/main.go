@@ -32,6 +32,7 @@ import (
 	"gymcrm/internal/referrals"
 	"gymcrm/internal/reports"
 	"gymcrm/internal/retention"
+	"gymcrm/internal/rhythm"
 	"gymcrm/internal/trainers"
 	"gymcrm/internal/users"
 	"gymcrm/internal/visitors"
@@ -172,6 +173,10 @@ func main() {
 	retentionSvc := retention.NewService(retentionRepo)
 	retentionHandler := retention.NewHandler(retentionSvc)
 
+	rhythmRepo := rhythm.NewRepository(db)
+	rhythmSvc := rhythm.NewService(rhythmRepo)
+	rhythmHandler := rhythm.NewHandler(rhythmSvc)
+
 	lifecycleRepo := lifecycle.NewRepository(db)
 	lifecycleSvc := lifecycle.NewService(lifecycleRepo)
 	lifecycleHandler := lifecycle.NewHandler(lifecycleSvc)
@@ -292,6 +297,13 @@ func main() {
 	mux.Handle("GET /api/v1/retention/summary", jwt(http.HandlerFunc(retentionHandler.Summary)))
 	mux.Handle("PATCH /api/v1/retention/alerts/{id}/resolve", jwt(http.HandlerFunc(retentionHandler.Resolve)))
 	mux.Handle("GET /api/v1/retention/staff-activity", jwt(http.HandlerFunc(retentionHandler.StaffActivity)))
+
+	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
+	// same retention_alerts queue, so resolution goes through the retention
+	// endpoint above — there is deliberately no second resolve route.
+	mux.Handle("POST /api/v1/rhythm/scan", jwt(http.HandlerFunc(rhythmHandler.Scan)))
+	mux.Handle("GET /api/v1/rhythm/breaks", jwt(http.HandlerFunc(rhythmHandler.ListBreaks)))
+	mux.Handle("GET /api/v1/rhythm/members/{id}", jwt(http.HandlerFunc(rhythmHandler.GetProfile)))
 
 	// ── Membership lifecycle ───────────────────────────────────────────────
 	// Freeze / unfreeze / upgrade / transfer / terminate, plus the preview
