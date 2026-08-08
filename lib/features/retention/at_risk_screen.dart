@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../models/retention_alert.dart';
+import '../../models/rhythm.dart';
 import '../../services/api_response.dart';
 import '../../services/retention_service.dart';
+import '../../services/rhythm_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
+import 'rhythm_break_section.dart';
 
 /// Members at risk of churning, grouped by severity.
 ///
@@ -29,6 +32,7 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
   List<RetentionAlert> _alerts = [];
   RetentionSummary? _summary;
   List<StaffActivity> _staffActivity = [];
+  List<RhythmBreak> _breaks = [];
   bool _dataChanged = false;
 
   @override
@@ -49,12 +53,14 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
         RetentionService().getAlerts(),
         RetentionService().getSummary(),
         RetentionService().getStaffActivity(days: 7),
+        RhythmService().getBreaks(),
       ]);
       if (!mounted) return;
       setState(() {
         _alerts = results[0] as List<RetentionAlert>;
         _summary = results[1] as RetentionSummary;
         _staffActivity = results[2] as List<StaffActivity>;
+        _breaks = results[3] as List<RhythmBreak>;
         _loading = false;
       });
     } catch (e) {
@@ -71,14 +77,19 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
   Future<void> _scan() async {
     setState(() => _scanning = true);
     try {
+      // One button runs both engines. Staff have no reason to know that
+      // "who stopped coming" and "whose routine broke" are separate passes —
+      // and a second button would just be a second thing to forget.
       final result = await RetentionService().scan();
+      final rhythmResult = await RhythmService().scan();
       if (!mounted) return;
       setState(() => _scanning = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result.summaryLine),
-          backgroundColor:
-              result.raised > 0 ? AppColors.warning : AppColors.success,
+          content: Text('${result.summaryLine}\n${rhythmResult.summaryLine}'),
+          backgroundColor: result.raised > 0 || rhythmResult.alertsRaised > 0
+              ? AppColors.warning
+              : AppColors.success,
         ),
       );
       await _load();
@@ -100,50 +111,11 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
   /// would only teach staff to type "." to clear the list, which is worse than
   /// no note because it looks like a record when it isn't.
   Future<void> _resolve(RetentionAlert a) async {
-    final controller = TextEditingController();
-
-    final choice = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Mark handled — ${a.memberName}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'What did you do? This is recorded against your name.',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                hintText: 'e.g. Called — will renew Friday',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'cancel'),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'bare'),
-            child: const Text('Just mark done'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'note'),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+    final note = await _askActionNote(
+      a.memberName,
+      hint: 'e.g. Called — will renew Friday',
     );
-
-    if (choice == null || choice == 'cancel' || !mounted) return;
-    final note = choice == 'note' ? controller.text : '';
+    if (note == null || !mounted) return;
 
     try {
       await RetentionService().resolve(a.id, actionNote: note);
@@ -176,6 +148,95 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
         ),
       );
     }
+  }
+
+  /// Rhythm breaks resolve through the same endpoint, note and attribution as
+  /// every other alert — there is only one queue and one way to close a row.
+  Future<void> _resolveBreak(RhythmBreak b) async {
+    final note = await _askActionNote(
+      b.memberName,
+      hint: 'e.g. Called — new work shift, moved to the 7pm slot',
+    );
+    if (note == null || !mounted) return;
+
+    try {
+      await RetentionService().resolve(b.alertId, actionNote: note);
+      _dataChanged = true;
+      if (!mounted) return;
+      _refreshStaffActivity();
+      setState(() {
+        _breaks.removeWhere((x) => x.alertId == b.alertId);
+        _alerts.removeWhere((x) => x.id == b.alertId);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              e is ApiException ? e.message : "Couldn't resolve that alert."),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
+  Future<void> _copyBreak(RhythmBreak b) async {
+    await Clipboard.setData(ClipboardData(text: b.message));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Details for ${b.memberName} copied'),
+        backgroundColor: AppColors.success,
+      ),
+    );
+  }
+
+  /// Returns the note to record, or null if the staff member backed out.
+  /// An empty string means "just mark done" — still a real resolution, just
+  /// without detail.
+  Future<String?> _askActionNote(String memberName, {required String hint}) async {
+    final controller = TextEditingController();
+
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Mark handled — $memberName'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'What did you do? This is recorded against your name.',
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              maxLines: 2,
+              decoration: InputDecoration(hintText: hint),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'cancel'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'bare'),
+            child: const Text('Just mark done'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'note'),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (choice == null || choice == 'cancel') return null;
+    return choice == 'note' ? controller.text : '';
   }
 
   Future<void> _refreshStaffActivity() async {
@@ -240,7 +301,7 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
     if (_loading) return const LoadingView(label: 'Checking who needs attention...');
     if (_error != null) return ErrorBanner(message: _error!, onRetry: _load);
 
-    if (_alerts.isEmpty) {
+    if (_alerts.isEmpty && _breaks.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(40),
@@ -265,9 +326,13 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
       );
     }
 
-    final high = _alerts.where((a) => a.severity == 'high').toList();
-    final medium = _alerts.where((a) => a.severity == 'medium').toList();
-    final low = _alerts.where((a) => a.severity == 'low').toList();
+    // Rhythm breaks have their own section with the numbers behind them, so
+    // they are excluded here — otherwise the same member appears twice.
+    final counted =
+        _alerts.where((a) => a.alertType != 'rhythm_break').toList();
+    final high = counted.where((a) => a.severity == 'high').toList();
+    final medium = counted.where((a) => a.severity == 'medium').toList();
+    final low = counted.where((a) => a.severity == 'low').toList();
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -276,6 +341,11 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
         children: [
           _summaryBar(),
           _staffActivityPanel(),
+          RhythmBreakSection(
+            breaks: _breaks,
+            onResolve: _resolveBreak,
+            onCopy: _copyBreak,
+          ),
           _section('Needs attention now', high, AppColors.danger,
               'Lapsed or lapsing today, and long absences'),
           _section('Worth a nudge', medium, AppColors.warning,

@@ -51,6 +51,7 @@ class RetentionAlert {
         'expired_no_renewal' => 'Expired, not renewed',
         'inactive_1_week' => 'Inactive 1 week',
         'inactive_2_weeks' => 'Inactive 2+ weeks',
+        'rhythm_break' => 'Routine broken',
         _ => alertType.replaceAll('_', ' '),
       };
 
@@ -150,6 +151,7 @@ class HandledItem {
         'expired_no_renewal' => 'Lapsed',
         'inactive_1_week' => 'Inactive 1wk',
         'inactive_2_weeks' => 'Inactive 2wk+',
+        'rhythm_break' => 'Routine broken',
         _ => alertType.replaceAll('_', ' '),
       };
 
