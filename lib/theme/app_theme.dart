@@ -60,6 +60,16 @@ class AppTheme {
       filled: true,
       fillColor: Colors.white,
 
+      // Without an explicit hintStyle, Flutter's default renders placeholder
+      // text nearly as dark as real input — so an example like "Annual
+      // Membership — Gold" reads as if the user already typed it, and a
+      // "required field" error then looks like a bug. Hints must be visibly
+      // lighter than entered text, everywhere in the app.
+      hintStyle: const TextStyle(
+        color: AppColors.textSecondary,
+        fontWeight: FontWeight.w400,
+      ),
+
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
       ),

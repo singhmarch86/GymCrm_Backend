@@ -29,6 +29,14 @@ enum AppStatus {
   waitlisted,
   attended,
   noShow,
+
+  // Invoicing (internal/invoicing) — see FR-04. 'draft' is a document not yet
+  // issued (neutral, not a warning); 'unpaid'/'partial' are derived payment
+  // states that need to read as degrees of the same thing rather than
+  // collapsing onto the existing 'pending' bucket.
+  draft,
+  unpaid,
+  partial,
 }
 
 /// Generic status badge used across Members, Renewals, Payments, and any
@@ -123,6 +131,16 @@ class StatusChip extends StatelessWidget {
       case 'NO_SHOW':
         return AppStatus.noShow;
 
+      // Invoicing (internal/invoicing) — see FR-04.
+      case 'DRAFT':
+        return AppStatus.draft;
+      case 'ISSUED':
+        return AppStatus.scheduled; // issued but not yet settled — informational
+      case 'UNPAID':
+        return AppStatus.unpaid;
+      case 'PARTIAL':
+        return AppStatus.partial;
+
       default:
         return AppStatus.pending; // unrecognised value — neutral, non-alarming fallback
     }
@@ -161,6 +179,13 @@ class StatusChip extends StatelessWidget {
         return AppColors.warning;
       case AppStatus.noShow:
         return AppColors.danger;
+
+      case AppStatus.draft:
+        return Colors.grey;
+      case AppStatus.unpaid:
+        return AppColors.danger;
+      case AppStatus.partial:
+        return AppColors.warning;
     }
   }
 
@@ -199,6 +224,13 @@ class StatusChip extends StatelessWidget {
         return Icons.how_to_reg_rounded;
       case AppStatus.noShow:
         return Icons.person_off_rounded;
+
+      case AppStatus.draft:
+        return Icons.edit_note_rounded;
+      case AppStatus.unpaid:
+        return Icons.receipt_long_rounded;
+      case AppStatus.partial:
+        return Icons.pie_chart_rounded;
     }
   }
 
@@ -237,6 +269,13 @@ class StatusChip extends StatelessWidget {
         return 'Attended';
       case AppStatus.noShow:
         return 'No-show';
+
+      case AppStatus.draft:
+        return 'Draft';
+      case AppStatus.unpaid:
+        return 'Unpaid';
+      case AppStatus.partial:
+        return 'Part paid';
     }
   }
 

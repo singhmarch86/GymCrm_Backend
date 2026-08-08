@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/staff.dart';
+import '../branch/transfer_to_branch_dialog.dart';
 import '../../services/api_response.dart';
 import '../../services/staff_service.dart';
 import '../../theme/app_colors.dart';
@@ -70,6 +71,18 @@ class _StaffScreenState extends State<StaffScreen> {
       _dataChanged = true;
       await _load();
     }
+  }
+
+  /// Moves a colleague's home branch. Their access to this branch is kept, so
+  /// they can still cover shifts here.
+  Future<void> _moveToBranch(Staff s) async {
+    final moved = await showTransferToBranchDialog(
+      context,
+      kind: TransferKind.staff,
+      entityId: s.id,
+      entityName: s.name,
+    );
+    if (moved == true) _load();
   }
 
   Future<void> _toggleStatus(Staff s) async {
@@ -335,11 +348,14 @@ class _StaffScreenState extends State<StaffScreen> {
                       _resetPassword(s);
                     case 'status':
                       _toggleStatus(s);
+                    case 'move':
+                      _moveToBranch(s);
                   }
                 },
                 itemBuilder: (_) => [
                   const PopupMenuItem(value: 'edit', child: Text('Edit details')),
                   const PopupMenuItem(value: 'password', child: Text('Reset password')),
+                  const PopupMenuItem(value: 'move', child: Text('Move to another branch')),
                   PopupMenuItem(
                     value: 'status',
                     child: Text(

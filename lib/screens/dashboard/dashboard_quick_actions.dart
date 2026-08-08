@@ -4,15 +4,21 @@ import '../../theme/app_colors.dart';
 import '../../widgets/dashboard_action_card.dart';
 
 import '../../features/attendance/attendance_screen.dart';
+import '../../features/branch/branch_screen.dart';
 import '../../features/classes/classes_screen.dart';
+import '../../features/imports/import_screen.dart';
+import '../../features/invoices/invoices_screen.dart';
 import '../../features/leads/leads_screen.dart';
 import '../../features/members/member_screen.dart';
 import '../../features/payments/payments_screen.dart';
+import '../../features/pos/pos_screen.dart';
+import '../../features/personal_training/personal_training_screen.dart';
 import '../../features/referrals/referrals_screen.dart';
 import '../../features/renewals/renewals_screen.dart';
 import '../../features/reports/reports_screen.dart';
 import '../../features/retention/at_risk_screen.dart';
 import '../../features/staff/staff_screen.dart';
+import '../../features/trainers/trainers_screen.dart';
 import '../../features/visitors/visitors_screen.dart';
 import '../plans_screen.dart';
 
@@ -113,6 +119,20 @@ class DashboardQuickActions extends StatelessWidget {
           screen: () => const PaymentsScreen(),
         ),
         _Action(
+          title: 'Shop',
+          subtitle: 'Sell products, track stock',
+          icon: Icons.storefront_rounded,
+          color: AppColors.success,
+          screen: () => const PosScreen(),
+        ),
+        _Action(
+          title: 'Invoices',
+          subtitle: 'GST invoices and discounts',
+          icon: Icons.receipt_long_rounded,
+          color: AppColors.primary,
+          screen: () => const InvoicesScreen(),
+        ),
+        _Action(
           title: 'Attendance',
           subtitle: 'Check in members, view history',
           icon: Icons.how_to_reg_rounded,
@@ -160,6 +180,34 @@ class DashboardQuickActions extends StatelessWidget {
           icon: Icons.diversity_3_rounded,
           color: AppColors.warning,
           screen: () => const ReferralsScreen(),
+        ),
+        _Action(
+          title: 'Branches',
+          subtitle: 'Switch location, chain overview',
+          icon: Icons.store_rounded,
+          color: AppColors.primary,
+          screen: () => const BranchScreen(),
+        ),
+        _Action(
+          title: 'Import data',
+          subtitle: 'Bring members and history across',
+          icon: Icons.upload_file_rounded,
+          color: AppColors.info,
+          screen: () => const ImportScreen(),
+        ),
+        _Action(
+          title: 'Trainers',
+          subtitle: 'PT roster and specializations',
+          icon: Icons.sports_rounded,
+          color: AppColors.primary,
+          screen: () => const TrainersScreen(),
+        ),
+        _Action(
+          title: 'Personal Training',
+          subtitle: 'Packages and 1:1 appointments',
+          icon: Icons.fitness_center_rounded,
+          color: AppColors.success,
+          screen: () => const PersonalTrainingScreen(),
         ),
       ];
 

@@ -1,10 +1,11 @@
-/// Trainer — a gym staff member who trains members.
-/// Full implementation in the Trainer Management sprint.
+/// Trainer — a gym staff member on the PT roster. Distinct from a `User`
+/// account: a trainer here is a standalone record (name, phone, comp) that
+/// may or may not also have a login. See FR-03 §0.
 class Trainer {
   final int id;
-  final int gymId;
   final String firstName;
   final String lastName;
+  final String fullName;
   final String phone;
   final String? email;
   final String? specialization;
@@ -15,9 +16,9 @@ class Trainer {
 
   Trainer({
     required this.id,
-    required this.gymId,
     required this.firstName,
     required this.lastName,
+    required this.fullName,
     required this.phone,
     this.email,
     this.specialization,
@@ -27,13 +28,11 @@ class Trainer {
     required this.createdAt,
   });
 
-  String get fullName => '$firstName $lastName';
-
   factory Trainer.fromJson(Map<String, dynamic> j) => Trainer(
         id: j['id'] ?? 0,
-        gymId: j['gym_id'] ?? 0,
         firstName: j['first_name'] ?? '',
         lastName: j['last_name'] ?? '',
+        fullName: j['full_name'] ?? '${j['first_name'] ?? ''} ${j['last_name'] ?? ''}',
         phone: j['phone'] ?? '',
         email: j['email'],
         specialization: j['specialization'],

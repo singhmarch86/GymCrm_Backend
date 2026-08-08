@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/renewal_due.dart';
 import '../../theme/app_text_styles.dart';
 
+import '../invoices/quick_invoice.dart';
 import 'empty_renewals.dart';
 import 'renewal_card.dart';
 
@@ -121,6 +122,13 @@ class RenewalList extends StatelessWidget {
             child: RenewalCard(
               renewal: item.renewal!,
               onRenew: () => onRenew(item.renewal!),
+              onInvoice: item.renewal!.planId == null
+                  ? null
+                  : () => QuickInvoice.createForPlan(
+                        context,
+                        memberId: item.renewal!.id,
+                        planId: item.renewal!.planId!,
+                      ),
             ),
           );
         },

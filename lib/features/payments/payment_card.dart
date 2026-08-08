@@ -9,12 +9,17 @@ class PaymentCard extends StatelessWidget {
   final Payment payment;
   final VoidCallback? onCollect;
   final VoidCallback? onTap;
+  /// Raises a GST invoice for this payment. Money and documents are separate
+  /// records (FR-04 §0.1), so a payment can exist without an invoice — this is
+  /// how staff produce one after the fact.
+  final VoidCallback? onInvoice;
 
   const PaymentCard({
     super.key,
     required this.payment,
     this.onCollect,
     this.onTap,
+    this.onInvoice,
   });
 
   /// Canonical color for the amount / date emphasis row — mirrors StatusChip.
@@ -178,6 +183,18 @@ class PaymentCard extends StatelessWidget {
               ),
             ],
           ),
+
+          if (onInvoice != null) ...[
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onInvoice,
+                icon: const Icon(Icons.receipt_long_rounded, size: 16),
+                label: const Text('Invoice'),
+              ),
+            ),
+          ],
 
           // ── Collect Payment button ───────────────────────────────────────
           if (_showCollectButton && onCollect != null) ...[

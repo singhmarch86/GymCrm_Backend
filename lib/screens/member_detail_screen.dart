@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../features/branch/transfer_to_branch_dialog.dart';
+import '../features/invoices/member_invoices_section.dart';
+import '../features/wallet/member_wallet_section.dart';
 import '../features/lifecycle/freeze_dialog.dart';
 import '../features/lifecycle/lifecycle_shared.dart' show formatDate;
 import '../features/lifecycle/lifecycle_timeline.dart';
@@ -229,6 +232,38 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
                   onPressed: () => Navigator.pop(context, 'delete'),
                 ),
               ),
+
+              AppSpacing.gapXxl,
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.swap_horiz, size: 18),
+                  label: const Text('Move to another branch'),
+                  onPressed: () async {
+                    final moved = await showTransferToBranchDialog(
+                      context,
+                      kind: TransferKind.member,
+                      entityId: widget.member.id,
+                      entityName: '${widget.member.firstName} ${widget.member.lastName}',
+                    );
+                    // The member no longer belongs to this branch, so the panel
+                    // is showing something that is no longer here — close it and
+                    // let the list refresh.
+                    if (moved == true && context.mounted) {
+                      Navigator.pop(context, 'changed');
+                    }
+                  },
+                ),
+              ),
+
+              AppSpacing.gapXxl,
+
+              MemberWalletSection(memberId: widget.member.id),
+
+              AppSpacing.gapXxl,
+
+              MemberInvoicesSection(memberId: widget.member.id, refreshToken: _timelineToken),
 
               AppSpacing.gapXxl,
 

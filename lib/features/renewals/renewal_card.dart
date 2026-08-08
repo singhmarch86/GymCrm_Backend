@@ -9,12 +9,16 @@ class RenewalCard extends StatelessWidget {
   final RenewalDue renewal;
   final VoidCallback? onRenew;
   final VoidCallback? onTap;
+  /// Raises a GST invoice for the renewal. Only offered when the member is on
+  /// a plan — an invoice line has to be for something.
+  final VoidCallback? onInvoice;
 
   const RenewalCard({
     super.key,
     required this.renewal,
     this.onRenew,
     this.onTap,
+    this.onInvoice,
   });
 
   /// Canonical application-wide status color mapping — must stay identical
@@ -170,6 +174,18 @@ class RenewalCard extends StatelessWidget {
               ),
             ],
           ),
+
+          if (onInvoice != null && renewal.planId != null) ...[
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onInvoice,
+                icon: const Icon(Icons.receipt_long_rounded, size: 16),
+                label: const Text('Invoice'),
+              ),
+            ),
+          ],
 
           if (showRenewButton && onRenew != null) ...[
             const SizedBox(height: 16),

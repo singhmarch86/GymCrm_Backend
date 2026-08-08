@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/member.dart';
 import '../../models/payment.dart';
 
+import '../invoices/quick_invoice.dart';
 import 'collect_payment_dialog.dart';
 import 'empty_payments.dart';
 import 'payment_card.dart';
@@ -47,6 +48,14 @@ class PaymentList extends StatelessWidget {
             child: PaymentCard(
               payment: payment,
               onCollect: () => _collect(context, payment),
+              onInvoice: () => QuickInvoice.createAndOpen(
+                context,
+                memberId: payment.memberId,
+                description: payment.planName ?? 'Membership fee',
+                amountInPaise: payment.amountInPaise,
+                itemType: payment.planId != null ? 'plan' : 'custom',
+                referenceId: payment.planId,
+              ),
             ),
           );
         },
