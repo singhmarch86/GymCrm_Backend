@@ -124,6 +124,13 @@ func (r *Repository) FindInactive(ctx context.Context, minDays, maxDays int) ([]
 			WHERE m.gym_id = ?
 			  AND m.deleted_at IS NULL
 			  AND m.status = 'active'
+			  -- Members in their first 90 days belong to the activation
+			  -- programme (FR-10 §4). "Inactive 1 week" tells the wrong story
+			  -- about somebody who joined nine days ago: it implies a lapse
+			  -- from a routine, and they have no routine to lapse from. Their
+			  -- own alert says what is actually happening and prompts a
+			  -- different conversation.
+			  AND m.join_date < CURRENT_DATE - 90
 			GROUP BY m.id, m.first_name, m.last_name, m.phone, m.created_at
 		)
 		SELECT id AS member_id, member_name, phone, days_since AS days_value

@@ -11,11 +11,12 @@ import (
 	"time"
 
 	"gymcrm/configs"
+	"gymcrm/internal/activation"
 	"gymcrm/internal/attendance"
 	"gymcrm/internal/auth"
 	"gymcrm/internal/branches"
-	"gymcrm/internal/dashboard"
 	"gymcrm/internal/classes"
+	"gymcrm/internal/dashboard"
 	"gymcrm/internal/database"
 	"gymcrm/internal/devseed"
 	"gymcrm/internal/importer"
@@ -28,8 +29,8 @@ import (
 	"gymcrm/internal/plans"
 	"gymcrm/internal/pos"
 	"gymcrm/internal/pt"
-	"gymcrm/internal/renewals"
 	"gymcrm/internal/referrals"
+	"gymcrm/internal/renewals"
 	"gymcrm/internal/reports"
 	"gymcrm/internal/retention"
 	"gymcrm/internal/rhythm"
@@ -177,6 +178,10 @@ func main() {
 	rhythmSvc := rhythm.NewService(rhythmRepo)
 	rhythmHandler := rhythm.NewHandler(rhythmSvc)
 
+	activationRepo := activation.NewRepository(db)
+	activationSvc := activation.NewService(activationRepo)
+	activationHandler := activation.NewHandler(activationSvc)
+
 	lifecycleRepo := lifecycle.NewRepository(db)
 	lifecycleSvc := lifecycle.NewService(lifecycleRepo)
 	lifecycleHandler := lifecycle.NewHandler(lifecycleSvc)
@@ -304,6 +309,13 @@ func main() {
 	mux.Handle("POST /api/v1/rhythm/scan", jwt(http.HandlerFunc(rhythmHandler.Scan)))
 	mux.Handle("GET /api/v1/rhythm/breaks", jwt(http.HandlerFunc(rhythmHandler.ListBreaks)))
 	mux.Handle("GET /api/v1/rhythm/members/{id}", jwt(http.HandlerFunc(rhythmHandler.GetProfile)))
+
+	// First 90 days (FR-10). Like rhythm, these raise rows in the same
+	// retention_alerts queue and are closed through the retention endpoint —
+	// one member, one problem, one row, one call.
+	mux.Handle("POST /api/v1/activation/scan", jwt(http.HandlerFunc(activationHandler.Scan)))
+	mux.Handle("GET /api/v1/activation/alerts", jwt(http.HandlerFunc(activationHandler.ListAlerts)))
+	mux.Handle("GET /api/v1/activation/funnel", jwt(http.HandlerFunc(activationHandler.Funnel)))
 
 	// ── Membership lifecycle ───────────────────────────────────────────────
 	// Freeze / unfreeze / upgrade / transfer / terminate, plus the preview
