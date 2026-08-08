@@ -13,22 +13,29 @@ import (
 	"gymcrm/configs"
 	"gymcrm/internal/attendance"
 	"gymcrm/internal/auth"
+	"gymcrm/internal/branches"
 	"gymcrm/internal/dashboard"
 	"gymcrm/internal/classes"
 	"gymcrm/internal/database"
 	"gymcrm/internal/devseed"
+	"gymcrm/internal/importer"
+	"gymcrm/internal/invoicing"
 	"gymcrm/internal/leads"
 	"gymcrm/internal/lifecycle"
 	"gymcrm/internal/members"
 	"gymcrm/internal/middleware"
 	"gymcrm/internal/payments"
 	"gymcrm/internal/plans"
+	"gymcrm/internal/pos"
+	"gymcrm/internal/pt"
 	"gymcrm/internal/renewals"
 	"gymcrm/internal/referrals"
 	"gymcrm/internal/reports"
 	"gymcrm/internal/retention"
+	"gymcrm/internal/trainers"
 	"gymcrm/internal/users"
 	"gymcrm/internal/visitors"
+	"gymcrm/internal/wallet"
 )
 
 //go:embed docs/swagger.json
@@ -128,6 +135,34 @@ func main() {
 	referralsRepo := referrals.NewRepository(db)
 	referralsSvc := referrals.NewService(referralsRepo)
 	referralsHandler := referrals.NewHandler(referralsSvc)
+
+	trainersRepo := trainers.NewRepository(db)
+	trainersSvc := trainers.NewService(trainersRepo)
+	trainersHandler := trainers.NewHandler(trainersSvc)
+
+	ptRepo := pt.NewRepository(db)
+	ptSvc := pt.NewService(ptRepo)
+	ptHandler := pt.NewHandler(ptSvc)
+
+	invoicingRepo := invoicing.NewRepository(db)
+	invoicingSvc := invoicing.NewService(invoicingRepo)
+	invoicingHandler := invoicing.NewHandler(invoicingSvc)
+
+	importerRepo := importer.NewRepository(db)
+	importerSvc := importer.NewService(importerRepo)
+	importerHandler := importer.NewHandler(importerSvc)
+
+	posRepo := pos.NewRepository(db)
+	posSvc := pos.NewService(posRepo)
+	posHandler := pos.NewHandler(posSvc)
+
+	walletRepo := wallet.NewRepository(db)
+	walletSvc := wallet.NewService(walletRepo)
+	walletHandler := wallet.NewHandler(walletSvc)
+
+	branchesRepo := branches.NewRepository(db)
+	branchesSvc := branches.NewService(branchesRepo, cfg.JWT.Secret)
+	branchesHandler := branches.NewHandler(branchesSvc)
 
 	usersRepo := users.NewRepository(db)
 	usersSvc := users.NewService(usersRepo)
@@ -309,6 +344,80 @@ func main() {
 	mux.Handle("POST /api/v1/referrals/{id}/reward", jwt(http.HandlerFunc(referralsHandler.Reward)))
 	mux.Handle("POST /api/v1/referrals/{id}/expire", jwt(http.HandlerFunc(referralsHandler.Expire)))
 	mux.Handle("GET /api/v1/members/{member_id}/referrals", jwt(http.HandlerFunc(referralsHandler.MemberReferrals)))
+
+	// ── Trainers ────────────────────────────────────────────────────────────
+	mux.Handle("POST /api/v1/trainers", jwt(http.HandlerFunc(trainersHandler.Create)))
+	mux.Handle("GET /api/v1/trainers", jwt(http.HandlerFunc(trainersHandler.List)))
+	mux.Handle("PUT /api/v1/trainers/{id}", jwt(http.HandlerFunc(trainersHandler.Update)))
+
+	// ── PT packages & appointments ──────────────────────────────────────────
+	mux.Handle("POST /api/v1/pt-packages", jwt(http.HandlerFunc(ptHandler.CreatePackage)))
+	mux.Handle("GET /api/v1/pt-packages", jwt(http.HandlerFunc(ptHandler.ListPackages)))
+	mux.Handle("PATCH /api/v1/pt-packages/{id}/status", jwt(http.HandlerFunc(ptHandler.UpdatePackageStatus)))
+	mux.Handle("GET /api/v1/members/{member_id}/pt-packages", jwt(http.HandlerFunc(ptHandler.MemberPackages)))
+	mux.Handle("POST /api/v1/pt-appointments", jwt(http.HandlerFunc(ptHandler.Book)))
+	mux.Handle("GET /api/v1/pt-appointments", jwt(http.HandlerFunc(ptHandler.ListAppointments)))
+	mux.Handle("POST /api/v1/pt-appointments/{id}/outcome", jwt(http.HandlerFunc(ptHandler.SetOutcome)))
+
+	// ── Invoicing & discounts ──────────────────────────────────────────────
+	mux.Handle("POST /api/v1/invoices", jwt(http.HandlerFunc(invoicingHandler.Create)))
+	mux.Handle("GET /api/v1/invoices", jwt(http.HandlerFunc(invoicingHandler.List)))
+	mux.Handle("GET /api/v1/invoices/{id}", jwt(http.HandlerFunc(invoicingHandler.Get)))
+	mux.Handle("DELETE /api/v1/invoices/{id}", jwt(http.HandlerFunc(invoicingHandler.DeleteDraft)))
+	mux.Handle("POST /api/v1/invoices/{id}/items", jwt(http.HandlerFunc(invoicingHandler.AddItem)))
+	mux.Handle("POST /api/v1/invoices/{id}/plan-items", jwt(http.HandlerFunc(invoicingHandler.AddPlanItem)))
+	mux.Handle("DELETE /api/v1/invoices/{id}/items/{item_id}", jwt(http.HandlerFunc(invoicingHandler.RemoveItem)))
+	mux.Handle("POST /api/v1/invoices/{id}/discount", jwt(http.HandlerFunc(invoicingHandler.ApplyDiscount)))
+	mux.Handle("POST /api/v1/invoices/{id}/issue", jwt(http.HandlerFunc(invoicingHandler.Issue)))
+	mux.Handle("POST /api/v1/invoices/{id}/cancel", jwt(http.HandlerFunc(invoicingHandler.Cancel)))
+	mux.Handle("GET /api/v1/members/{member_id}/invoices", jwt(http.HandlerFunc(invoicingHandler.MemberInvoices)))
+
+	mux.Handle("POST /api/v1/discounts", jwt(http.HandlerFunc(invoicingHandler.CreateDiscount)))
+	mux.Handle("GET /api/v1/discounts", jwt(http.HandlerFunc(invoicingHandler.ListDiscounts)))
+	mux.Handle("PUT /api/v1/discounts/{id}", jwt(http.HandlerFunc(invoicingHandler.UpdateDiscount)))
+
+	mux.Handle("GET /api/v1/billing-settings", jwt(http.HandlerFunc(invoicingHandler.GetSettings)))
+	mux.Handle("PUT /api/v1/billing-settings", jwt(http.HandlerFunc(invoicingHandler.UpdateSettings)))
+
+	// ── Retail: products, stock, sales ─────────────────────────────────────
+	mux.Handle("POST /api/v1/products", jwt(http.HandlerFunc(posHandler.CreateProduct)))
+	mux.Handle("GET /api/v1/products", jwt(http.HandlerFunc(posHandler.ListProducts)))
+	mux.Handle("PUT /api/v1/products/{id}", jwt(http.HandlerFunc(posHandler.UpdateProduct)))
+	mux.Handle("DELETE /api/v1/products/{id}", jwt(http.HandlerFunc(posHandler.DeleteProduct)))
+	mux.Handle("POST /api/v1/products/{id}/stock", jwt(http.HandlerFunc(posHandler.AdjustStock)))
+	mux.Handle("GET /api/v1/products/{id}/stock-history", jwt(http.HandlerFunc(posHandler.StockHistory)))
+	mux.Handle("POST /api/v1/sales", jwt(http.HandlerFunc(posHandler.RecordSale)))
+	mux.Handle("GET /api/v1/sales", jwt(http.HandlerFunc(posHandler.ListSales)))
+	mux.Handle("GET /api/v1/sales/{id}", jwt(http.HandlerFunc(posHandler.GetSale)))
+	mux.Handle("POST /api/v1/sales/{id}/refund", jwt(http.HandlerFunc(posHandler.Refund)))
+	mux.Handle("GET /api/v1/retail/summary", jwt(http.HandlerFunc(posHandler.Summary)))
+
+	// ── Member wallet ──────────────────────────────────────────────────────
+	mux.Handle("GET /api/v1/members/{member_id}/wallet", jwt(http.HandlerFunc(walletHandler.Get)))
+	mux.Handle("POST /api/v1/members/{member_id}/wallet/topup", jwt(http.HandlerFunc(walletHandler.TopUp)))
+	mux.Handle("POST /api/v1/members/{member_id}/wallet/spend", jwt(http.HandlerFunc(walletHandler.Spend)))
+	mux.Handle("POST /api/v1/members/{member_id}/wallet/adjust", jwt(http.HandlerFunc(walletHandler.Adjust)))
+
+	// ── Branches & organizations ───────────────────────────────────────────
+	mux.Handle("GET /api/v1/branches", jwt(http.HandlerFunc(branchesHandler.MyBranches)))
+	mux.Handle("POST /api/v1/branches", jwt(http.HandlerFunc(branchesHandler.CreateBranch)))
+	mux.Handle("POST /api/v1/branches/switch", jwt(http.HandlerFunc(branchesHandler.Switch)))
+	mux.Handle("POST /api/v1/branches/access", jwt(http.HandlerFunc(branchesHandler.GrantAccess)))
+	mux.Handle("DELETE /api/v1/branches/{gym_id}/access/{user_id}", jwt(http.HandlerFunc(branchesHandler.RevokeAccess)))
+	mux.Handle("GET /api/v1/org/summary", jwt(http.HandlerFunc(branchesHandler.ChainSummary)))
+	mux.Handle("GET /api/v1/org/report", jwt(http.HandlerFunc(branchesHandler.PeriodReport)))
+	mux.Handle("PUT /api/v1/branches/{gym_id}/targets", jwt(http.HandlerFunc(branchesHandler.SetTargets)))
+	mux.Handle("POST /api/v1/branches/transfer-member", jwt(http.HandlerFunc(branchesHandler.TransferMember)))
+	mux.Handle("POST /api/v1/branches/transfer-staff", jwt(http.HandlerFunc(branchesHandler.TransferStaff)))
+	mux.Handle("POST /api/v1/branches/transfer-trainer", jwt(http.HandlerFunc(branchesHandler.TransferTrainer)))
+
+	// ── Data import ────────────────────────────────────────────────────────
+	mux.Handle("POST /api/v1/imports", jwt(http.HandlerFunc(importerHandler.Validate)))
+	mux.Handle("GET /api/v1/imports", jwt(http.HandlerFunc(importerHandler.List)))
+	mux.Handle("GET /api/v1/imports/template", jwt(http.HandlerFunc(importerHandler.Template)))
+	mux.Handle("GET /api/v1/imports/{id}", jwt(http.HandlerFunc(importerHandler.Get)))
+	mux.Handle("POST /api/v1/imports/{id}/commit", jwt(http.HandlerFunc(importerHandler.Commit)))
+	mux.Handle("DELETE /api/v1/imports/{id}", jwt(http.HandlerFunc(importerHandler.Discard)))
 
 	// ── Reports ────────────────────────────────────────────────────────────
 	mux.Handle("GET /api/v1/reports/revenue", jwt(http.HandlerFunc(reportsHandler.Revenue)))

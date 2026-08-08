@@ -46,6 +46,10 @@ services:
       - ./migrations/012_membership_lifecycle.sql:/docker-entrypoint-initdb.d/012_membership_lifecycle.sql
       - ./migrations/013_classes_booking.sql:/docker-entrypoint-initdb.d/013_classes_booking.sql
       - ./migrations/014_visitors_referrals.sql:/docker-entrypoint-initdb.d/014_visitors_referrals.sql
+      - ./migrations/015_trainers_pt_appointments.sql:/docker-entrypoint-initdb.d/015_trainers_pt_appointments.sql
+      - ./migrations/016_invoicing_discounts.sql:/docker-entrypoint-initdb.d/016_invoicing_discounts.sql
+      - ./migrations/017_data_import.sql:/docker-entrypoint-initdb.d/017_data_import.sql
+      - ./migrations/018_tax_inclusive_default.sql:/docker-entrypoint-initdb.d/018_tax_inclusive_default.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gymcrm -d gymcrm"]
       interval: 3s
