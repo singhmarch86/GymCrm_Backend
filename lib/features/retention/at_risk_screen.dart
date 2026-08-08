@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../models/activation.dart';
 import '../../models/retention_alert.dart';
 import '../../models/rhythm.dart';
+import '../../services/activation_service.dart';
 import '../../services/api_response.dart';
 import '../../services/retention_service.dart';
 import '../../services/rhythm_service.dart';
@@ -10,6 +12,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
+import 'activation_section.dart';
 import 'rhythm_break_section.dart';
 
 /// Members at risk of churning, grouped by severity.
@@ -33,6 +36,7 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
   RetentionSummary? _summary;
   List<StaffActivity> _staffActivity = [];
   List<RhythmBreak> _breaks = [];
+  List<ActivationAlert> _activation = [];
   bool _dataChanged = false;
 
   @override
@@ -54,6 +58,7 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
         RetentionService().getSummary(),
         RetentionService().getStaffActivity(days: 7),
         RhythmService().getBreaks(),
+        ActivationService().getAlerts(),
       ]);
       if (!mounted) return;
       setState(() {
@@ -61,6 +66,7 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
         _summary = results[1] as RetentionSummary;
         _staffActivity = results[2] as List<StaffActivity>;
         _breaks = results[3] as List<RhythmBreak>;
+        _activation = results[4] as List<ActivationAlert>;
         _loading = false;
       });
     } catch (e) {
@@ -82,12 +88,16 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
       // and a second button would just be a second thing to forget.
       final result = await RetentionService().scan();
       final rhythmResult = await RhythmService().scan();
+      final activationResult = await ActivationService().scan();
       if (!mounted) return;
       setState(() => _scanning = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${result.summaryLine}\n${rhythmResult.summaryLine}'),
-          backgroundColor: result.raised > 0 || rhythmResult.alertsRaised > 0
+          content: Text('${result.summaryLine}\n${rhythmResult.summaryLine}'
+              '\n${activationResult.summaryLine}'),
+          backgroundColor: result.raised > 0 ||
+                  rhythmResult.alertsRaised > 0 ||
+                  activationResult.alertsRaised > 0
               ? AppColors.warning
               : AppColors.success,
         ),
@@ -239,6 +249,47 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
     return choice == 'note' ? controller.text : '';
   }
 
+  /// Activation alerts close through the same endpoint as everything else —
+  /// there is one queue and one way to clear a row.
+  Future<void> _resolveActivation(ActivationAlert a) async {
+    final note = await _askActionNote(
+      a.memberName,
+      hint: 'e.g. Called — booked them in for Tuesday 7am',
+    );
+    if (note == null || !mounted) return;
+
+    try {
+      await RetentionService().resolve(a.alertId, actionNote: note);
+      _dataChanged = true;
+      if (!mounted) return;
+      _refreshStaffActivity();
+      setState(() {
+        _activation.removeWhere((x) => x.alertId == a.alertId);
+        _alerts.removeWhere((x) => x.id == a.alertId);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              e is ApiException ? e.message : "Couldn't resolve that alert."),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
+  Future<void> _copyActivation(ActivationAlert a) async {
+    await Clipboard.setData(ClipboardData(text: a.message));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Details for ${a.memberName} copied'),
+        backgroundColor: AppColors.success,
+      ),
+    );
+  }
+
   Future<void> _refreshStaffActivity() async {
     try {
       final data = await RetentionService().getStaffActivity(days: 7);
@@ -301,7 +352,7 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
     if (_loading) return const LoadingView(label: 'Checking who needs attention...');
     if (_error != null) return ErrorBanner(message: _error!, onRetry: _load);
 
-    if (_alerts.isEmpty && _breaks.isEmpty) {
+    if (_alerts.isEmpty && _breaks.isEmpty && _activation.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(40),
@@ -328,8 +379,11 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
 
     // Rhythm breaks have their own section with the numbers behind them, so
     // they are excluded here — otherwise the same member appears twice.
-    final counted =
-        _alerts.where((a) => a.alertType != 'rhythm_break').toList();
+    final counted = _alerts
+        .where((a) =>
+            a.alertType != 'rhythm_break' &&
+            !a.alertType.startsWith('activation_'))
+        .toList();
     final high = counted.where((a) => a.severity == 'high').toList();
     final medium = counted.where((a) => a.severity == 'medium').toList();
     final low = counted.where((a) => a.severity == 'low').toList();
@@ -341,6 +395,11 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
         children: [
           _summaryBar(),
           _staffActivityPanel(),
+          ActivationSection(
+            alerts: _activation,
+            onResolve: _resolveActivation,
+            onCopy: _copyActivation,
+          ),
           RhythmBreakSection(
             breaks: _breaks,
             onResolve: _resolveBreak,
