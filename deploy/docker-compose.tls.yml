@@ -1,0 +1,47 @@
+# TLS overlay. Layered on top of docker-compose.prod.yml:
+#
+#   docker compose -f deploy/docker-compose.prod.yml \
+#                  -f deploy/docker-compose.tls.yml \
+#                  --env-file deploy/.env up -d
+#
+# Kept as an overlay rather than folded into the base file so the plain-HTTP
+# deployment still works unchanged — behind a load balancer that already
+# terminates TLS, or on a machine with no public domain yet.
+
+services:
+  web:
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: "${DOMAIN:?set DOMAIN in deploy/.env, e.g. gym.example.com}"
+    volumes:
+      # nginx:alpine substitutes ${DOMAIN} in anything under templates/ at
+      # container start, so the config is not edited per deployment.
+      - ./nginx-tls.conf:/etc/nginx/templates/default.conf.template:ro
+      - ./web:/usr/share/nginx/html:ro
+      - certbot-conf:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    # A certificate renewed at 3am is useless until nginx reloads it, and
+    # nginx does not notice new files on its own. Reloading every 12 hours
+    # costs nothing and closes that gap.
+    command: >
+      /bin/sh -c "while :; do sleep 12h & wait $${!}; nginx -s reload; done &
+                  /docker-entrypoint.sh nginx -g 'daemon off;'"
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certbot-conf:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    # Let's Encrypt certificates last 90 days. Checking twice daily is the
+    # documented recommendation — it means a failed renewal has many chances
+    # to recover before anything expires. certbot only acts inside the last
+    # 30 days, so this is not 60 pointless requests a month.
+    entrypoint: >
+      /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"
+    restart: unless-stopped
+
+volumes:
+  certbot-conf:
+  certbot-www:

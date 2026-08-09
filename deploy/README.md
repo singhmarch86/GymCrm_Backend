@@ -56,15 +56,62 @@ The app is on port 80. Check it:
 curl -s localhost/api/v1/health
 ```
 
-## 4. Put HTTPS in front of it
+## 4. HTTPS
 
 **Do this before a real gym touches it.** Logins and member phone numbers go
-over this connection, and on plain HTTP they travel in clear text over whatever
+over this connection; on plain HTTP they travel in clear text over whatever
 café WiFi the owner is using.
 
-The simplest route on a fresh VPS is Caddy or nginx with certbot in front,
-terminating TLS and proxying to port 80. Point `HTTP_PORT` at something like
-`8080` in `.env` first so the reverse proxy can own port 80.
+nginx terminates TLS with a free Let's Encrypt certificate, renewed
+automatically. You need a **domain pointing at this server** first — a bare IP
+cannot get a certificate.
+
+Set `DOMAIN` and `LETSENCRYPT_EMAIL` in `deploy/.env`, then run once:
+
+```bash
+./deploy/init-tls.sh
+```
+
+That script exists to solve a genuine chicken-and-egg: **nginx will not start
+without a certificate, and certbot cannot obtain one without nginx running** to
+answer the challenge. It places a throwaway self-signed certificate, starts
+nginx, lets certbot replace it with a real one, and reloads. Run once and never
+again.
+
+From then on, start the stack with the TLS overlay:
+
+```bash
+docker compose -f deploy/docker-compose.prod.yml \
+               -f deploy/docker-compose.tls.yml \
+               --env-file deploy/.env up -d
+```
+
+Port 80 redirects to 443, except `/.well-known/acme-challenge/` which must stay
+on plain HTTP or renewal fails silently and the certificate expires 90 days
+later.
+
+### Confirm renewal before trusting it
+
+```bash
+docker compose -f deploy/docker-compose.prod.yml -f deploy/docker-compose.tls.yml \
+  --env-file deploy/.env run --rm --entrypoint "certbot renew --dry-run" certbot
+```
+
+certbot checks twice daily and nginx reloads every 12 hours to pick up a new
+certificate — a certificate renewed at 3am is useless until nginx reloads it,
+and nginx does not notice new files on its own.
+
+### HSTS starts short on purpose
+
+`nginx-tls.conf` sets `Strict-Transport-Security: max-age=300`. **HSTS cannot be
+undone from the server side** — once a browser caches a long max-age it refuses
+plain HTTP for that domain until it expires, even if your certificate breaks.
+Run for a week, confirm renewals are clean, then raise it to `31536000`.
+
+### If something else already terminates TLS
+
+Skip the overlay entirely. Use the base compose file, set `HTTP_PORT=8080`, and
+point your load balancer or existing reverse proxy at it.
 
 ---
 
