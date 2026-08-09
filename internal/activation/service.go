@@ -111,7 +111,40 @@ func (s *Service) ListAlerts(ctx context.Context) ([]AlertRow, error) {
 	if rows == nil {
 		rows = []AlertRow{}
 	}
+
+	// Re-render each message from the numbers as they are NOW.
+	//
+	// The message stored on the alert is a record of what was true when it was
+	// raised, and it stays in the database for exactly that reason — the
+	// resolved-alert history should show what staff were told at the time.
+	// But on the live list it goes stale: an alert raised yesterday still says
+	// "joined 3 days ago" while the row beside it counts 4. Two numbers
+	// disagreeing on the same card is the kind of small wrongness that makes a
+	// gym owner stop trusting the rest of the screen.
+	today := time.Now()
+	for i := range rows {
+		rows[i].Message = renderMessage(rows[i], today)
+	}
 	return rows, nil
+}
+
+// renderMessage rebuilds an alert's sentence from the live row. Falls back to
+// whatever was stored if the row does not describe a state we can phrase.
+func renderMessage(r AlertRow, today time.Time) string {
+	a := Assessment{
+		State:              State(r.AlertType),
+		DaysSinceJoin:      r.DaysSinceJoin,
+		Visits:             r.Visits,
+		DaysSinceLastVisit: -1,
+		VisitsPerWeek:      r.VisitsPerWeek,
+	}
+	if r.LastVisit != nil {
+		a.DaysSinceLastVisit = daysBetween(*r.LastVisit, today)
+	}
+	if msg := a.Message(r.MemberName); msg != "" {
+		return msg
+	}
+	return r.Message
 }
 
 func (s *Service) Funnel(ctx context.Context, months int) ([]CohortRow, error) {

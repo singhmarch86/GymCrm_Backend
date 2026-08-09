@@ -99,6 +99,30 @@ func (s *Service) ListBreaks(ctx context.Context) ([]BreakRow, error) {
 	if rows == nil {
 		rows = []BreakRow{}
 	}
+
+	// Re-render from the current profile, for the same reason activation does.
+	//
+	// Here the drift is worse than a day count: the profile is recomputed on
+	// every scan, so the card's bars can say "5 of 27" while the sentence
+	// underneath still says "3 of 21" from whenever the alert was first
+	// raised. The stored message stays in the database as the record of what
+	// staff were told at the time; this is what they read today.
+	for i := range rows {
+		p := Profile{
+			AnchorMinute:   rows[i].AnchorMinute,
+			BaselineVisits: rows[i].BaselineVisits,
+			BaselineOnSlot: rows[i].BaselineOnSlot,
+			BaselineRate:   rows[i].BaselineRate,
+			RecentVisits:   rows[i].RecentVisits,
+			RecentOnSlot:   rows[i].RecentOnSlot,
+			RecentRate:     rows[i].RecentRate,
+		}
+		// A member with no stored profile yet keeps the original wording
+		// rather than being described with zeroes.
+		if rows[i].BaselineVisits > 0 {
+			rows[i].Message = p.Message(rows[i].MemberName)
+		}
+	}
 	return rows, nil
 }
 
