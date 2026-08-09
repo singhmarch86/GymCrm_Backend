@@ -28,3 +28,4 @@ gymcrm-backend.zip
 deploy/.env
 deploy/web/
 deploy/backups/
+deploy/demo/
