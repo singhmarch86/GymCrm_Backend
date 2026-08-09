@@ -25,8 +25,16 @@ machine that is not yours.
 Then copy the output next to the compose file:
 
 ```bash
-rm -rf deploy/web && cp -r ../gymcrm_app/build/web deploy/web
+mkdir -p deploy/web
+rsync -a --delete ../gymcrm_app/build/web/ deploy/web/
 ```
+
+**Do not `rm -rf deploy/web` while the stack is running.** Docker bind-mounts
+that directory by inode, not by path — delete it and the running nginx
+container is left pointing at a directory that no longer exists, serving 403
+on every request. `rsync --delete` replaces the *contents* and leaves the
+directory itself alone. If you do delete it by accident, `docker compose ...
+restart web` re-binds it.
 
 ## 2. Write the secrets
 
@@ -118,9 +126,17 @@ point your load balancer or existing reverse proxy at it.
 ## Updating a running deployment
 
 ```bash
-# rebuild the web bundle, copy it in, then:
+# 1. rebuild the bundle (on your machine, not the server)
+#      flutter build web --release --dart-define=API_BASE_URL=
+# 2. replace the CONTENTS of deploy/web — never the directory itself:
+rsync -a --delete ../gymcrm_app/build/web/ deploy/web/
+# 3. restart:
 docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build
 ```
+
+Static files are picked up without a restart, since nginx reads them per
+request. A restart is only needed if the API changed — or if you deleted and
+recreated `deploy/web`, which breaks the mount as described above.
 
 nginx serves `index.html` and the service worker with `no-store`, so browsers
 pick up a new build immediately. The hashed JS and asset files are cached hard,
