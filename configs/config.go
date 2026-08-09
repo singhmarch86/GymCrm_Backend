@@ -31,9 +31,9 @@ type DatabaseConfig struct {
 }
 
 type JWTConfig struct {
-	Secret              string
-	AccessTokenMinutes  int
-	RefreshTokenDays    int
+	Secret             string
+	AccessTokenMinutes int
+	RefreshTokenDays   int
 }
 
 // Load reads config from environment. Returns error on missing required values.
@@ -88,6 +88,51 @@ func (c *Config) CORSAllowedOrigins() []string {
 		return []string{"*"}
 	}
 	return nil
+}
+
+// ─── Registration policy ──────────────────────────────────────────────────────
+
+// RegistrationMode describes who may create a gym on this deployment.
+type RegistrationMode int
+
+const (
+	// RegistrationOpen — anyone who can reach the endpoint may create a gym.
+	RegistrationOpen RegistrationMode = iota
+	// RegistrationInvite — a gym may be created only with the invite code.
+	RegistrationInvite
+	// RegistrationClosed — nobody may create a gym over HTTP.
+	RegistrationClosed
+)
+
+// Registration decides whether POST /api/v1/auth/register is usable.
+//
+// The endpoint creates a gym AND its owner account, and it is unauthenticated
+// by necessity — there is nobody to authenticate as before the gym exists. On
+// a public server that means anyone who finds the URL can write a tenant into
+// the production database, so the default in production is CLOSED. Opening it
+// has to be a deliberate act, not something inherited from the dev defaults.
+//
+// Development is unchanged and stays open, so the local workflow and the
+// demo seeder keep working.
+func (c *Config) Registration() RegistrationMode {
+	if !c.IsProduction() {
+		return RegistrationOpen
+	}
+	if os.Getenv("REGISTRATION_INVITE_CODE") != "" {
+		return RegistrationInvite
+	}
+	// Self-serve signup is a legitimate business model, but it must be chosen
+	// out loud rather than arrived at by forgetting to set something.
+	if strings.EqualFold(os.Getenv("ALLOW_PUBLIC_REGISTRATION"), "true") {
+		return RegistrationOpen
+	}
+	return RegistrationClosed
+}
+
+// RegistrationInviteCode is the shared secret required when Registration() is
+// RegistrationInvite. Empty in every other mode.
+func (c *Config) RegistrationInviteCode() string {
+	return os.Getenv("REGISTRATION_INVITE_CODE")
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

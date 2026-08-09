@@ -97,7 +97,7 @@ func main() {
 	// ── Wire modules ──────────────────────────────────────────────────────
 	authRepo := auth.NewRepository(db)
 	authSvc := auth.NewService(authRepo, cfg.JWT.Secret)
-	authHandler := auth.NewHandler(authSvc)
+	authHandler := auth.NewHandler(authSvc, cfg)
 
 	plansRepo := plans.NewRepository(db)
 	plansSvc := plans.NewService(plansRepo)

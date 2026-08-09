@@ -280,7 +280,6 @@ func generateRefreshToken() (plain, hash string, err error) {
 	return plain, string(hashBytes), nil
 }
 
-
 // toNullableString converts empty string to nil pointer.
 // Used for optional fields with unique indexes — prevents "" colliding across rows.
 func toNullableString(s string) *string {
@@ -289,6 +288,7 @@ func toNullableString(s string) *string {
 	}
 	return &s
 }
+
 // splitRefreshToken parses "<userID>:<plainToken>" into its components.
 func splitRefreshToken(token string) (userID int64, plain string, err error) {
 	idx := strings.IndexByte(token, ':')
@@ -324,4 +324,3 @@ func toGymDTO(g *gyms.Gym) GymDTO {
 		Status: string(g.Status),
 	}
 }
-

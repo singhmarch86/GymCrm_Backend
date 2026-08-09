@@ -1,21 +1,35 @@
 package auth
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 
+	"gymcrm/configs"
 	"gymcrm/internal/database"
 	"gymcrm/internal/shared/response"
 )
 
 type Handler struct {
 	svc *Service
+
+	// Who is allowed to create a gym on this deployment. Held on the handler
+	// rather than read from the environment per request, so the policy is
+	// fixed at boot and cannot drift.
+	registration RegistrationPolicy
 }
 
-func NewHandler(svc *Service) *Handler {
-	return &Handler{svc: svc}
+// RegistrationPolicy is the subset of config the auth handler needs. Declared
+// as an interface so the gate is testable without building a whole Config.
+type RegistrationPolicy interface {
+	Registration() configs.RegistrationMode
+	RegistrationInviteCode() string
+}
+
+func NewHandler(svc *Service, registration RegistrationPolicy) *Handler {
+	return &Handler{svc: svc, registration: registration}
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
@@ -32,7 +46,9 @@ func (h *Handler) RegisterProtectedRoutes(mux *http.ServeMux) {
 // Register godoc
 // @Summary      Register a new gym
 // @Description  Creates a gym (tenant) and the first owner account atomically.
-//               Returns access + refresh tokens — app is immediately usable after registration.
+//
+//	Returns access + refresh tokens — app is immediately usable after registration.
+//
 // @Tags         auth
 // @Accept       json
 // @Produce      json
@@ -48,6 +64,20 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		response.BadRequest(w, "invalid request body")
 		return
 	}
+
+	// The gate runs before validation on purpose: a caller who is not allowed
+	// to register should learn that, not be walked through fixing a form they
+	// were never permitted to submit.
+	if !h.registrationAllowed(req.InviteCode) {
+		// A plain 403 with a real explanation, rather than a 404 pretending
+		// the route does not exist. The route name ships inside the public
+		// Flutter bundle, so hiding it fools nobody and only confuses the gym
+		// owner who was told to sign up.
+		response.Forbidden(w,
+			"registration is not open on this server — contact your provider to have a gym created")
+		return
+	}
+
 	if err := ValidateRegisterGymRequest(&req); err != nil {
 		response.UnprocessableEntity(w, err.Error())
 		return
@@ -58,6 +88,28 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.Created(w, result)
+}
+
+// registrationAllowed applies the deployment's registration policy.
+func (h *Handler) registrationAllowed(suppliedCode string) bool {
+	switch h.registration.Registration() {
+	case configs.RegistrationOpen:
+		return true
+
+	case configs.RegistrationInvite:
+		expected := h.registration.RegistrationInviteCode()
+		if expected == "" {
+			// Invite mode with no code configured would otherwise let everyone
+			// in with an empty string. Fail closed.
+			return false
+		}
+		// Constant-time so the response time cannot be used to discover the
+		// code one character at a time.
+		return subtle.ConstantTimeCompare([]byte(suppliedCode), []byte(expected)) == 1
+
+	default:
+		return false
+	}
 }
 
 // Login godoc
