@@ -27,3 +27,4 @@ gymcrm-backend.zip
 # Production secrets — never commit
 deploy/.env
 deploy/web/
+deploy/backups/

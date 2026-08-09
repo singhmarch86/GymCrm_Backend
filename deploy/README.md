@@ -100,9 +100,58 @@ repo and off shared drives.
 
 ## Backups
 
-Nothing here backs itself up. Before a pilot gym relies on this, put a nightly
-`pg_dump` on a cron and copy it somewhere off the box — a gym losing its member
-list is not a recoverable situation for them or for you.
+`deploy/backup.sh` takes a gzipped `pg_dump`, verifies it, and only then prunes
+anything older than `KEEP_DAYS` (default 14).
+
+**The ordering is the point.** A backup job that prunes before verifying — or
+regardless of whether tonight's dump worked — quietly deletes every good backup
+you have over a fortnight, and you find out on the day you need one. This one
+refuses to prune if the dump is empty, is not valid gzip, has no
+`PostgreSQL database dump complete` marker, is under 10 KB, or is less than
+half the size of the previous backup.
+
+Run it nightly. `crontab -e` on the host:
+
+```
+30 2 * * * /srv/gymcrm/deploy/backup.sh >> /var/log/gymcrm-backup.log 2>&1
+```
+
+It exits non-zero on any failure, so wrap it in whatever alerting you have. **A
+backup job nobody is alerted about is a backup job that has been broken for
+three weeks.**
+
+### Get them off the box
+
+A backup that only exists on the machine you are trying to recover is not a
+backup. Add a second line to copy them somewhere else — object storage, another
+VPS, anything:
+
+```
+0 3 * * * rclone copy /srv/gymcrm/deploy/backups remote:gymcrm-backups
+```
+
+These dumps contain **real member names, phone numbers and payment history**.
+They are written `0600` into a `0700` directory. Wherever you copy them needs
+to be at least as private, and they must never reach the repo.
+
+### Restoring
+
+```bash
+./deploy/restore.sh deploy/backups/gymcrm-2026-08-09_030000.sql.gz
+```
+
+It asks you to type the database name before overwriting anything.
+
+**Do a restore drill before a pilot gym relies on this.** Restore into a
+scratch database and compare row counts against live:
+
+```bash
+./deploy/restore.sh deploy/backups/<latest>.sql.gz restoretest
+```
+
+A backup you have never restored is a file, not a backup. This script and the
+verification above were tested this way against the 800-member demo database —
+members, attendance, sales and alerts all came back identical.
 
 ---
 
