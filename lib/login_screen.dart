@@ -6,6 +6,7 @@ import 'services/storage_service.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'theme/app_colors.dart';
+import 'theme/breakpoints.dart';
 import 'utils/validators.dart';
 import 'widgets/error_banner.dart';
 
@@ -328,6 +329,94 @@ class _LoginScreenState extends State<LoginScreen> {
 class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // On a phone the 58/42 split leaves the headline about 200px wide and the
+    // photo a sliver. Below the breakpoint the decorative image is dropped
+    // entirely rather than shrunk — it carries no information, and the space
+    // is worth more to the form below it.
+    if (context.isMobile) {
+      return Container(
+        width: double.infinity,
+        color: AppColors.primaryLight,
+        padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.fitness_center_rounded,
+                      color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 8),
+                RichText(
+                  text: const TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'GYM',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.textPrimary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' CRM',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.primary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            RichText(
+              text: const TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'Welcome ',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      height: 1.15,
+                    ),
+                  ),
+                  TextSpan(
+                    text: 'Back!',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                      height: 1.15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Login to your account and continue your fitness journey.',
+              style: TextStyle(
+                  fontSize: 13, color: AppColors.textSecondary, height: 1.45),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SizedBox(
       height: 300,
       child: Row(

@@ -1,10 +1,24 @@
 /// Single source of truth for the backend base URL.
 ///
-/// Change this one value when switching between environments:
+/// Set at build time, so one codebase ships to every environment:
 ///
-///   Local simulator (iOS/Android):  'http://localhost:8080'
-///   Physical device on same WiFi:   'http://192.168.1.105:8080'  ← your Mac's IP
-///   Production:                      'https://api.yourdomain.com'
+///   Local dev (the default, no flag needed):
+///     flutter run -d chrome
 ///
-/// Find your Mac's local IP:  ipconfig getifaddr en0
-const String kBaseUrl = 'http://localhost:8089';
+///   Deployed behind one origin — nginx serves the app and proxies /api to
+///   the Go service. Pass an EMPTY value so every request becomes relative:
+///     flutter build web --release --dart-define=API_BASE_URL=
+///
+///   Backend on a separate host (needs CORS configured there):
+///     flutter build web --release --dart-define=API_BASE_URL=https://api.example.com
+///
+///   Physical device on the same WiFi (find your IP: ipconfig getifaddr en0):
+///     flutter run --dart-define=API_BASE_URL=http://192.168.1.105:8089
+///
+/// Same-origin is the deployment worth preferring: relative URLs mean no CORS
+/// to configure, no mixed-content trouble behind HTTPS, and no rebuild when
+/// the API's hostname changes.
+const String kBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://localhost:8089',
+);
