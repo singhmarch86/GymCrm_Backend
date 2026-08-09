@@ -16,6 +16,7 @@ import (
 	"gymcrm/internal/auth"
 	"gymcrm/internal/branches"
 	"gymcrm/internal/classes"
+	"gymcrm/internal/counter"
 	"gymcrm/internal/dashboard"
 	"gymcrm/internal/database"
 	"gymcrm/internal/devseed"
@@ -182,6 +183,10 @@ func main() {
 	activationSvc := activation.NewService(activationRepo)
 	activationHandler := activation.NewHandler(activationSvc)
 
+	counterRepo := counter.NewRepository(db)
+	counterSvc := counter.NewService(counterRepo)
+	counterHandler := counter.NewHandler(counterSvc)
+
 	lifecycleRepo := lifecycle.NewRepository(db)
 	lifecycleSvc := lifecycle.NewService(lifecycleRepo)
 	lifecycleHandler := lifecycle.NewHandler(lifecycleSvc)
@@ -316,6 +321,13 @@ func main() {
 	mux.Handle("POST /api/v1/activation/scan", jwt(http.HandlerFunc(activationHandler.Scan)))
 	mux.Handle("GET /api/v1/activation/alerts", jwt(http.HandlerFunc(activationHandler.ListAlerts)))
 	mux.Handle("GET /api/v1/activation/funnel", jwt(http.HandlerFunc(activationHandler.Funnel)))
+
+	// The counter prompt (FR-11). Not a new signal — a new place to show the
+	// ones that already exist, at the moment the member is standing there.
+	mux.Handle("POST /api/v1/counter/checkin/{member_id}", jwt(http.HandlerFunc(counterHandler.Show)))
+	mux.Handle("GET /api/v1/counter/prompt/{member_id}", jwt(http.HandlerFunc(counterHandler.Peek)))
+	mux.Handle("PATCH /api/v1/counter/prompts/{id}/acted", jwt(http.HandlerFunc(counterHandler.MarkActed)))
+	mux.Handle("GET /api/v1/counter/effectiveness", jwt(http.HandlerFunc(counterHandler.Effectiveness)))
 
 	// ── Membership lifecycle ───────────────────────────────────────────────
 	// Freeze / unfreeze / upgrade / transfer / terminate, plus the preview
