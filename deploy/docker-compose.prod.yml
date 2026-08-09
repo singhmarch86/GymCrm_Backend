@@ -35,6 +35,10 @@ services:
       # Same-origin deployment needs no cross-origin allowance at all. Set
       # this only if you serve the app from a different hostname.
       CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-}"
+      # Who may create a gym. Both default to empty/false, which leaves
+      # registration CLOSED in production — see deploy/.env.example.
+      REGISTRATION_INVITE_CODE: "${REGISTRATION_INVITE_CODE:-}"
+      ALLOW_PUBLIC_REGISTRATION: "${ALLOW_PUBLIC_REGISTRATION:-false}"
     depends_on:
       postgres:
         condition: service_healthy
