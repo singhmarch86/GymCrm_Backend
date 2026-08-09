@@ -183,9 +183,90 @@ condition wrong.
 After that, existing platform admins create others, and every creation is
 logged.
 
+The bootstrapped account is not usable until it has enrolled in two-factor
+(§10), and you should create a **second** platform admin immediately — §10
+explains why one is a way to lock yourself out permanently.
+
+## 10. Two-factor authentication is required
+
+Every platform admin logs in with a password **and** a six-digit TOTP code from
+an authenticator app. This is a rule, not a setting.
+
+**TOTP** — Time-based One-Time Password — is the six-digit number that changes
+every 30 seconds in Google Authenticator, Microsoft Authenticator or Authy. It
+is the same thing your bank or GitHub asks for.
+
+It works by sharing one secret between the server and the phone at setup time.
+After that both sides independently compute a code from that secret plus the
+current time, and they match. **Nothing is sent to the phone** — no SMS, no
+network, no cost, and it works on a plane. That is also why it beats SMS codes,
+which can be intercepted by someone convincing a mobile operator to move a
+number to a new SIM.
+
+The practical effect: stealing the password is no longer enough. Someone would
+need the password *and* the physical phone.
+
+This is the account that can reach every customer's data. A password alone is
+the wrong protection for it — passwords get reused, phished, and typed into the
+wrong window, and the blast radius here is not one gym, it is all of them.
+
+### It cannot be turned off
+
+There is no per-account toggle. An optional second factor means the least
+careful admin decides the security of the whole platform, and "I'll enable it
+later" is a state that persists.
+
+### A new admin cannot do anything until they have enrolled
+
+Creating a platform admin creates an account that can do exactly one thing: log
+in and complete enrolment. Until a TOTP secret is confirmed, every other
+platform endpoint refuses it.
+
+Otherwise there is a window — sometimes days — where a fully-powered account is
+protected by a password that was very likely sent over WhatsApp.
+
+**This includes the bootstrap admin from §9.** The command creates the account;
+the first login forces enrolment. There is no exception for the first one,
+because "just this one, temporarily" is how permanent exceptions are born.
+
+### Enrolment
+
+1. The server generates a secret and shows it once, as a QR code and as text.
+2. The admin must enter a valid code from their app to confirm it. An
+   unconfirmed secret is never activated — this catches the case where the QR
+   was scanned into the wrong app, or not at all.
+3. Ten single-use **recovery codes** are shown once and stored hashed, the same
+   way a password is. They are never displayed again.
+
+### Losing the phone
+
+Recovery codes are the intended path: one code, used once, gets you in.
+
+If both the phone and the codes are gone, another platform admin resets the
+account. That reset is logged like any other cross-tenant act (§7).
+
+**Therefore: always have at least two platform admins.** With one, a lost phone
+and a lost recovery sheet means nobody can ever reach the vendor console again
+— not you, not anyone — and the only remaining route is editing the database on
+the server by hand. This is a real way to lock yourself out of your own
+business, and the fix costs nothing: create the second admin on day one.
+
+### Details that are easy to get wrong
+
+| Rule | Value | Why |
+|---|---|---|
+| Clock drift tolerance | ±1 step (±30s) | Phones drift. Any wider and you are meaningfully extending each code's life. |
+| A code cannot be reused | last accepted step is stored | Without this, a code shoulder-surfed or captured from a screen share stays valid for its whole window. This is the detail most implementations miss. |
+| Failed attempts | lock the account after 5, for 15 minutes | Six digits is 1,000,000 combinations — trivial to brute force at machine speed if nothing stops it. |
+| Recovery codes | single use, hashed at rest | A reusable recovery code is a second password. A plaintext one is worse. |
+| Platform session | **2 hours** | Shorter than a gym session on purpose. TOTP at login is worth little if the session then lasts all day on an unlocked laptop. |
+
+TOTP is checked **at login only**, not per request. The short session is what
+limits exposure after that.
+
 ---
 
-## 10. What this deliberately does not do
+## 11. What this deliberately does not do
 
 - **No billing.** The console records which plan a gym is on and whether it is
   paid, because suspension needs to know. It does not take payments, issue
@@ -211,7 +292,7 @@ logged.
 
 ---
 
-## 11. What the software exposes
+## 12. What the software exposes
 
 All under `/api/v1/platform/*`, all requiring a platform token.
 
@@ -233,13 +314,18 @@ And one gym-side addition:
 
 ---
 
-## 12. Decisions that are yours, not mine
+## 13. Decisions that are yours, not mine
 
-- **Should platform admins require a second factor?** I think yes, and this is
-  the account I would least like to see behind a password alone — it is the
-  keys to every customer's data. TOTP is the standard answer. It is extra
-  work, so it is your call, but "a strong password" is a weak answer for this
-  particular account.
+- **Should entering a gym require the code again?** §10 checks TOTP at login
+  only, and relies on a 2-hour session to limit what a walked-away laptop is
+  worth. Asking again at the moment of crossing into a customer's data is
+  stronger and is what banks do for transfers. It is also the most annoying
+  possible place to put it, during support work, when you are already
+  irritated. I have left it out; it is a fair thing to add later if the
+  console is ever used from shared machines.
+
+- **How long should the platform session last?** Two hours is my number, not a
+  derived one. Shorter is safer and more irritating.
 
 - **30 minutes for a support token.** Long enough to investigate, short enough
   that a forgotten browser tab is not a standing key. Raise it and you weaken
