@@ -261,8 +261,15 @@ business, and the fix costs nothing: create the second admin on day one.
 | Recovery codes | single use, hashed at rest | A reusable recovery code is a second password. A plaintext one is worse. |
 | Platform session | **2 hours** | Shorter than a gym session on purpose. TOTP at login is worth little if the session then lasts all day on an unlocked laptop. |
 
-TOTP is checked **at login only**, not per request. The short session is what
-limits exposure after that.
+TOTP is checked **at login only**, not per request, and **entering a gym does
+not ask for it again**. The 2-hour session is what limits exposure after login.
+
+That was a deliberate decision, not an omission. Asking for the code again at
+the moment of crossing into a customer's data is what a bank does for a
+transfer, and it is stronger — but support work is exactly when the interruption
+lands worst, and a control that makes people avoid the audited path is a
+control that makes things less safe, not more. Revisit only if the console
+starts being used from shared or public machines.
 
 ---
 
@@ -316,16 +323,10 @@ And one gym-side addition:
 
 ## 13. Decisions that are yours, not mine
 
-- **Should entering a gym require the code again?** §10 checks TOTP at login
-  only, and relies on a 2-hour session to limit what a walked-away laptop is
-  worth. Asking again at the moment of crossing into a customer's data is
-  stronger and is what banks do for transfers. It is also the most annoying
-  possible place to put it, during support work, when you are already
-  irritated. I have left it out; it is a fair thing to add later if the
-  console is ever used from shared machines.
-
-- **How long should the platform session last?** Two hours is my number, not a
-  derived one. Shorter is safer and more irritating.
+- **How long should the platform session last?** Two hours, decided. It is not
+  a derived number — shorter is safer and more irritating, and this is the
+  point on that curve that was chosen. Worth revisiting only if the console is
+  ever used from machines you do not control.
 
 - **30 minutes for a support token.** Long enough to investigate, short enough
   that a forgotten browser tab is not a standing key. Raise it and you weaken
