@@ -27,6 +27,7 @@ Screens appear in the order they sit on the dashboard.
 [Trainers](#17-trainers) · [Personal Training](#18-personal-training)
 
 **Also read**
+[Every retention signal](#every-way-the-software-watches-retention) ·
 [What it does not do](#what-this-software-does-not-do) ·
 [Quick reference](#quick-reference)
 
@@ -204,6 +205,8 @@ against your name.
 
 This is the part that makes everything else worth having. A perfect alert
 nobody rings is worth nothing.
+
+→ [Every retention signal and what triggers it](#every-way-the-software-watches-retention)
 
 ---
 
@@ -446,6 +449,74 @@ as they are used, and the remaining balance is always visible.
 
 When a member is down to their last couple of sessions, the front desk sees a
 note at check-in — the natural moment to talk about the next block.
+
+---
+
+# Every way the software watches retention
+
+Nine alerts and six counter prompts, arranged by where a member is in their
+life at the gym. Every one is arithmetic on your own records — no scores, no
+predictions.
+
+## Stage 1 — their first 90 days
+
+Where most members are lost. While a member is in this window the general
+inactivity alerts stand down, so nobody is listed twice.
+
+| Signal | Fires when | The call |
+|---|---|---|
+| **Paid, never walked in** | 3+ days since joining, zero check-ins | Get them through the door once |
+| **Coming too rarely** | Day 7+, under 1.5 visits a week | Ask what makes it hard; agree two fixed days |
+| **Started, then quiet** | 3+ visits, then 10 days of silence | Find what stopped, give them a slot to return to |
+
+## Stage 2 — established members
+
+| Signal | Fires when | The call |
+|---|---|---|
+| **Routine has broken** | They kept a time slot for 8 weeks, now keep it 40% of the time or less — **while still visiting as often** | Ask if their schedule changed; rebuild a fixed time |
+| **Inactive 1 week** | 7–13 days since their last visit | Light nudge |
+| **Inactive 2 weeks+** | 14+ days, escalating past 21 | The strongest churn signal there is |
+
+**Why "routine has broken" is different.** Every other signal here — and every
+one in competing software — fires when somebody *stops coming*. This one fires
+while they are **still coming just as often**, because the habit goes before
+the attendance does. It is the only early warning on the list.
+
+## Stage 3 — membership ending
+
+| Signal | Fires when |
+|---|---|
+| **Expiring in 3 days** | Renewal due shortly |
+| **Expires today** | Last day of the membership |
+| **Expired, not renewed** | Lapsed with no renewal recorded |
+
+## At the counter — six prompts
+
+These are not alerts. They appear at the front desk at the moment the member is
+standing there, which is the only moment acting costs nobody any extra effort.
+**One at a time, and most check-ins show none.**
+
+| Prompt | Appears when |
+|---|---|
+| **First ever visit** | Their very first check-in |
+| **Back after a break** | Returning after 10+ days away |
+| **Needs attention** | They have an open alert from above |
+| **PT running out** | 2 or fewer sessions left |
+| **Due a restock** | Overdue on something they buy regularly |
+| **Wallet low** | Under ₹200, if they use the wallet |
+
+## The three things that are not signals at all
+
+- **Staff accountability.** Every alert closed records who did it and what they
+  did. "Handled this week" shows the owner whether the list is being worked. An
+  alert nobody rings is worth nothing, so this is arguably the most important
+  retention feature in the product.
+- **Freeze instead of losing them.** A member with an injury or travelling can
+  pause rather than cancel — the difference between a returning member and a
+  lost one.
+- **Auto-resolution.** Alerts close themselves when the problem goes away — a
+  member renews, or starts keeping their slot again — so staff never tick off
+  something the system can already see was handled.
 
 ---
 
