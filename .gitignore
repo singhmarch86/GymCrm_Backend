@@ -23,3 +23,7 @@ gymcrm-backend.zip
 
 # OS
 .DS_Store
+
+# Production secrets — never commit
+deploy/.env
+deploy/web/
