@@ -13,6 +13,7 @@ import '../../widgets/app_card.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import 'activation_section.dart';
+import 'collapsible_group.dart';
 import 'rhythm_break_section.dart';
 
 /// Members at risk of churning, grouped by severity.
@@ -676,7 +677,10 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
           child: Text(hint,
               style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
         ),
-        ...items.map((a) => _row(a, color)),
+        CollapsibleGroup(
+          noun: 'more to call',
+          children: items.map((a) => _row(a, color)).toList(),
+        ),
       ],
     );
   }

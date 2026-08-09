@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/rhythm.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import 'collapsible_group.dart';
 
 /// Rhythm breaks, shown at the top of the At Risk list (FR-09).
 ///
@@ -59,11 +60,16 @@ class RhythmBreakSection extends StatelessWidget {
             style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
           ),
         ),
-        ...breaks.map((b) => _RhythmBreakCard(
-              item: b,
-              onResolve: () => onResolve(b),
-              onCopy: () => onCopy(b),
-            )),
+        CollapsibleGroup(
+          noun: 'more with a broken routine',
+          children: breaks
+              .map((b) => _RhythmBreakCard(
+                    item: b,
+                    onResolve: () => onResolve(b),
+                    onCopy: () => onCopy(b),
+                  ))
+              .toList(),
+        ),
       ],
     );
   }

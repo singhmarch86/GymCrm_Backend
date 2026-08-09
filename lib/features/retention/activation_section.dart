@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/activation.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import 'collapsible_group.dart';
 
 /// New members who haven't got started, shown at the top of the At Risk list
 /// (FR-10).
@@ -101,12 +102,17 @@ class ActivationSection extends StatelessWidget {
             ],
           ),
         ),
-        ...items.map((a) => _ActivationCard(
-              item: a,
-              color: color,
-              onResolve: () => onResolve(a),
-              onCopy: () => onCopy(a),
-            )),
+        CollapsibleGroup(
+          noun: 'more to call',
+          children: items
+              .map((a) => _ActivationCard(
+                    item: a,
+                    color: color,
+                    onResolve: () => onResolve(a),
+                    onCopy: () => onCopy(a),
+                  ))
+              .toList(),
+        ),
       ],
     );
   }
