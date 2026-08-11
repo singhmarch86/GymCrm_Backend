@@ -14,6 +14,10 @@ class Member {
   final int? membershipPlanId;
   final String? membershipPlanName;
 
+  /// When they last came in (FR-17 §2). Null means never — a real answer, and
+  /// for a member who joined yesterday the expected one.
+  final String? lastVisitAt;
+
   Member({
     required this.id,
     required this.firstName,
@@ -22,6 +26,7 @@ class Member {
     required this.status,
     required this.membershipPlanId,
     this.membershipPlanName,
+    this.lastVisitAt,
     this.email,
     this.gender,
     this.address,
@@ -47,6 +52,7 @@ class Member {
       expiryDate: json['expiry_date'],
       membershipPlanId: json['membership_plan_id'] as int?,
       membershipPlanName: json['membership_plan_name'],
+      lastVisitAt: json['last_visit_at'],
     );
   }
 }

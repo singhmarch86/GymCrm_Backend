@@ -10,8 +10,9 @@ import '../../theme/app_colors.dart';
 import '../../widgets/empty_state.dart';
 
 import 'member_card.dart';
+import 'member_table.dart';
 
-class MemberList extends StatelessWidget {
+class MemberList extends StatefulWidget {
   final bool isLoading;
   final List<Member> members;
   final Future<void> Function() onRefresh;
@@ -25,6 +26,43 @@ class MemberList extends StatelessWidget {
     this.onMemberChanged,
   });
 
+  @override
+  State<MemberList> createState() => _MemberListState();
+}
+
+class _MemberListState extends State<MemberList> {
+  // Sorted client-side over the page already fetched. Server-side sorting is
+  // the right answer once paging matters, and deliberately not smuggled in
+  // behind a layout change (FR-17 §6).
+  String _sortKey = '';
+  bool _sortAsc = true;
+
+  List<Member> get _sorted {
+    if (_sortKey.isEmpty) return widget.members;
+    final rows = [...widget.members];
+    int cmp(String? a, String? b) {
+      // Nulls last in both directions: "no expiry recorded" is not a date and
+      // should never lead the list somebody is working down.
+      if (a == null || a.isEmpty) return 1;
+      if (b == null || b.isEmpty) return -1;
+      return a.compareTo(b);
+    }
+
+    rows.sort((x, y) => _sortKey == 'expiry'
+        ? cmp(x.expiryDate, y.expiryDate)
+        : cmp(x.lastVisitAt, y.lastVisitAt));
+    return _sortAsc ? rows : rows.reversed.toList();
+  }
+
+  void _onSort(String key) => setState(() {
+        if (_sortKey == key) {
+          _sortAsc = !_sortAsc;
+        } else {
+          _sortKey = key;
+          _sortAsc = true;
+        }
+      });
+
   Future<void> _openDetail(BuildContext context, Member member) async {
     // The panel closes fully before we act on its result — see
     // showMemberDetailPanel's doc comment for why this can't just open
@@ -36,13 +74,13 @@ class MemberList extends StatelessWidget {
       // A lifecycle operation (freeze/upgrade/transfer/terminate) ran inside
       // the panel. It already reflects the new state itself; the outer list
       // just needs to catch up.
-      onMemberChanged?.call();
-      await onRefresh();
+      widget.onMemberChanged?.call();
+      await widget.onRefresh();
     } else if (action == 'edit') {
       final result = await showEditMemberDialog(context, member);
       if (result == true) {
-        onMemberChanged?.call();
-        await onRefresh();
+        widget.onMemberChanged?.call();
+        await widget.onRefresh();
       }
     } else if (action == 'delete') {
       final confirm = await showDialog<bool>(
@@ -71,8 +109,8 @@ class MemberList extends StatelessWidget {
 
       try {
         await MemberService().deleteMember(member.id);
-        onMemberChanged?.call();
-        await onRefresh();
+        widget.onMemberChanged?.call();
+        await widget.onRefresh();
       } catch (e) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -88,20 +126,20 @@ class MemberList extends StatelessWidget {
   Future<void> _addMember(BuildContext context) async {
     final result = await showAddMemberDialog(context);
     if (result == true) {
-      onMemberChanged?.call();
-      await onRefresh();
+      widget.onMemberChanged?.call();
+      await widget.onRefresh();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (widget.isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
-    if (members.isEmpty) {
+    if (widget.members.isEmpty) {
       return EmptyStateView(
         icon: Icons.groups_outlined,
         title: 'No Members Found',
@@ -111,18 +149,35 @@ class MemberList extends StatelessWidget {
       );
     }
 
+    // 900px is the shell's breakpoint, so the table appears exactly when the
+    // rail does and the two never disagree about what "desk width" means.
+    if (MediaQuery.sizeOf(context).width >= 900) {
+      return RefreshIndicator(
+        onRefresh: widget.onRefresh,
+        child: MemberTable(
+          members: _sorted,
+          onTap: (m) => _openDetail(context, m),
+          onCollectPayment: (m) => _openDetail(context, m),
+          onRenew: (m) => _openDetail(context, m),
+          sortKey: _sortKey,
+          sortAscending: _sortAsc,
+          onSort: _onSort,
+        ),
+      );
+    }
+
     return RefreshIndicator(
-      onRefresh: onRefresh,
+      onRefresh: widget.onRefresh,
       child: ListView.separated(
         padding: const EdgeInsets.only(
           top: 8,
           bottom: 100,
         ),
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: members.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 14),
+        itemCount: widget.members.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 14),
         itemBuilder: (context, index) {
-          final member = members[index];
+          final member = widget.members[index];
 
           return MemberCard(
             member: member,
