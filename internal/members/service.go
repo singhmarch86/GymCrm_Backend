@@ -64,6 +64,15 @@ func (s *Service) CreateMember(ctx context.Context, req CreateMemberRequest) (*M
 	if req.Notes != "" {
 		member.Notes = &req.Notes
 	}
+	// Stored independently: a name with no number is still worth having (staff
+	// can find it), and a number with no name is still callable. Requiring
+	// both would mean losing whichever half somebody managed to get.
+	if req.EmergencyContactName != "" {
+		member.EmergencyContactName = &req.EmergencyContactName
+	}
+	if req.EmergencyContactPhone != "" {
+		member.EmergencyContactPhone = &req.EmergencyContactPhone
+	}
 
 	// Optional date fields
 	if req.DateOfBirth != "" {

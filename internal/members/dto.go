@@ -16,6 +16,9 @@ type CreateMemberRequest struct {
 	StartDate        string `json:"start_date"`
 	ExpiryDate       string `json:"expiry_date"`
 	Notes            string `json:"notes"`
+
+	EmergencyContactName  string `json:"emergency_contact_name"`
+	EmergencyContactPhone string `json:"emergency_contact_phone"`
 }
 
 type UpdateMemberRequest struct {
@@ -68,12 +71,15 @@ type MemberResponse struct {
 	// When they last came in (FR-17 §2). Nil means never — a real answer, and
 	// for a new member the expected one.
 	LastVisitAt *time.Time `json:"last_visit_at,omitempty"`
-	StartDate   *time.Time `json:"start_date,omitempty"`
-	ExpiryDate  *time.Time `json:"expiry_date,omitempty"`
-	Status      string     `json:"status"`
-	Notes       *string    `json:"notes,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+
+	EmergencyContactName  *string    `json:"emergency_contact_name,omitempty"`
+	EmergencyContactPhone *string    `json:"emergency_contact_phone,omitempty"`
+	StartDate             *time.Time `json:"start_date,omitempty"`
+	ExpiryDate            *time.Time `json:"expiry_date,omitempty"`
+	Status                string     `json:"status"`
+	Notes                 *string    `json:"notes,omitempty"`
+	CreatedAt             time.Time  `json:"created_at"`
+	UpdatedAt             time.Time  `json:"updated_at"`
 }
 
 type MemberListResponse struct {
@@ -105,6 +111,9 @@ func ToResponse(m *Member, planName string) MemberResponse {
 		Notes:            m.Notes,
 		CreatedAt:        m.CreatedAt,
 		UpdatedAt:        m.UpdatedAt,
+
+		EmergencyContactName:  m.EmergencyContactName,
+		EmergencyContactPhone: m.EmergencyContactPhone,
 	}
 	if planName != "" {
 		resp.MembershipPlanName = &planName
