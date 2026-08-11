@@ -57,6 +57,8 @@ class MemberService {
     DateTime? expiryDate,
     DateTime? dateOfBirth,
     String? notes,
+    String? emergencyContactName,
+    String? emergencyContactPhone,
   }) async {
     final headers = await _authHeaders();
 
@@ -75,6 +77,10 @@ class MemberService {
             if (expiryDate != null) 'expiry_date': _dateOnly(expiryDate),
             if (dateOfBirth != null) 'date_of_birth': _dateOnly(dateOfBirth),
             if (notes != null && notes.isNotEmpty) 'notes': notes,
+            if (emergencyContactName != null && emergencyContactName.isNotEmpty)
+              'emergency_contact_name': emergencyContactName,
+            if (emergencyContactPhone != null && emergencyContactPhone.isNotEmpty)
+              'emergency_contact_phone': emergencyContactPhone,
           }),
         ));
 

@@ -38,6 +38,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
   // The desk will write "knee injury — no squats" somewhere. Without a field
   // for it, it goes on paper and leaves with whoever wrote it.
   final notesController = TextEditingController();
+  final emergencyNameController = TextEditingController();
+  final emergencyPhoneController = TextEditingController();
 
   String? _gender;
   int? _planId;
@@ -81,6 +83,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     emailController.dispose();
     addressController.dispose();
     notesController.dispose();
+    emergencyNameController.dispose();
+    emergencyPhoneController.dispose();
     super.dispose();
   }
 
@@ -120,6 +124,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         expiryDate: _expiryDate,
         dateOfBirth: _dateOfBirth,
         notes: notesController.text.trim(),
+        emergencyContactName: emergencyNameController.text.trim(),
+        emergencyContactPhone: emergencyPhoneController.text.trim(),
       );
 
       if (!mounted) return;
@@ -286,6 +292,56 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                           label: 'Expiry Date (optional)',
                           value: _expiryDate == null ? 'Not set' : _formatDate(_expiryDate!),
                           onTap: () => _pickDate(isStart: false),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  AppSpacing.gapLg,
+
+                  // The only fields on this form that exist for the member's
+                  // sake rather than the gym's. Grouped and labelled so a
+                  // receptionist can see at a glance whether they were filled
+                  // — this is the one blank nobody wants to discover in the
+                  // moment it matters.
+                  Row(
+                    children: [
+                      Icon(Icons.emergency_share_rounded,
+                          size: 15, color: Colors.grey.shade600),
+                      const SizedBox(width: 7),
+                      Text('In an emergency',
+                          style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700)),
+                    ],
+                  ),
+                  AppSpacing.gapSm,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: emergencyNameController,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: const InputDecoration(
+                              labelText: 'Contact name (optional)'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: emergencyPhoneController,
+                          keyboardType: TextInputType.phone,
+                          decoration: const InputDecoration(
+                              labelText: 'Contact phone (optional)'),
+                          // Validated only if filled: half an emergency
+                          // contact still beats none, and a name with no
+                          // number is something staff can act on.
+                          validator: (v) {
+                            final t = (v ?? '').trim();
+                            if (t.isEmpty) return null;
+                            return t.length < 10 ? 'Enter a full phone number' : null;
+                          },
                         ),
                       ),
                     ],
