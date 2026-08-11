@@ -143,7 +143,15 @@ func (r *Repository) GetMemberReport(ctx context.Context) (*MemberReport, error)
 
 	count := func(query string, dest *int64, args ...interface{}) error {
 		var c countRow
-		return r.db.WithContext(ctx).Raw(query, args...).Scan(&c).Error
+		if err := r.db.WithContext(ctx).Raw(query, args...).Scan(&c).Error; err != nil {
+			return err
+		}
+		// The assignment this closure exists for. Without it every caller got
+		// back its zero value while the queries themselves ran perfectly — so
+		// the screen reported 0 members against a database holding 809, and
+		// nothing errored anywhere to say otherwise.
+		*dest = c.V
+		return nil
 	}
 
 	if err := count(

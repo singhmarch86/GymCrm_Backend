@@ -61,7 +61,22 @@ docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --
 The app is on port 80. Check it:
 
 ```bash
-curl -s localhost/api/v1/health
+curl -s localhost/api/v1/plans -o /dev/null -w '%{http_code}\n'
+```
+
+`401` is the healthy answer — nginx reached the Go app and the app demanded a
+token. A `502` means the API is down; `200` would mean authentication is off.
+
+**Do not health-check with `curl localhost/health`.** The API does serve
+`/health`, unversioned, but nginx only proxies `/api/` and `/swagger/` —
+everything else falls through to the SPA catch-all. So `/health` on port 80
+returns `index.html` with a **200 whether the API is running or not**, which is
+the worst possible outcome for a check you rely on.
+
+To reach the real health endpoint, go straight at the container:
+
+```bash
+docker compose -f deploy/docker-compose.prod.yml exec app wget -qO- localhost:8089/health
 ```
 
 ## 4. HTTPS

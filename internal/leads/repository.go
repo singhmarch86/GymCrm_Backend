@@ -343,7 +343,14 @@ func (r *Repository) GetSummary(ctx context.Context) (*SummaryData, error) {
 
 	count := func(query string, dest *int64, args ...interface{}) error {
 		var c countRow
-		return r.db.WithContext(ctx).Raw(query, args...).Scan(&c).Error
+		if err := r.db.WithContext(ctx).Raw(query, args...).Scan(&c).Error; err != nil {
+			return err
+		}
+		// Same omission as the reports repository had: scanning into a local
+		// and never assigning it left every lead count at zero, with the
+		// queries running fine and no error raised anywhere.
+		*dest = c.V
+		return nil
 	}
 
 	if err := count(`SELECT COUNT(*) AS v FROM leads WHERE gym_id = ? AND deleted_at IS NULL`, &s.TotalLeads, gymID); err != nil {

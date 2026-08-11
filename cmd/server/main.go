@@ -34,6 +34,7 @@ import (
 	"gymcrm/internal/renewals"
 	"gymcrm/internal/reports"
 	"gymcrm/internal/retention"
+	"gymcrm/internal/staffwork"
 	"gymcrm/internal/rhythm"
 	"gymcrm/internal/trainers"
 	"gymcrm/internal/users"
@@ -175,6 +176,10 @@ func main() {
 	retentionSvc := retention.NewService(retentionRepo)
 	retentionHandler := retention.NewHandler(retentionSvc)
 
+	staffWorkRepo := staffwork.NewRepository(db)
+	staffWorkSvc := staffwork.NewService(staffWorkRepo)
+	staffWorkHandler := staffwork.NewHandler(staffWorkSvc)
+
 	rhythmRepo := rhythm.NewRepository(db)
 	rhythmSvc := rhythm.NewService(rhythmRepo)
 	rhythmHandler := rhythm.NewHandler(rhythmSvc)
@@ -307,6 +312,13 @@ func main() {
 	mux.Handle("GET /api/v1/retention/summary", jwt(http.HandlerFunc(retentionHandler.Summary)))
 	mux.Handle("PATCH /api/v1/retention/alerts/{id}/resolve", jwt(http.HandlerFunc(retentionHandler.Resolve)))
 	mux.Handle("GET /api/v1/retention/staff-activity", jwt(http.HandlerFunc(retentionHandler.StaffActivity)))
+
+	// Staff work (FR-13). Read-only over ledgers that already record who acted.
+	// Plain jwt, not owner-only: a staff member may see their own day, and the
+	// service narrows the result from the token rather than trusting a query
+	// parameter.
+	mux.Handle("GET /api/v1/staff-work", jwt(http.HandlerFunc(staffWorkHandler.Day)))
+	mux.Handle("GET /api/v1/staff-work/items", jwt(http.HandlerFunc(staffWorkHandler.Items)))
 
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention
@@ -466,9 +478,14 @@ func main() {
 	// CORS wraps the whole mux so preflight OPTIONS requests are answered before
 	// they reach the router (which registers only method-qualified routes and
 	// would 405 them). No-op for native clients; required for any web build.
+	//
+	// RequestLog wraps CORS rather than the other way round: CORS answers
+	// preflights itself and never calls through, so a logger mounted inside it
+	// would be blind to a failing preflight — the single hardest failure to
+	// diagnose from the browser side.
 	srv := &http.Server{
 		Addr:         ":" + cfg.Server.Port,
-		Handler:      middleware.CORS(cfg.CORSAllowedOrigins())(mux),
+		Handler:      middleware.RequestLog()(middleware.CORS(cfg.CORSAllowedOrigins())(mux)),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,

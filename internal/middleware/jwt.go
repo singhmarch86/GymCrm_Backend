@@ -42,6 +42,11 @@ func JWTMiddleware(jwtSecret string) func(http.Handler) http.Handler {
 			tc := database.NewTenantContext(claims.GymID, claims.UserID, claims.Role)
 			ctx := database.WithTenant(r.Context(), tc)
 
+			// Tell the access log who this turned out to be. Deliberately after
+			// signature validation: an unverified token must never be able to
+			// write a gym id into the log it does not own.
+			setIdentity(ctx, claims.GymID, claims.UserID, claims.Role)
+
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
