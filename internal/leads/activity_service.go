@@ -9,7 +9,9 @@ import (
 
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 
-func (s *Service) ListActivities(ctx context.Context, leadID int64) ([]LeadActivity, error) {
+func (s *Service) ListActivities(
+	ctx context.Context, leadID int64, activityType, outcome string,
+) ([]LeadActivity, error) {
 	lead, err := s.repo.FindByID(ctx, leadID)
 	if err != nil {
 		return nil, fmt.Errorf("list activities: %w", err)
@@ -18,7 +20,17 @@ func (s *Service) ListActivities(ctx context.Context, leadID int64) ([]LeadActiv
 		return nil, ErrLeadNotFound
 	}
 
-	out, err := s.repo.ListActivities(ctx, leadID)
+	// Reject an unknown filter rather than returning an empty timeline. A
+	// typo'd value silently matching nothing looks identical to "this lead has
+	// no history", which is the wrong thing to conclude about a lead.
+	if activityType != "" && !IsValidActivityType(activityType) {
+		return nil, ErrInvalidActivityType
+	}
+	if outcome != "" && !IsValidOutcome(outcome) {
+		return nil, ErrInvalidOutcome
+	}
+
+	out, err := s.repo.ListActivities(ctx, leadID, activityType, outcome)
 	if err != nil {
 		return nil, fmt.Errorf("list activities: %w", err)
 	}
@@ -50,6 +62,19 @@ func (s *Service) AddActivity(ctx context.Context, leadID int64, req AddActivity
 		LeadID: leadID,
 		Type:   ActivityType(req.Type),
 		Note:   strPtrOrNil(strings.TrimSpace(req.Note)),
+	}
+
+	// Outcome is optional (FR-16 §3) but never invented: absent stays absent
+	// rather than becoming a default that would misreport work nobody did.
+	if raw := strings.TrimSpace(req.Outcome); raw != "" {
+		if !IsValidOutcome(raw) {
+			return nil, ErrInvalidOutcome
+		}
+		if !ActivityType(req.Type).AcceptsOutcome() {
+			return nil, ErrOutcomeNotAllowed
+		}
+		o := ActivityOutcome(raw)
+		activity.Outcome = &o
 	}
 
 	if err := s.repo.LogActivity(ctx, activity); err != nil {
@@ -131,6 +156,14 @@ func (s *Service) GetFollowUps(ctx context.Context) (*FollowUpResponse, error) {
 		return nil, fmt.Errorf("follow-ups: %w", err)
 	}
 
+	// A week: long enough that a quiet Tuesday does not read as a collapse,
+	// short enough to still describe how the phone work is going now.
+	const outcomeWindowDays = 7
+	outcomes, err := s.repo.OutcomeCounts(ctx, outcomeWindowDays)
+	if err != nil {
+		return nil, fmt.Errorf("follow-ups: outcome counts: %w", err)
+	}
+
 	return &FollowUpResponse{
 		Overdue:  toLeadResponseList(buckets.Overdue),
 		Today:    toLeadResponseList(buckets.Today),
@@ -142,7 +175,9 @@ func (s *Service) GetFollowUps(ctx context.Context) (*FollowUpResponse, error) {
 			Upcoming: len(buckets.Upcoming),
 			Trials:   len(buckets.Trials),
 		},
-		GeneratedAt: time.Now().UTC(),
+		GeneratedAt:   time.Now().UTC(),
+		OutcomeCounts: outcomes,
+		OutcomeDays:   outcomeWindowDays,
 	}, nil
 }
 

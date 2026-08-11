@@ -78,17 +78,84 @@ func (r *Repository) UpdateStatusWithActivity(
 // ─── Activity reads ───────────────────────────────────────────────────────────
 
 // ListActivities returns a lead's full timeline, newest first.
-func (r *Repository) ListActivities(ctx context.Context, leadID int64) ([]LeadActivity, error) {
+// ListActivities returns a lead's timeline, optionally narrowed by what was
+// done and what came of it (FR-16 §5).
+//
+// Empty filters mean "everything" rather than "nothing": a timeline that
+// emptied itself because a filter defaulted to a value nobody chose would look
+// like data loss.
+func (r *Repository) ListActivities(
+	ctx context.Context, leadID int64, activityType, outcome string,
+) ([]LeadActivity, error) {
 	tc := database.MustGetTenant(ctx)
-	var out []LeadActivity
-	err := r.db.WithContext(ctx).
+
+	q := r.db.WithContext(ctx).
 		Table("lead_activities").
 		Select(`lead_activities.*, COALESCE(users.name, '') AS user_name`).
 		Joins("LEFT JOIN users ON users.id = lead_activities.user_id").
-		Where("lead_activities.gym_id = ? AND lead_activities.lead_id = ?", tc.GymID(), leadID).
-		Order("lead_activities.created_at DESC").
-		Scan(&out).Error
+		Where("lead_activities.gym_id = ? AND lead_activities.lead_id = ?", tc.GymID(), leadID)
+
+	if activityType != "" {
+		q = q.Where("lead_activities.type = ?", activityType)
+	}
+	if outcome != "" {
+		q = q.Where("lead_activities.outcome = ?", outcome)
+	}
+
+	var out []LeadActivity
+	err := q.Order("lead_activities.created_at DESC").Scan(&out).Error
 	return out, err
+}
+
+// OutcomeCount is one row of the grouped counts on the follow-up screen.
+type OutcomeCount struct {
+	Outcome string `json:"outcome"`
+	Label   string `json:"label"`
+	Count   int64  `json:"count"`
+}
+
+// OutcomeCounts summarises the last `days` of logged outcomes (FR-16 §6).
+//
+// "14 no answer, 3 call back" tells an owner in one line whether the phone
+// work is landing. The same facts spread across nineteen timeline entries tell
+// them nothing.
+//
+// Every outcome comes back, including the zeros. A missing row reads as "we
+// have not had that result" when it may equally mean the query skipped it, and
+// a chart whose categories appear and vanish between refreshes is unreadable.
+func (r *Repository) OutcomeCounts(ctx context.Context, days int) ([]OutcomeCount, error) {
+	tc := database.MustGetTenant(ctx)
+
+	type row struct {
+		Outcome string
+		Count   int64
+	}
+	var rows []row
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT outcome, COUNT(*) AS count
+		  FROM lead_activities
+		 WHERE gym_id = ?
+		   AND outcome IS NOT NULL
+		   AND created_at >= NOW() - MAKE_INTERVAL(days => ?)
+		 GROUP BY outcome`, tc.GymID(), days).Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+
+	found := make(map[string]int64, len(rows))
+	for _, x := range rows {
+		found[x.Outcome] = x.Count
+	}
+
+	out := make([]OutcomeCount, 0, len(AllOutcomes))
+	for _, o := range AllOutcomes {
+		out = append(out, OutcomeCount{
+			Outcome: string(o),
+			Label:   o.Label(),
+			Count:   found[string(o)],
+		})
+	}
+	return out, nil
 }
 
 // ─── Assignees ────────────────────────────────────────────────────────────────

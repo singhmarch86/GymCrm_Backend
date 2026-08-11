@@ -3,6 +3,7 @@ package leads
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"gymcrm/internal/shared/response"
 )
@@ -21,7 +22,12 @@ func (h *Handler) ListActivities(w http.ResponseWriter, r *http.Request) {
 		response.BadRequest(w, "invalid lead id")
 		return
 	}
-	items, err := h.svc.ListActivities(r.Context(), id)
+	q := r.URL.Query()
+	items, err := h.svc.ListActivities(
+		r.Context(), id,
+		strings.TrimSpace(q.Get("type")),
+		strings.TrimSpace(q.Get("outcome")),
+	)
 	if err != nil {
 		h.handleError(w, err)
 		return

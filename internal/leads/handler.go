@@ -21,14 +21,14 @@ func NewHandler(svc *Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/v1/leads",                   h.Create)
-	mux.HandleFunc("GET /api/v1/leads",                    h.List)
-	mux.HandleFunc("GET /api/v1/leads/summary",            h.Summary)
-	mux.HandleFunc("GET /api/v1/leads/{id}",               h.GetByID)
-	mux.HandleFunc("PUT /api/v1/leads/{id}",               h.Update)
-	mux.HandleFunc("PATCH /api/v1/leads/{id}/status",      h.AdvanceStatus)
-	mux.HandleFunc("POST /api/v1/leads/{id}/convert",      h.Convert)
-	mux.HandleFunc("DELETE /api/v1/leads/{id}",            h.Delete)
+	mux.HandleFunc("POST /api/v1/leads", h.Create)
+	mux.HandleFunc("GET /api/v1/leads", h.List)
+	mux.HandleFunc("GET /api/v1/leads/summary", h.Summary)
+	mux.HandleFunc("GET /api/v1/leads/{id}", h.GetByID)
+	mux.HandleFunc("PUT /api/v1/leads/{id}", h.Update)
+	mux.HandleFunc("PATCH /api/v1/leads/{id}/status", h.AdvanceStatus)
+	mux.HandleFunc("POST /api/v1/leads/{id}/convert", h.Convert)
+	mux.HandleFunc("DELETE /api/v1/leads/{id}", h.Delete)
 }
 
 // Create godoc
@@ -214,7 +214,9 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 // Convert godoc
 // @Summary      Convert lead to member
 // @Description  Single atomic transaction: creates member, collects payment,
-//               creates renewal, updates expiry, marks lead as joined.
+//
+//	creates renewal, updates expiry, marks lead as joined.
+//
 // @Tags         leads
 // @Accept       json
 // @Produce      json
@@ -255,6 +257,8 @@ func (h *Handler) handleError(w http.ResponseWriter, err error) {
 	case errors.Is(err, ErrInvalidStatus):
 		response.UnprocessableEntity(w, err.Error())
 	case errors.Is(err, ErrInvalidActivityType):
+		response.UnprocessableEntity(w, err.Error())
+	case errors.Is(err, ErrInvalidOutcome), errors.Is(err, ErrOutcomeNotAllowed):
 		response.UnprocessableEntity(w, err.Error())
 	case errors.Is(err, ErrLostReasonRequired):
 		response.UnprocessableEntity(w, err.Error())

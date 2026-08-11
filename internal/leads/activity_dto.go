@@ -13,6 +13,9 @@ type AddActivityRequest struct {
 	// Date is only meaningful for follow_up_set / trial_scheduled, where it
 	// also updates the matching column on the lead. Format: YYYY-MM-DD.
 	Date string `json:"date"`
+	// Outcome is what came of it (FR-16). Optional: a note has none, and a
+	// staff member mid-shift must never be blocked by a dropdown.
+	Outcome string `json:"outcome"`
 }
 
 // ActivityListResponse wraps a lead's timeline.
@@ -49,6 +52,11 @@ type FollowUpResponse struct {
 	Trials      []LeadResponse `json:"trials"`
 	Counts      FollowUpCounts `json:"counts"`
 	GeneratedAt time.Time      `json:"generated_at"`
+
+	// What the last week of calling produced (FR-16 §6). Always all six
+	// outcomes, zeros included, so the row keeps its shape between refreshes.
+	OutcomeCounts []OutcomeCount `json:"outcome_counts"`
+	OutcomeDays   int            `json:"outcome_days"`
 }
 
 // ─── Analytics ────────────────────────────────────────────────────────────────

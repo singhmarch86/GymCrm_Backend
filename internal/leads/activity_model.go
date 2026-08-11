@@ -22,6 +22,11 @@ type LeadActivity struct {
 	Type ActivityType `gorm:"type:varchar(30);not null" json:"type"`
 	Note *string      `gorm:"type:text"                 json:"note,omitempty"`
 
+	// What came of it (FR-16). Nil is a real answer, not a missing one: a note
+	// has no outcome, and every row written before this column existed has
+	// none. Never inferred — see FR-16 §3.
+	Outcome *ActivityOutcome `gorm:"type:varchar(30)" json:"outcome,omitempty"`
+
 	// Set only for Type == ActivityStageChange.
 	FromStatus *string `gorm:"type:varchar(30)" json:"from_status,omitempty"`
 	ToStatus   *string `gorm:"type:varchar(30)" json:"to_status,omitempty"`
@@ -43,6 +48,69 @@ const (
 	ActivityConverted      ActivityType = "converted"
 	ActivityLost           ActivityType = "lost"
 )
+
+// ActivityOutcome is what came of a follow-up (FR-16).
+//
+// Six values, and the count is the point: a desk facing fifteen options picks
+// the first plausible one and the data becomes noise that looks like signal.
+// Adding a seventh should mean deleting one.
+type ActivityOutcome string
+
+const (
+	OutcomeAnswered      ActivityOutcome = "answered"
+	OutcomeNoAnswer      ActivityOutcome = "no_answer"
+	OutcomeCallBack      ActivityOutcome = "call_back"
+	OutcomeInterested    ActivityOutcome = "interested"
+	OutcomeNotInterested ActivityOutcome = "not_interested"
+	OutcomeWrongNumber   ActivityOutcome = "wrong_number"
+)
+
+// AllOutcomes is the display order: reached, not reached, then the verdicts.
+var AllOutcomes = []ActivityOutcome{
+	OutcomeAnswered,
+	OutcomeNoAnswer,
+	OutcomeCallBack,
+	OutcomeInterested,
+	OutcomeNotInterested,
+	OutcomeWrongNumber,
+}
+
+// Label is what the desk should read, in their words.
+func (o ActivityOutcome) Label() string {
+	switch o {
+	case OutcomeAnswered:
+		return "Answered"
+	case OutcomeNoAnswer:
+		return "No answer"
+	case OutcomeCallBack:
+		return "Call back later"
+	case OutcomeInterested:
+		return "Interested"
+	case OutcomeNotInterested:
+		return "Not interested"
+	case OutcomeWrongNumber:
+		return "Wrong number"
+	}
+	return string(o)
+}
+
+// IsValidOutcome reports whether s is one of the six.
+func IsValidOutcome(s string) bool {
+	for _, o := range AllOutcomes {
+		if ActivityOutcome(s) == o {
+			return true
+		}
+	}
+	return false
+}
+
+// AcceptsOutcome reports whether an outcome may be attached to this type.
+//
+// Server-written history is excluded (FR-16 §7): a client able to tag a
+// stage_change with an outcome could rewrite what the funnel analytics report.
+func (t ActivityType) AcceptsOutcome() bool {
+	return IsValidActivityType(string(t))
+}
 
 // IsValidActivityType reports whether s is a type a client may submit.
 // Stage transitions, creation and conversion are logged by the server itself,
