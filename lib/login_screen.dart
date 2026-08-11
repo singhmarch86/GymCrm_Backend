@@ -4,11 +4,11 @@ import 'services/api_response.dart';
 import 'services/auth_service.dart';
 import 'services/storage_service.dart';
 import 'screens/register_screen.dart';
-import 'screens/dashboard/dashboard_screen.dart';
 import 'theme/app_colors.dart';
 import 'theme/breakpoints.dart';
 import 'utils/validators.dart';
 import 'widgets/error_banner.dart';
+import 'shell/app_shell.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(builder: (_) => const AppShell()),
       );
     } catch (e) {
       if (!mounted) return;

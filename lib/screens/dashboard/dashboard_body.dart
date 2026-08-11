@@ -12,6 +12,10 @@ import 'dashboard_recent_activity.dart';
 import 'dashboard_stats_grid.dart';
 
 class DashboardBody extends StatelessWidget {
+  /// See DashboardScreen.showQuickActions — false inside the shell, where the
+  /// navigation grid lives in More instead.
+  final bool showQuickActions;
+
   final String userName;
   final String role;
 
@@ -50,6 +54,7 @@ class DashboardBody extends StatelessWidget {
     required this.inactive30Days,
     required this.renewalsToday,
     required this.atRiskHigh,
+    this.showQuickActions = true,
     required this.todayRevenuePaise,
     required this.monthRevenuePaise,
     required this.pendingPayments,
@@ -148,19 +153,24 @@ class DashboardBody extends StatelessWidget {
           ),
         ],
 
-        AppSpacing.gapXxl,
+        // Inside the shell this whole block moves to the More section, so
+        // Today stays what changes daily rather than a wall of links
+        // (FR-14 §5).
+        if (showQuickActions) ...[
+          AppSpacing.gapXxl,
 
-        const DashboardSectionTitle(
-          title: "Quick Actions",
-        ),
+          const DashboardSectionTitle(
+            title: "Quick Actions",
+          ),
 
-        AppSpacing.gapLg,
+          AppSpacing.gapLg,
 
-        DashboardQuickActions(
-          onDataChanged: onDataChanged,
-          renewalsToday: renewalsToday,
-          atRiskHigh: atRiskHigh,
-        ),
+          DashboardQuickActions(
+            onDataChanged: onDataChanged,
+            renewalsToday: renewalsToday,
+            atRiskHigh: atRiskHigh,
+          ),
+        ],
 
         AppSpacing.gapXxl,
 

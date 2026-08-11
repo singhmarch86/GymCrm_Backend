@@ -25,7 +25,15 @@ import 'leads_body.dart';
 /// Each tab owns its own fetch and loads lazily on first visit, so opening the
 /// screen costs exactly one request rather than four.
 class LeadsScreen extends StatefulWidget {
-  const LeadsScreen({super.key});
+  /// Which sub-tab to open on: 0 List, 1 Board, 2 Follow-ups, 3 Analytics.
+  final int initialTab;
+
+  /// The board. Named rather than a bare `1` because the shell opens Leads
+  /// here by default (FR-14 §2), and a reordered TabBar should not silently
+  /// land every user on Analytics instead.
+  static const int boardTab = 1;
+
+  const LeadsScreen({super.key, this.initialTab = 0});
 
   @override
   State<LeadsScreen> createState() => _LeadsScreenState();
@@ -61,7 +69,11 @@ class _LeadsScreenState extends State<LeadsScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 4, vsync: this)..addListener(_onTabChanged);
+    _tabs = TabController(
+      length: 4,
+      initialIndex: widget.initialTab.clamp(0, 3),
+      vsync: this,
+    )..addListener(_onTabChanged);
     _load();
     _loadAssignees();
   }

@@ -18,9 +18,170 @@ import '../../features/renewals/renewals_screen.dart';
 import '../../features/reports/reports_screen.dart';
 import '../../features/retention/at_risk_screen.dart';
 import '../../features/staff/staff_screen.dart';
+import '../../features/staffwork/staff_work_screen.dart';
 import '../../features/trainers/trainers_screen.dart';
 import '../../features/visitors/visitors_screen.dart';
 import '../plans_screen.dart';
+
+/// One group of navigation entries, rendered under its own heading.
+///
+/// Density is the other half of the fix: the secondary groups use a compact
+/// tile so four rows of them occupy the space one row of big cards used to,
+/// which is what lets the whole map of the product fit on one screen at desk
+/// width instead of scrolling past the fold.
+class _ActionSection extends StatelessWidget {
+  final String heading;
+  final String blurb;
+  final List<_Action> actions;
+  final bool prominent;
+  final double width;
+  final double topPadding;
+  final void Function(_Action) onTap;
+
+  const _ActionSection({
+    required this.heading,
+    required this.blurb,
+    required this.actions,
+    required this.prominent,
+    required this.width,
+    required this.topPadding,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (actions.isEmpty) return const SizedBox.shrink();
+
+    // Prominent cards need room to breathe; compact tiles are sized so a
+    // phone still gets two per row and a desk screen gets six.
+    final int columns = prominent
+        ? (width > 1100 ? 3 : (width > 700 ? 2 : 1))
+        : (width > 1100 ? 6 : (width > 700 ? 4 : 2));
+
+    const gap = 12.0;
+    final tileWidth = (width - gap * (columns - 1)) / columns;
+
+    return Padding(
+      padding: EdgeInsets.only(top: topPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(heading,
+                    style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary)),
+                const SizedBox(height: 1),
+                Text(blurb,
+                    style: TextStyle(
+                        fontSize: 11.5, color: Colors.grey.shade500)),
+              ],
+            ),
+          ),
+          Wrap(
+            spacing: gap,
+            runSpacing: gap,
+            children: actions
+                .map((a) => SizedBox(
+                      width: tileWidth,
+                      child: prominent
+                          ? DashboardActionCard(
+                              title: a.title,
+                              subtitle: a.subtitle,
+                              icon: a.icon,
+                              color: a.color,
+                              badge: a.badge,
+                              onTap: () => onTap(a),
+                            )
+                          : _CompactTile(action: a, onTap: () => onTap(a)),
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A secondary destination: icon, label, optional badge. No subtitle — at this
+/// size the subtitle was the thing making the old grid unreadable, because
+/// nineteen two-line descriptions is a wall of text nobody reads twice.
+class _CompactTile extends StatelessWidget {
+  final _Action action;
+  final VoidCallback onTap;
+
+  const _CompactTile({required this.action, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: action.color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(action.icon, size: 18, color: action.color),
+                  ),
+                  if (action.badge != null)
+                    Positioned(
+                      right: -6,
+                      top: -5,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: AppColors.danger,
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: Text(action.badge!,
+                            style: const TextStyle(
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 7),
+              Text(
+                action.title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 11.5, fontWeight: FontWeight.w600, height: 1.2),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// One navigation entry, so the list can be laid out by the grid below rather
 /// than each card hard-coding its own position.
@@ -119,6 +280,13 @@ class DashboardQuickActions extends StatelessWidget {
           screen: () => const PaymentsScreen(),
         ),
         _Action(
+          title: 'Staff work',
+          subtitle: 'What each person did today',
+          icon: Icons.badge_rounded,
+          color: AppColors.info,
+          screen: () => const StaffWorkScreen(),
+        ),
+        _Action(
           title: 'Shop',
           subtitle: 'Sell products, track stock',
           icon: Icons.storefront_rounded,
@@ -211,44 +379,74 @@ class DashboardQuickActions extends StatelessWidget {
         ),
       ];
 
+  /// The information architecture, in one place.
+  ///
+  /// Nineteen identical tiles in one flat grid meant everything shouted at the
+  /// same volume, so nothing did — a receptionist looking for Attendance had to
+  /// read all nineteen labels every time. Grouping is what makes a list this
+  /// long navigable: you skip to a heading first and read four labels, not
+  /// nineteen.
+  ///
+  /// The order is the working day. What the desk touches hourly comes first;
+  /// what gets configured once a year comes last. Titles are matched against
+  /// [_actions] so this stays a single, readable statement of the hierarchy
+  /// rather than a `group:` field repeated nineteen times.
+  static const List<(String, String, List<String>)> _groups = [
+    (
+      'At the desk',
+      'What the front desk touches all day',
+      ['Members', 'Attendance', 'Renewals', 'At Risk', 'Payments', 'Shop'],
+    ),
+    (
+      'Growing the gym',
+      'Enquiries, walk-ins and word of mouth',
+      ['Leads', 'Visitors', 'Referrals'],
+    ),
+    (
+      'Training',
+      'Classes, trainers and personal training',
+      ['Classes', 'Trainers', 'Personal Training'],
+    ),
+    (
+      'Money and oversight',
+      'Billing, reporting, and who did what',
+      ['Invoices', 'Reports', 'Staff work'],
+    ),
+    (
+      'Setup',
+      'Configured once, then left alone',
+      ['Plans', 'Staff', 'Branches', 'Import data'],
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final actions = _actions;
+    final byTitle = {for (final a in _actions) a.title: a};
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Eight full-width cards stacked vertically is a very long scroll on a
-        // desktop window while the horizontal space goes unused. Columns are
-        // chosen by available width, matching the 700px breakpoint the stats
-        // grid already uses so the two sections stay visually in step.
-        final int columns = constraints.maxWidth > 1100
-            ? 4
-            : constraints.maxWidth > 700
-                ? 2
-                : 1;
+        final width = constraints.maxWidth;
 
-        const gap = 16.0;
-        final cardWidth =
-            (constraints.maxWidth - gap * (columns - 1)) / columns;
-
-        return Wrap(
-          spacing: gap,
-          runSpacing: gap,
-          children: actions
-              .map(
-                (a) => SizedBox(
-                  width: cardWidth,
-                  child: DashboardActionCard(
-                    title: a.title,
-                    subtitle: a.subtitle,
-                    icon: a.icon,
-                    color: a.color,
-                    badge: a.badge,
-                    onTap: () => _openAndMaybeRefresh(context, a.screen()),
-                  ),
-                ),
-              )
-              .toList(),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final (index, group) in _groups.indexed)
+              _ActionSection(
+                width: width,
+                heading: group.$1,
+                blurb: group.$2,
+                onTap: (a) => _openAndMaybeRefresh(context, a.screen()),
+                // Only the first group gets the large cards. A hierarchy where
+                // everything is emphasised is not a hierarchy; the desk work
+                // earns the space because it is opened dozens of times a day.
+                prominent: index == 0,
+                actions: group.$3
+                    .map((t) => byTitle[t])
+                    .whereType<_Action>()
+                    .toList(),
+                topPadding: index == 0 ? 0.0 : 22.0,
+              ),
+          ],
         );
       },
     );

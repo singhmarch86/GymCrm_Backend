@@ -6,7 +6,7 @@ import '../services/storage_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/validators.dart';
 import '../widgets/error_banner.dart';
-import 'dashboard/dashboard_screen.dart';
+import '../shell/app_shell.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -71,7 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(builder: (_) => const AppShell()),
         (route) => false,
       );
     } catch (e) {

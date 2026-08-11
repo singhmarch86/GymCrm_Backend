@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../services/storage_service.dart';
-import 'dashboard/dashboard_screen.dart';
 import '../login_screen.dart';
+import '../shell/app_shell.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const DashboardScreen(),
+          builder: (_) => const AppShell(),
         ),
       );
     } else {

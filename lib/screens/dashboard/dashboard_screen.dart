@@ -16,7 +16,14 @@ import '../../widgets/loading_state.dart';
 import 'dashboard_body.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  /// Whether to render the full navigation grid inside the page.
+  ///
+  /// False inside the shell (FR-14 §5): the tiles moved to More, and what is
+  /// left is the numbers that change daily — so the morning question is
+  /// answered without scrolling past nineteen links to reach it.
+  final bool showQuickActions;
+
+  const DashboardScreen({super.key, this.showQuickActions = true});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -170,6 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: RefreshIndicator(
           onRefresh: loadDashboard,
           child: DashboardBody(
+            showQuickActions: widget.showQuickActions,
             userName: userName,
             role: role,
             totalMembers: totalMembers,
