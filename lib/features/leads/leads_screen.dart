@@ -14,6 +14,8 @@ import 'lead_analytics_view.dart';
 import 'lead_detail_screen.dart';
 import 'lead_followups_view.dart';
 import 'lead_kanban_board.dart';
+import 'lead_workflow_view.dart';
+import 'next_step_sheet.dart';
 import 'leads_body.dart';
 
 /// Lead CRM. Four views over the same pipeline:
@@ -32,6 +34,9 @@ class LeadsScreen extends StatefulWidget {
   /// here by default (FR-14 §2), and a reordered TabBar should not silently
   /// land every user on Analytics instead.
   static const int boardTab = 1;
+
+  /// The workflow queue (FR-18) — what is owed, unattended first.
+  static const int workflowTab = 2;
 
   const LeadsScreen({super.key, this.initialTab = 0});
 
@@ -53,6 +58,11 @@ class _LeadsScreenState extends State<LeadsScreen>
   bool _followUpsLoading = false;
   String? _followUpsError;
 
+  // Workflow (FR-18)
+  LeadWorkflow? _workflow;
+  bool _workflowLoading = false;
+  String? _workflowError;
+
   // Analytics
   LeadAnalytics? _analytics;
   bool _analyticsLoading = false;
@@ -70,8 +80,8 @@ class _LeadsScreenState extends State<LeadsScreen>
   void initState() {
     super.initState();
     _tabs = TabController(
-      length: 4,
-      initialIndex: widget.initialTab.clamp(0, 3),
+      length: 5,
+      initialIndex: widget.initialTab.clamp(0, 4),
       vsync: this,
     )..addListener(_onTabChanged);
     _load();
@@ -89,8 +99,9 @@ class _LeadsScreenState extends State<LeadsScreen>
   void _onTabChanged() {
     if (_tabs.indexIsChanging) return;
     // Fetch on first visit only; pull-to-refresh and mutations handle the rest.
-    if (_tabs.index == 2 && _followUps == null) _loadFollowUps();
-    if (_tabs.index == 3 && _analytics == null) _loadAnalytics();
+    if (_tabs.index == 2 && _workflow == null) _loadWorkflow();
+    if (_tabs.index == 3 && _followUps == null) _loadFollowUps();
+    if (_tabs.index == 4 && _analytics == null) _loadAnalytics();
   }
 
   // ─── Loads ──────────────────────────────────────────────────────────────────
@@ -155,6 +166,28 @@ class _LeadsScreenState extends State<LeadsScreen>
     }
   }
 
+  Future<void> _loadWorkflow() async {
+    setState(() {
+      _workflowLoading = true;
+      _workflowError = null;
+    });
+    try {
+      final data = await LeadService().getWorkflow();
+      if (!mounted) return;
+      setState(() {
+        _workflow = data;
+        _workflowLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _workflowError =
+            e is ApiException ? e.message : "Couldn't load the workflow.";
+        _workflowLoading = false;
+      });
+    }
+  }
+
   Future<void> _loadAnalytics() async {
     setState(() {
       _analyticsLoading = true;
@@ -180,10 +213,12 @@ class _LeadsScreenState extends State<LeadsScreen>
   /// After any mutation, refresh the active view and invalidate the others so
   /// a stale funnel or queue can't linger behind a tab.
   void _invalidateDerived() {
+    _workflow = null;
     _followUps = null;
     _analytics = null;
-    if (_tabs.index == 2) _loadFollowUps();
-    if (_tabs.index == 3) _loadAnalytics();
+    if (_tabs.index == 2) _loadWorkflow();
+    if (_tabs.index == 3) _loadFollowUps();
+    if (_tabs.index == 4) _loadAnalytics();
   }
 
   Future<void> _refreshAll() async {
@@ -500,6 +535,14 @@ class _LeadsScreenState extends State<LeadsScreen>
               const Tab(icon: Icon(Icons.list_rounded, size: 18), text: 'List'),
               const Tab(icon: Icon(Icons.view_kanban_rounded, size: 18), text: 'Board'),
               Tab(
+                icon: const Icon(Icons.checklist_rounded, size: 18),
+                // The unattended count rides on the tab because it is the one
+                // number somebody should react to without opening anything.
+                text: _workflow != null && _workflow!.unattended > 0
+                    ? 'Workflow (${_workflow!.unattended})'
+                    : 'Workflow',
+              ),
+              Tab(
                 icon: const Icon(Icons.notifications_active_rounded, size: 18),
                 text: _followUps != null && _followUps!.actionableCount > 0
                     ? 'Follow-ups (${_followUps!.actionableCount})'
@@ -523,6 +566,7 @@ class _LeadsScreenState extends State<LeadsScreen>
             children: [
               _listTab(),
               _boardTab(),
+              _workflowTab(),
               _followUpsTab(),
               _analyticsTab(),
             ],
@@ -575,6 +619,52 @@ class _LeadsScreenState extends State<LeadsScreen>
       onAdvance: _advance,
       onAddLead: _openAddLead,
     );
+  }
+
+  Widget _workflowTab() {
+    if (_workflowLoading) return const LoadingView();
+    if (_workflowError != null) {
+      return ErrorBanner(message: _workflowError!, onRetry: _loadWorkflow);
+    }
+    if (_workflow == null) return const LoadingView();
+
+    return RefreshIndicator(
+      onRefresh: _loadWorkflow,
+      child: LeadWorkflowView(
+        workflow: _workflow!,
+        onTap: (item) => _openDetailById(item.leadId),
+        onSetNextStep: _setNextStep,
+      ),
+    );
+  }
+
+  Future<void> _openDetailById(int leadId) async {
+    final result = await showLeadDetailPanel(context, leadId);
+    if (!mounted) return;
+    if (result == true) await _refreshAll();
+  }
+
+  /// The only write on the workflow screen, and always a human confirming.
+  Future<void> _setNextStep(WorkflowItem item) async {
+    final saved = await showNextStepSheet(
+      context,
+      leadName: item.name,
+      stageLabel: item.stageLabel,
+      currentStep: item.nextStep,
+      currentDue: item.nextStepDue,
+      onSave: (step, due) =>
+          LeadService().setNextStep(item.leadId, step: step, due: due),
+      // Clearing is deliberate, not a mistake to be prevented: a lead that
+      // genuinely needs no next step should be closable back to Unattended
+      // rather than carrying a fake date somebody stops believing.
+      onClear: item.nextStep == null
+          ? null
+          : () => LeadService().setNextStep(item.leadId),
+    );
+    if (saved == true && mounted) {
+      _dataChanged = true;
+      await _loadWorkflow();
+    }
   }
 
   Widget _boardTab() {

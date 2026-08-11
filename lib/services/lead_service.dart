@@ -167,6 +167,61 @@ class LeadService {
     return LeadActivity.fromJson(json['data']);
   }
 
+  // ─── Workflow (FR-18) ────────────────────────────────────────────────────────
+
+  /// The workflow queue: every open lead grouped by what needs doing.
+  ///
+  /// [assignedTo] is a user id, the literal 'unassigned', or '' for everyone.
+  Future<LeadWorkflow> getWorkflow({String assignedTo = ''}) async {
+    final uri = Uri.parse('$kBaseUrl/api/v1/leads/workflow').replace(
+      queryParameters: assignedTo.isEmpty ? null : {'assigned_to': assignedTo},
+    );
+    final response = await guardRequest(
+      () async => http.get(uri, headers: await _headers()),
+    );
+    return LeadWorkflow.fromJson(unwrapJson(response)['data']);
+  }
+
+  /// Records what happens next. Pass both, or neither to clear it — the
+  /// backend rejects a step without a date, because a step nobody will be
+  /// reminded of is the failure this feature exists to remove.
+  Future<void> setNextStep(
+    int leadId, {
+    String step = '',
+    DateTime? due,
+  }) async {
+    await guardRequest(
+      () async => http.patch(
+        Uri.parse('$kBaseUrl/api/v1/leads/$leadId/next-step'),
+        headers: await _headers(),
+        body: jsonEncode({
+          'step': step,
+          'due': due == null ? '' : _ymd(due),
+        }),
+      ),
+    );
+  }
+
+  Future<List<NextStepOption>> getNextStepOptions() async {
+    final response = await guardRequest(
+      () async => http.get(
+        Uri.parse('$kBaseUrl/api/v1/leads/next-steps'),
+        headers: await _headers(),
+      ),
+    );
+    final List list = unwrapJson(response)['data']['next_steps'] as List? ?? [];
+    return list
+        .map((e) => NextStepOption.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Local date, never UTC. toIso8601String() would convert first and send
+  /// yesterday for anything logged before 05:30 IST.
+  static String _ymd(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
+
   // ─── Follow-up queue ─────────────────────────────────────────────────────────
 
   Future<FollowUpQueue> getFollowUps() async {

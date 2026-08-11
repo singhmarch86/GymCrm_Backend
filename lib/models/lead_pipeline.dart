@@ -281,3 +281,147 @@ class OutcomeCount {
         count: j['count'] ?? 0,
       );
 }
+
+/// The lead workflow (FR-18).
+///
+/// Every open lead has exactly one next step, owned by one person, with a
+/// date. A lead missing any of the three is Unattended — the state this whole
+/// feature exists to make visible.
+class WorkflowItem {
+  final int leadId;
+  final String name;
+  final String phone;
+  final String status;
+  final String stageLabel;
+
+  /// Days in the current stage. Stuck is not a status: a lead sitting in
+  /// Contacted for three weeks is not "contacted", it is dying.
+  final int stageDays;
+
+  final String? nextStep;
+  final String? nextStepLabel;
+  final DateTime? nextStepDue;
+
+  final int? ownerId;
+  final String? ownerName;
+
+  /// Computed by the server so the UI can never disagree with it about who is
+  /// overdue.
+  final String state;
+  final int daysOverdue;
+
+  const WorkflowItem({
+    required this.leadId,
+    required this.name,
+    required this.phone,
+    required this.status,
+    required this.stageLabel,
+    required this.stageDays,
+    this.nextStep,
+    this.nextStepLabel,
+    this.nextStepDue,
+    this.ownerId,
+    this.ownerName,
+    required this.state,
+    this.daysOverdue = 0,
+  });
+
+  factory WorkflowItem.fromJson(Map<String, dynamic> j) => WorkflowItem(
+        leadId: j['lead_id'] ?? 0,
+        name: j['name'] ?? '',
+        phone: j['phone'] ?? '',
+        status: j['status'] ?? '',
+        stageLabel: j['stage_label'] ?? '',
+        stageDays: j['stage_days'] ?? 0,
+        nextStep: j['next_step'],
+        nextStepLabel: j['next_step_label'],
+        nextStepDue: j['next_step_due'] == null
+            ? null
+            : DateTime.tryParse(j['next_step_due'])?.toLocal(),
+        ownerId: j['owner_id'],
+        ownerName: j['owner_name'],
+        state: j['state'] ?? '',
+        daysOverdue: j['days_overdue'] ?? 0,
+      );
+
+  bool get isUnattended => state == 'unattended';
+
+  /// A lead stuck in one stage for over a month, whatever its due date says.
+  /// Advisory only — it changes emphasis, never grouping.
+  bool get isStale => stageDays >= 30;
+}
+
+class WorkflowGroup {
+  final String state;
+  final String label;
+  final int count;
+  final List<WorkflowItem> items;
+
+  const WorkflowGroup({
+    required this.state,
+    required this.label,
+    required this.count,
+    required this.items,
+  });
+
+  factory WorkflowGroup.fromJson(Map<String, dynamic> j) => WorkflowGroup(
+        state: j['state'] ?? '',
+        label: j['label'] ?? '',
+        count: j['count'] ?? 0,
+        items: ((j['items'] as List?) ?? [])
+            .map((e) => WorkflowItem.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class LeadWorkflow {
+  final List<WorkflowGroup> groups;
+  final int totalOpen;
+  final int unattended;
+  final int overdue;
+  final int dueToday;
+
+  const LeadWorkflow({
+    required this.groups,
+    required this.totalOpen,
+    required this.unattended,
+    required this.overdue,
+    required this.dueToday,
+  });
+
+  factory LeadWorkflow.fromJson(Map<String, dynamic> j) => LeadWorkflow(
+        groups: ((j['groups'] as List?) ?? [])
+            .map((e) => WorkflowGroup.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        totalOpen: j['total_open'] ?? 0,
+        unattended: j['unattended'] ?? 0,
+        overdue: j['overdue'] ?? 0,
+        dueToday: j['due_today'] ?? 0,
+      );
+
+  bool get isEmpty => totalOpen == 0;
+}
+
+/// One thing a staff member can commit to doing next.
+class NextStepOption {
+  final String step;
+  final String label;
+
+  const NextStepOption(this.step, this.label);
+
+  /// Mirrors the server's list so the picker works before /next-steps returns.
+  /// The server remains the source of truth — FR-18 expects the pilot gym to
+  /// revise this vocabulary.
+  static const fallback = [
+    NextStepOption('first_contact', 'Make first contact'),
+    NextStepOption('call_back', 'Call back'),
+    NextStepOption('book_trial', 'Book a trial'),
+    NextStepOption('confirm_trial', 'Confirm they are coming'),
+    NextStepOption('counselling', 'Counselling — discuss plans'),
+    NextStepOption('close', 'Close, or record why not'),
+    NextStepOption('fix_number', 'Get a working number'),
+  ];
+
+  factory NextStepOption.fromJson(Map<String, dynamic> j) =>
+      NextStepOption(j['step'] ?? '', j['label'] ?? '');
+}
