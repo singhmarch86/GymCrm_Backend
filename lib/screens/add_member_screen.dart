@@ -35,11 +35,18 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
   final addressController = TextEditingController();
+  // The desk will write "knee injury — no squats" somewhere. Without a field
+  // for it, it goes on paper and leaves with whoever wrote it.
+  final notesController = TextEditingController();
 
   String? _gender;
   int? _planId;
   DateTime _startDate = DateTime.now();
   DateTime? _expiryDate;
+  // Optional, and the field the backend has always accepted while the form
+  // never sent it. Drives birthday messages, age-appropriate advice, and any
+  // medical conversation.
+  DateTime? _dateOfBirth;
 
   List<Plan> _plans = [];
   bool _loadingPlans = true;
@@ -73,6 +80,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     phoneController.dispose();
     emailController.dispose();
     addressController.dispose();
+    notesController.dispose();
     super.dispose();
   }
 
@@ -110,6 +118,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         membershipPlanId: _planId,
         startDate: _startDate,
         expiryDate: _expiryDate,
+        dateOfBirth: _dateOfBirth,
+        notes: notesController.text.trim(),
       );
 
       if (!mounted) return;
@@ -202,6 +212,38 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                   ),
                   AppSpacing.gapMd,
 
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _dateOfBirth ??
+                            DateTime.now().subtract(const Duration(days: 365 * 25)),
+                        // No upper bound on age and nobody under 5: a gym has
+                        // no business rejecting a date somebody actually has.
+                        firstDate: DateTime(1920),
+                        lastDate: DateTime.now()
+                            .subtract(const Duration(days: 365 * 5)),
+                        helpText: 'Date of birth',
+                        initialDatePickerMode: DatePickerMode.year,
+                      );
+                      if (picked != null) setState(() => _dateOfBirth = picked);
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                          labelText: 'Date of Birth (optional)'),
+                      child: Text(
+                        _dateOfBirth == null
+                            ? 'Not set'
+                            : _formatDate(_dateOfBirth!),
+                        style: TextStyle(
+                          color: _dateOfBirth == null
+                              ? Colors.grey.shade500
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
                     initialValue: _gender,
                     decoration: const InputDecoration(labelText: 'Gender (optional)'),
@@ -247,6 +289,24 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                         ),
                       ),
                     ],
+                  ),
+
+                  AppSpacing.gapLg,
+
+                  // Last on the form on purpose. Every field added is friction
+                  // at the counter while somebody waits, and joining is the
+                  // worst possible moment for friction — so the free-text one
+                  // sits where it can be skipped without scrolling past
+                  // anything that matters.
+                  TextFormField(
+                    controller: notesController,
+                    maxLines: 3,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Notes (optional)',
+                      hintText: 'Injuries, goals, anything the desk should know',
+                      alignLabelWithHint: true,
+                    ),
                   ),
 
                   if (_error != null) ...[
