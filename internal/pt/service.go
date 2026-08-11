@@ -171,7 +171,7 @@ func toPackageResponse(r packageRow) PackageResponse {
 		TrainerID: r.TrainerID, TrainerName: r.TrainerName, PackageName: r.PackageName,
 		TotalSessions: r.TotalSessions, SessionsUsed: r.SessionsUsed,
 		SessionsRemaining: r.sessionsRemaining(),
-		AmountInPaise: r.AmountInPaise, AmountInRupees: paiseToRupees(r.AmountInPaise),
+		AmountInPaise:     r.AmountInPaise, AmountInRupees: paiseToRupees(r.AmountInPaise),
 		ExpiryDate: r.ExpiryDate, Status: r.Status, CreatedAt: r.CreatedAt,
 	}
 }

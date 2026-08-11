@@ -9,8 +9,8 @@ import "time"
 type CreateClassTypeRequest struct {
 	Name            string `json:"name"`             // required
 	Description     string `json:"description"`      // optional
-	DurationMinutes int    `json:"duration_minutes"`  // required, > 0
-	DefaultCapacity int    `json:"default_capacity"`  // required, > 0
+	DurationMinutes int    `json:"duration_minutes"` // required, > 0
+	DefaultCapacity int    `json:"default_capacity"` // required, > 0
 }
 
 // UpdateClassTypeRequest is the payload for PUT /api/v1/class-types/{id}.
@@ -45,14 +45,14 @@ type ClassTypeResponse struct {
 // CreateScheduleRequest is the payload for POST /api/v1/class-schedules.
 // @Description Create a recurring schedule. Capacity/duration default from the class type if omitted.
 type CreateScheduleRequest struct {
-	ClassTypeID     int64  `json:"class_type_id"`             // required
-	DayOfWeek       int    `json:"day_of_week"`                // required, 0-6
-	StartTime       string `json:"start_time"`                 // required, "HH:MM"
-	DurationMinutes int    `json:"duration_minutes"`           // optional, defaults from class type
-	Capacity        int    `json:"capacity"`                   // optional, defaults from class type
-	TrainerUserID   *int64 `json:"trainer_user_id"`             // optional — FR-02 §0.2
-	EffectiveFrom   string `json:"effective_from"`             // optional, YYYY-MM-DD, defaults to today
-	EffectiveUntil  string `json:"effective_until"`             // optional, YYYY-MM-DD, empty = open-ended
+	ClassTypeID     int64  `json:"class_type_id"`    // required
+	DayOfWeek       int    `json:"day_of_week"`      // required, 0-6
+	StartTime       string `json:"start_time"`       // required, "HH:MM"
+	DurationMinutes int    `json:"duration_minutes"` // optional, defaults from class type
+	Capacity        int    `json:"capacity"`         // optional, defaults from class type
+	TrainerUserID   *int64 `json:"trainer_user_id"`  // optional — FR-02 §0.2
+	EffectiveFrom   string `json:"effective_from"`   // optional, YYYY-MM-DD, defaults to today
+	EffectiveUntil  string `json:"effective_until"`  // optional, YYYY-MM-DD, empty = open-ended
 }
 
 // ScheduleResponse is the full schedule record, with the class type name
@@ -78,12 +78,12 @@ type ScheduleResponse struct {
 // CreateAdHocSessionRequest creates a one-off session not tied to a recurrence.
 // @Description Create a single ad-hoc session (no recurring schedule).
 type CreateAdHocSessionRequest struct {
-	ClassTypeID     int64  `json:"class_type_id"`     // required
-	SessionDate     string `json:"session_date"`      // required, YYYY-MM-DD
-	StartTime       string `json:"start_time"`        // required, "HH:MM"
-	DurationMinutes int    `json:"duration_minutes"`  // optional, defaults from class type
-	Capacity        int    `json:"capacity"`          // optional, defaults from class type
-	TrainerUserID   *int64 `json:"trainer_user_id"`   // optional
+	ClassTypeID     int64  `json:"class_type_id"`    // required
+	SessionDate     string `json:"session_date"`     // required, YYYY-MM-DD
+	StartTime       string `json:"start_time"`       // required, "HH:MM"
+	DurationMinutes int    `json:"duration_minutes"` // optional, defaults from class type
+	Capacity        int    `json:"capacity"`         // optional, defaults from class type
+	TrainerUserID   *int64 `json:"trainer_user_id"`  // optional
 }
 
 // UpdateSessionRequest edits a single materialized session — a substitute

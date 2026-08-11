@@ -14,9 +14,9 @@ import (
 // Repository handles all renewals DB operations.
 //
 // TENANT ISOLATION:
-//   1. Every query starts with database.ScopedDB(ctx, r.db)
-//   2. Joined queries qualify gym_id as "renewals.gym_id" to avoid ambiguity
-//   3. No Update or Delete methods — renewals are append-only
+//  1. Every query starts with database.ScopedDB(ctx, r.db)
+//  2. Joined queries qualify gym_id as "renewals.gym_id" to avoid ambiguity
+//  3. No Update or Delete methods — renewals are append-only
 type Repository struct {
 	db *gorm.DB
 }

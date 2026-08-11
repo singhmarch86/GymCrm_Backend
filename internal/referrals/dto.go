@@ -29,16 +29,16 @@ type RewardRequest struct {
 // ReferralResponse is the full referral record, denormalised for display.
 // @Description A referral record.
 type ReferralResponse struct {
-	ID                 int64      `json:"id"`
-	ReferrerMemberID   int64      `json:"referrer_member_id"`
-	ReferrerName       string     `json:"referrer_name"`
-	ReferredName       string     `json:"referred_name"`
-	ReferredPhone      string     `json:"referred_phone"`
-	ReferredMemberID   *int64     `json:"referred_member_id,omitempty"`
-	Status             string     `json:"status"`
-	RewardDays         *int       `json:"reward_days,omitempty"`
-	RewardGivenAt      *time.Time `json:"reward_given_at,omitempty"`
-	Notes              *string    `json:"notes,omitempty"`
-	CreatedByUserName  string     `json:"created_by_user_name"`
-	CreatedAt          time.Time  `json:"created_at"`
+	ID                int64      `json:"id"`
+	ReferrerMemberID  int64      `json:"referrer_member_id"`
+	ReferrerName      string     `json:"referrer_name"`
+	ReferredName      string     `json:"referred_name"`
+	ReferredPhone     string     `json:"referred_phone"`
+	ReferredMemberID  *int64     `json:"referred_member_id,omitempty"`
+	Status            string     `json:"status"`
+	RewardDays        *int       `json:"reward_days,omitempty"`
+	RewardGivenAt     *time.Time `json:"reward_given_at,omitempty"`
+	Notes             *string    `json:"notes,omitempty"`
+	CreatedByUserName string     `json:"created_by_user_name"`
+	CreatedAt         time.Time  `json:"created_at"`
 }

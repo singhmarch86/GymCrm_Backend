@@ -15,10 +15,10 @@ import (
 // Repository handles all member DB operations.
 //
 // TENANT ISOLATION RULES — enforced here, not in the service:
-//   1. Every query MUST start with database.ScopedDB(ctx, r.db)
-//   2. ScopedDB injects WHERE gym_id = <from_jwt> automatically
-//   3. No raw r.db calls anywhere in this file
-//   4. Member IDs are never trusted alone — always paired with gym_id
+//  1. Every query MUST start with database.ScopedDB(ctx, r.db)
+//  2. ScopedDB injects WHERE gym_id = <from_jwt> automatically
+//  3. No raw r.db calls anywhere in this file
+//  4. Member IDs are never trusted alone — always paired with gym_id
 //
 // This means: even if a bug in the service passes the wrong member ID,
 // the WHERE gym_id clause prevents cross-gym data access.

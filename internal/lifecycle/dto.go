@@ -10,11 +10,11 @@ import "time"
 // FreezeRequest pauses a membership, preserving its remaining validity.
 // @Description Freeze a membership. Expiry extends 1:1 with days frozen.
 type FreezeRequest struct {
-	StartDate  string `json:"start_date"`     // optional, YYYY-MM-DD, defaults to today
-	EndDate    string `json:"end_date"`       // required, YYYY-MM-DD
-	FeeInPaise int64  `json:"fee_in_paise"`   // optional, defaults to 0
-	Reason     string `json:"reason"`         // optional
-	Notes      string `json:"notes"`          // optional
+	StartDate  string `json:"start_date"`   // optional, YYYY-MM-DD, defaults to today
+	EndDate    string `json:"end_date"`     // required, YYYY-MM-DD
+	FeeInPaise int64  `json:"fee_in_paise"` // optional, defaults to 0
+	Reason     string `json:"reason"`       // optional
+	Notes      string `json:"notes"`        // optional
 }
 
 // UnfreezeRequest ends a freeze, possibly early.
@@ -46,10 +46,10 @@ type TransferRequest struct {
 // TerminateRequest ends a membership permanently.
 // @Description Terminate a membership. Terminal — restoring requires a new membership.
 type TerminateRequest struct {
-	EffectiveDate       string `json:"effective_date"`          // optional, YYYY-MM-DD, defaults to today
-	Reason              string `json:"reason"`                  // REQUIRED — churn analysis depends on it
+	EffectiveDate       string `json:"effective_date"`           // optional, YYYY-MM-DD, defaults to today
+	Reason              string `json:"reason"`                   // REQUIRED — churn analysis depends on it
 	TerminationFeePaise int64  `json:"termination_fee_in_paise"` // optional, defaults to 0
-	Notes               string `json:"notes"`                   // optional
+	Notes               string `json:"notes"`                    // optional
 }
 
 // ─── Response DTOs ────────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ type EventResponse struct {
 	FreezeDays  *int       `json:"freeze_days,omitempty"`
 
 	AmountDueInPaise     int64   `json:"amount_due_in_paise"`
-	AmountDueInRupees    float64 `json:"amount_due_in_rupees"`    // display only
+	AmountDueInRupees    float64 `json:"amount_due_in_rupees"` // display only
 	AmountCreditInPaise  int64   `json:"amount_credit_in_paise"`
 	AmountCreditInRupees float64 `json:"amount_credit_in_rupees"` // display only
 	FeeInPaise           int64   `json:"fee_in_paise"`
@@ -156,13 +156,13 @@ type UpgradeQuoteResponse struct {
 // TerminationQuoteResponse previews the refund before termination is committed.
 // @Description Preview of the refund owed on termination.
 type TerminationQuoteResponse struct {
-	MemberID             int64   `json:"member_id"`
-	RemainingDays        int     `json:"remaining_days"`
-	DailyRatePaise       int64   `json:"daily_rate_paise"`
-	GrossRefundPaise     int64   `json:"gross_refund_in_paise"`
-	TerminationFeePaise  int64   `json:"termination_fee_in_paise"`
-	NetRefundPaise       int64   `json:"net_refund_in_paise"` // clamped at 0
-	NetRefundInRupees    float64 `json:"net_refund_in_rupees"`
+	MemberID            int64   `json:"member_id"`
+	RemainingDays       int     `json:"remaining_days"`
+	DailyRatePaise      int64   `json:"daily_rate_paise"`
+	GrossRefundPaise    int64   `json:"gross_refund_in_paise"`
+	TerminationFeePaise int64   `json:"termination_fee_in_paise"`
+	NetRefundPaise      int64   `json:"net_refund_in_paise"` // clamped at 0
+	NetRefundInRupees   float64 `json:"net_refund_in_rupees"`
 }
 
 // paiseToRupees is display-only. Never use the result for arithmetic.

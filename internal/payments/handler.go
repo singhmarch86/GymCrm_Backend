@@ -24,19 +24,21 @@ func NewHandler(svc *Service) *Handler {
 // RegisterRoutes mounts all payment endpoints.
 // All routes require JWT — caller wraps with JWTMiddleware before mounting.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/v1/payments",                  h.Collect)
-	mux.HandleFunc("GET /api/v1/payments",                   h.List)
-	mux.HandleFunc("GET /api/v1/payments/summary",            h.Summary)
-	mux.HandleFunc("GET /api/v1/payments/{id}",               h.GetByID)
+	mux.HandleFunc("POST /api/v1/payments", h.Collect)
+	mux.HandleFunc("GET /api/v1/payments", h.List)
+	mux.HandleFunc("GET /api/v1/payments/summary", h.Summary)
+	mux.HandleFunc("GET /api/v1/payments/{id}", h.GetByID)
 	mux.HandleFunc("GET /api/v1/members/{member_id}/payments", h.MemberPayments)
 }
 
 // Collect godoc
 // @Summary      Collect a payment
 // @Description  Records a payment and, in the SAME atomic transaction, creates
-//               the corresponding renewal and updates the member's expiry date.
-//               One click, one transaction — either everything succeeds or
-//               nothing is written.
+//
+//	the corresponding renewal and updates the member's expiry date.
+//	One click, one transaction — either everything succeeds or
+//	nothing is written.
+//
 // @Tags         payments
 // @Accept       json
 // @Produce      json
@@ -91,7 +93,9 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 // List godoc
 // @Summary      List payments
 // @Description  Paginated list. Filter by status (paid, pending, overdue) and
-//               search by member name/phone.
+//
+//	search by member name/phone.
+//
 // @Tags         payments
 // @Produce      json
 // @Security     BearerAuth
@@ -167,7 +171,9 @@ func (h *Handler) MemberPayments(w http.ResponseWriter, r *http.Request) {
 // Summary godoc
 // @Summary      Get revenue summary
 // @Description  Today's revenue, this month's revenue, and pending payment
-//               count — backs the dashboard Revenue and Payments cards.
+//
+//	count — backs the dashboard Revenue and Payments cards.
+//
 // @Tags         payments
 // @Produce      json
 // @Security     BearerAuth

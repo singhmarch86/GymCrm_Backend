@@ -13,18 +13,18 @@ import (
 )
 
 var (
-	ErrProductNotFound   = errors.New("product not found")
-	ErrSaleNotFound      = errors.New("sale not found")
-	ErrInsufficientStock = errors.New("not enough stock")
-	ErrNameRequired      = errors.New("product name is required")
-	ErrPriceNegative     = errors.New("price cannot be negative")
-	ErrNoItems           = errors.New("a sale needs at least one item")
-	ErrQuantityZero      = errors.New("quantity cannot be zero")
-	ErrRefundReason      = errors.New("a reason is required for a refund")
-	ErrAlreadyRefunded   = errors.New("this sale has already been refunded")
+	ErrProductNotFound    = errors.New("product not found")
+	ErrSaleNotFound       = errors.New("sale not found")
+	ErrInsufficientStock  = errors.New("not enough stock")
+	ErrNameRequired       = errors.New("product name is required")
+	ErrPriceNegative      = errors.New("price cannot be negative")
+	ErrNoItems            = errors.New("a sale needs at least one item")
+	ErrQuantityZero       = errors.New("quantity cannot be zero")
+	ErrRefundReason       = errors.New("a reason is required for a refund")
+	ErrAlreadyRefunded    = errors.New("this sale has already been refunded")
 	ErrCannotRefundRefund = errors.New("a refund cannot itself be refunded")
 	// Paying from a wallet needs to know whose wallet.
-	ErrWalletNeedsMember  = errors.New("select the member to pay from their wallet")
+	ErrWalletNeedsMember = errors.New("select the member to pay from their wallet")
 )
 
 // Service implements retail. See docs/FR-07-pos-inventory.md.

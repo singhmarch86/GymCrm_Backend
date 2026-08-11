@@ -15,13 +15,13 @@ const (
 // This matches the reward_days field already present in the Flutter model
 // before any backend existed for this feature.
 type Referral struct {
-	ID               int64  `gorm:"primaryKey;autoIncrement" json:"id"`
-	GymID            int64  `gorm:"not null"                 json:"gym_id"`
-	ReferrerMemberID int64  `gorm:"not null"                 json:"referrer_member_id"`
+	ID               int64 `gorm:"primaryKey;autoIncrement" json:"id"`
+	GymID            int64 `gorm:"not null"                 json:"gym_id"`
+	ReferrerMemberID int64 `gorm:"not null"                 json:"referrer_member_id"`
 
-	ReferredName    string  `gorm:"not null" json:"referred_name"`
-	ReferredPhone   string  `gorm:"not null" json:"referred_phone"`
-	ReferredLeadID  *int64  `json:"referred_lead_id,omitempty"`
+	ReferredName     string `gorm:"not null" json:"referred_name"`
+	ReferredPhone    string `gorm:"not null" json:"referred_phone"`
+	ReferredLeadID   *int64 `json:"referred_lead_id,omitempty"`
 	ReferredMemberID *int64 `json:"referred_member_id,omitempty"`
 
 	Status string `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`

@@ -9,13 +9,13 @@ import "time"
 // @Description Collect a payment from a member. Triggers ONE atomic
 // transaction: payment saved, renewal created, member expiry updated.
 type CollectPaymentRequest struct {
-	MemberID        int64  `json:"member_id"`         // required
-	PlanID          int64  `json:"plan_id"`           // required, must be active
-	AmountInPaise   int64  `json:"amount_in_paise"`   // required, > 0
-	PaymentMode     string `json:"payment_mode"`      // required: cash | upi | credit_card | debit_card | bank_transfer
-	PaymentDate     string `json:"payment_date"`      // optional, YYYY-MM-DD, defaults to today
-	ReferenceNumber string `json:"reference_number"`  // optional — UPI/bank transaction ref
-	Notes           string `json:"notes"`             // optional
+	MemberID        int64  `json:"member_id"`        // required
+	PlanID          int64  `json:"plan_id"`          // required, must be active
+	AmountInPaise   int64  `json:"amount_in_paise"`  // required, > 0
+	PaymentMode     string `json:"payment_mode"`     // required: cash | upi | credit_card | debit_card | bank_transfer
+	PaymentDate     string `json:"payment_date"`     // optional, YYYY-MM-DD, defaults to today
+	ReferenceNumber string `json:"reference_number"` // optional — UPI/bank transaction ref
+	Notes           string `json:"notes"`            // optional
 }
 
 // ListPaymentsRequest holds query params for GET /api/v1/payments.
@@ -34,23 +34,23 @@ type ListPaymentsRequest struct {
 // plan display fields — same convention as renewals.RenewalResponse.
 // @Description Full payment record.
 type PaymentResponse struct {
-	ID                 int64      `json:"id"`
-	GymID              int64      `json:"gym_id"`
-	MemberID           int64      `json:"member_id"`
-	MemberName         string     `json:"member_name"`
-	Phone              string     `json:"phone"`
-	PlanID             *int64     `json:"plan_id,omitempty"`
-	PlanName           *string    `json:"plan_name,omitempty"`
-	AmountInPaise      int64      `json:"amount_in_paise"`
-	AmountInRupees     float64    `json:"amount_in_rupees"` // display only
-	Status             string     `json:"status"`           // paid | pending | overdue
-	PaymentMode        *string    `json:"payment_mode,omitempty"`
-	DueDate            *time.Time `json:"due_date,omitempty"`
-	PaidDate           *time.Time `json:"paid_date,omitempty"`
-	CollectedByUserID  *int64     `json:"collected_by_user_id,omitempty"`
-	ReferenceNumber    *string    `json:"reference_number,omitempty"`
-	Notes              *string    `json:"notes,omitempty"`
-	CreatedAt          time.Time  `json:"created_at"`
+	ID                int64      `json:"id"`
+	GymID             int64      `json:"gym_id"`
+	MemberID          int64      `json:"member_id"`
+	MemberName        string     `json:"member_name"`
+	Phone             string     `json:"phone"`
+	PlanID            *int64     `json:"plan_id,omitempty"`
+	PlanName          *string    `json:"plan_name,omitempty"`
+	AmountInPaise     int64      `json:"amount_in_paise"`
+	AmountInRupees    float64    `json:"amount_in_rupees"` // display only
+	Status            string     `json:"status"`           // paid | pending | overdue
+	PaymentMode       *string    `json:"payment_mode,omitempty"`
+	DueDate           *time.Time `json:"due_date,omitempty"`
+	PaidDate          *time.Time `json:"paid_date,omitempty"`
+	CollectedByUserID *int64     `json:"collected_by_user_id,omitempty"`
+	ReferenceNumber   *string    `json:"reference_number,omitempty"`
+	Notes             *string    `json:"notes,omitempty"`
+	CreatedAt         time.Time  `json:"created_at"`
 }
 
 // PaymentListResponse wraps a slice of payments.

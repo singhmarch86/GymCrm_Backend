@@ -19,21 +19,21 @@ var (
 	ErrCannotFreezeExpiry = errors.New("an expired membership cannot be frozen — renew it first")
 
 	// Upgrade
-	ErrSamePlan          = errors.New("the member is already on that plan")
+	ErrSamePlan           = errors.New("the member is already on that plan")
 	ErrUpgradeWhileFrozen = errors.New("unfreeze the membership before changing plan")
 
 	// Transfer
-	ErrTransferToSelf     = errors.New("a membership cannot be transferred to the same member")
-	ErrTargetHasActive    = errors.New("the receiving member already has an active membership")
-	ErrNothingToTransfer  = errors.New("this membership has no remaining days to transfer")
-	ErrCrossGymTransfer   = errors.New("memberships cannot be transferred between gyms")
+	ErrTransferToSelf    = errors.New("a membership cannot be transferred to the same member")
+	ErrTargetHasActive   = errors.New("the receiving member already has an active membership")
+	ErrNothingToTransfer = errors.New("this membership has no remaining days to transfer")
+	ErrCrossGymTransfer  = errors.New("memberships cannot be transferred between gyms")
 
 	// Terminate
 	ErrAlreadyTerminated = errors.New("this membership is already terminated")
 	ErrReasonRequired    = errors.New("a reason is required to terminate a membership")
 
 	// Effective dating
-	ErrBackdatedTooFar  = errors.New("operations cannot be backdated more than 7 days")
-	ErrFutureDatedTooFar = errors.New("freezes cannot be scheduled more than 30 days ahead")
+	ErrBackdatedTooFar      = errors.New("operations cannot be backdated more than 7 days")
+	ErrFutureDatedTooFar    = errors.New("freezes cannot be scheduled more than 30 days ahead")
 	ErrFutureDateNotAllowed = errors.New("only freezes may be dated in the future")
 )

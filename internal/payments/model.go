@@ -20,25 +20,25 @@ import "time"
 // modelled here for forward compatibility with a future dues-generation
 // job, but no endpoint in this sprint writes a "pending" row.
 type Payment struct {
-	ID                 int64      `gorm:"primaryKey;autoIncrement" json:"id"`
-	GymID              int64      `gorm:"not null"                 json:"gym_id"`
-	MemberID           int64      `gorm:"not null"                 json:"member_id"`
-	PlanID             *int64     `gorm:""                         json:"plan_id,omitempty"`
+	ID       int64  `gorm:"primaryKey;autoIncrement" json:"id"`
+	GymID    int64  `gorm:"not null"                 json:"gym_id"`
+	MemberID int64  `gorm:"not null"                 json:"member_id"`
+	PlanID   *int64 `gorm:""                         json:"plan_id,omitempty"`
 
-	AmountInPaise      int64      `gorm:"not null"                 json:"amount_in_paise"`
+	AmountInPaise int64 `gorm:"not null"                 json:"amount_in_paise"`
 
-	Status             PaymentStatus `gorm:"type:varchar(20);not null;default:'paid'" json:"status"`
-	PaymentMode        *PaymentMode  `gorm:"type:varchar(20)"                         json:"payment_mode,omitempty"`
+	Status      PaymentStatus `gorm:"type:varchar(20);not null;default:'paid'" json:"status"`
+	PaymentMode *PaymentMode  `gorm:"type:varchar(20)"                         json:"payment_mode,omitempty"`
 
-	DueDate            *time.Time `gorm:"type:date" json:"due_date,omitempty"`
-	PaidDate           *time.Time `gorm:"type:date" json:"paid_date,omitempty"`
+	DueDate  *time.Time `gorm:"type:date" json:"due_date,omitempty"`
+	PaidDate *time.Time `gorm:"type:date" json:"paid_date,omitempty"`
 
-	CollectedByUserID  *int64     `json:"collected_by_user_id,omitempty"`
-	ReferenceNumber    *string    `gorm:"type:varchar(100)" json:"reference_number,omitempty"`
-	Notes              *string    `gorm:"type:text"         json:"notes,omitempty"`
+	CollectedByUserID *int64  `json:"collected_by_user_id,omitempty"`
+	ReferenceNumber   *string `gorm:"type:varchar(100)" json:"reference_number,omitempty"`
+	Notes             *string `gorm:"type:text"         json:"notes,omitempty"`
 
-	CreatedAt          time.Time  `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt          time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 func (Payment) TableName() string { return "payments" }

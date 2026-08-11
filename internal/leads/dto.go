@@ -7,16 +7,16 @@ import "time"
 // CreateLeadRequest is the payload for POST /api/v1/leads.
 // gym_id always comes from JWT.
 type CreateLeadRequest struct {
-	Name           string  `json:"name"`            // required
-	Phone          string  `json:"phone"`           // required
-	Email          string  `json:"email"`           // optional
-	Gender         string  `json:"gender"`          // optional
-	Source         string  `json:"source"`          // required
-	Goal           string  `json:"goal"`            // optional
-	Notes          string  `json:"notes"`           // optional
-	TrialDate      string  `json:"trial_date"`      // optional YYYY-MM-DD
-	FollowUpDate   string  `json:"follow_up_date"`  // optional YYYY-MM-DD
-	AssignedUserID *int64  `json:"assigned_user_id"` // optional
+	Name           string `json:"name"`             // required
+	Phone          string `json:"phone"`            // required
+	Email          string `json:"email"`            // optional
+	Gender         string `json:"gender"`           // optional
+	Source         string `json:"source"`           // required
+	Goal           string `json:"goal"`             // optional
+	Notes          string `json:"notes"`            // optional
+	TrialDate      string `json:"trial_date"`       // optional YYYY-MM-DD
+	FollowUpDate   string `json:"follow_up_date"`   // optional YYYY-MM-DD
+	AssignedUserID *int64 `json:"assigned_user_id"` // optional
 }
 
 // UpdateLeadRequest is the payload for PUT /api/v1/leads/{id}.
@@ -53,12 +53,12 @@ type LeadResponse struct {
 	Email             *string    `json:"email,omitempty"`
 	Gender            *string    `json:"gender,omitempty"`
 	Source            string     `json:"source"`
-	SourceLabel       string     `json:"source_label"`        // display-friendly
+	SourceLabel       string     `json:"source_label"` // display-friendly
 	Goal              *string    `json:"goal,omitempty"`
 	GoalLabel         *string    `json:"goal_label,omitempty"` // display-friendly
 	Notes             *string    `json:"notes,omitempty"`
 	Status            string     `json:"status"`
-	StatusLabel       string     `json:"status_label"`        // display-friendly
+	StatusLabel       string     `json:"status_label"` // display-friendly
 	TrialDate         *time.Time `json:"trial_date,omitempty"`
 	FollowUpDate      *time.Time `json:"follow_up_date,omitempty"`
 	LostReason        *string    `json:"lost_reason,omitempty"`
@@ -76,13 +76,13 @@ type LeadListResponse struct {
 
 // LeadSummaryResponse backs GET /api/v1/leads/summary — dashboard KPIs.
 type LeadSummaryResponse struct {
-	TotalLeads         int64   `json:"total_leads"`
-	TodayLeads         int64   `json:"today_leads"`
-	PendingFollowUps   int64   `json:"pending_follow_ups"`
-	TrialsScheduled    int64   `json:"trials_scheduled"`
-	ConversionRate     float64 `json:"conversion_rate"`      // joined / (joined+lost) * 100
-	ByStatus           map[string]int64 `json:"by_status"`  // count per pipeline stage
-	BySource           map[string]int64 `json:"by_source"`  // count per source
+	TotalLeads       int64            `json:"total_leads"`
+	TodayLeads       int64            `json:"today_leads"`
+	PendingFollowUps int64            `json:"pending_follow_ups"`
+	TrialsScheduled  int64            `json:"trials_scheduled"`
+	ConversionRate   float64          `json:"conversion_rate"` // joined / (joined+lost) * 100
+	ByStatus         map[string]int64 `json:"by_status"`       // count per pipeline stage
+	BySource         map[string]int64 `json:"by_source"`       // count per source
 }
 
 // ─── Conversion ───────────────────────────────────────────────────────────────
@@ -100,11 +100,11 @@ type ConvertLeadRequest struct {
 	Gender    string `json:"gender"`     // optional
 
 	// Payment fields
-	PlanID          int64  `json:"plan_id"`           // required
-	AmountInPaise   int64  `json:"amount_in_paise"`   // required, > 0
-	PaymentMode     string `json:"payment_mode"`      // required
-	ReferenceNumber string `json:"reference_number"`  // optional
-	Notes           string `json:"notes"`             // optional
+	PlanID          int64  `json:"plan_id"`          // required
+	AmountInPaise   int64  `json:"amount_in_paise"`  // required, > 0
+	PaymentMode     string `json:"payment_mode"`     // required
+	ReferenceNumber string `json:"reference_number"` // optional
+	Notes           string `json:"notes"`            // optional
 }
 
 // ConvertLeadResponse confirms the conversion with both IDs.
@@ -127,21 +127,21 @@ var sourceLabels = map[string]string{
 }
 
 var goalLabels = map[string]string{
-	"weight_loss":      "Weight Loss",
-	"muscle_gain":      "Muscle Gain",
-	"fitness":          "General Fitness",
-	"sports":           "Sports",
-	"rehabilitation":   "Rehabilitation",
-	"other":            "Other",
+	"weight_loss":    "Weight Loss",
+	"muscle_gain":    "Muscle Gain",
+	"fitness":        "General Fitness",
+	"sports":         "Sports",
+	"rehabilitation": "Rehabilitation",
+	"other":          "Other",
 }
 
 var statusLabels = map[string]string{
-	"new_lead":         "New Lead",
-	"contacted":        "Contacted",
-	"trial_scheduled":  "Trial Scheduled",
-	"trial_completed":  "Trial Completed",
-	"joined":           "Joined",
-	"lost":             "Lost",
+	"new_lead":        "New Lead",
+	"contacted":       "Contacted",
+	"trial_scheduled": "Trial Scheduled",
+	"trial_completed": "Trial Completed",
+	"joined":          "Joined",
+	"lost":            "Lost",
 }
 
 func toLeadResponse(l *Lead) LeadResponse {

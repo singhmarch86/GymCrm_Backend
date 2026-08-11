@@ -14,10 +14,10 @@ import (
 // Repository handles all membership_plans DB operations.
 //
 // TENANT ISOLATION — same rules as members:
-//   1. Every query starts with database.ScopedDB(ctx, r.db)
-//   2. gym_id comes from context, never from parameters
-//   3. Plan IDs are always paired with gym_id scope
-//   4. Zero raw r.db calls in this file
+//  1. Every query starts with database.ScopedDB(ctx, r.db)
+//  2. gym_id comes from context, never from parameters
+//  3. Plan IDs are always paired with gym_id scope
+//  4. Zero raw r.db calls in this file
 type Repository struct {
 	db *gorm.DB
 }

@@ -322,12 +322,12 @@ func (r *Repository) ListSales(ctx context.Context, from, to time.Time, memberID
 // ─── Reporting ────────────────────────────────────────────────────────────────
 
 type SalesSummary struct {
-	SaleCount       int64 `json:"sale_count"`
-	UnitsSold       int64 `json:"units_sold"`
-	RevenueInPaise  int64 `json:"revenue_in_paise"`
-	CostInPaise     int64 `json:"cost_in_paise"`
+	SaleCount         int64 `json:"sale_count"`
+	UnitsSold         int64 `json:"units_sold"`
+	RevenueInPaise    int64 `json:"revenue_in_paise"`
+	CostInPaise       int64 `json:"cost_in_paise"`
 	StockValueInPaise int64 `json:"stock_value_in_paise"`
-	LowStockCount   int64 `json:"low_stock_count"`
+	LowStockCount     int64 `json:"low_stock_count"`
 }
 
 func (r *Repository) Summary(ctx context.Context, from, to time.Time) (*SalesSummary, error) {

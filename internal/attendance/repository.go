@@ -13,10 +13,10 @@ import (
 // Repository handles all attendance DB operations.
 //
 // TENANT ISOLATION:
-//   1. Single-table queries use database.ScopedDB(ctx, r.db)
-//   2. Joined queries use scopedAttendanceDB() which qualifies attendance.gym_id
-//      to avoid "column reference gym_id is ambiguous" with joined members table
-//   3. No Update or Delete methods — attendance is append-only
+//  1. Single-table queries use database.ScopedDB(ctx, r.db)
+//  2. Joined queries use scopedAttendanceDB() which qualifies attendance.gym_id
+//     to avoid "column reference gym_id is ambiguous" with joined members table
+//  3. No Update or Delete methods — attendance is append-only
 type Repository struct {
 	db *gorm.DB
 }

@@ -29,15 +29,15 @@ func NewHandler(svc *Service) *Handler {
 // always prefers a more specific literal segment over a wildcard, so
 // "/members/renewals" never gets swallowed by "/members/{id}".
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/v1/members",             h.Create)
-	mux.HandleFunc("GET /api/v1/members",              h.List)
-	mux.HandleFunc("GET /api/v1/members/search",       h.Search)
-	mux.HandleFunc("GET /api/v1/members/expiring",     h.Expiring)
-	mux.HandleFunc("GET /api/v1/members/renewals",     h.DueForRenewal)
-	mux.HandleFunc("GET /api/v1/members/{id}",         h.GetByID)
-	mux.HandleFunc("PUT /api/v1/members/{id}",         h.Update)
-	mux.HandleFunc("DELETE /api/v1/members/{id}",      h.Delete)
-	mux.HandleFunc("POST /api/v1/members/{id}/renew",  h.Renew)
+	mux.HandleFunc("POST /api/v1/members", h.Create)
+	mux.HandleFunc("GET /api/v1/members", h.List)
+	mux.HandleFunc("GET /api/v1/members/search", h.Search)
+	mux.HandleFunc("GET /api/v1/members/expiring", h.Expiring)
+	mux.HandleFunc("GET /api/v1/members/renewals", h.DueForRenewal)
+	mux.HandleFunc("GET /api/v1/members/{id}", h.GetByID)
+	mux.HandleFunc("PUT /api/v1/members/{id}", h.Update)
+	mux.HandleFunc("DELETE /api/v1/members/{id}", h.Delete)
+	mux.HandleFunc("POST /api/v1/members/{id}/renew", h.Renew)
 }
 
 // Create godoc
@@ -99,7 +99,9 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 // List godoc
 // @Summary      List members
 // @Description  Returns a paginated list of members for the authenticated gym.
-//               Filter by status or search by name/phone using query parameters.
+//
+//	Filter by status or search by name/phone using query parameters.
+//
 // @Tags         members
 // @Produce      json
 // @Security     BearerAuth
@@ -134,7 +136,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // Search godoc
 // @Summary      Search members
 // @Description  Search members by name or phone within the authenticated gym.
-//               Returns empty array for blank query — never returns all members.
+//
+//	Returns empty array for blank query — never returns all members.
+//
 // @Tags         members
 // @Produce      json
 // @Security     BearerAuth
@@ -163,8 +167,10 @@ func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 // Expiring godoc
 // @Summary      Get expiring members
 // @Description  Returns members whose membership expires within the next N days.
-//               Sorted by expiry date ascending (most urgent first).
-//               Use this to drive the renewal reminder dashboard.
+//
+//	Sorted by expiry date ascending (most urgent first).
+//	Use this to drive the renewal reminder dashboard.
+//
 // @Tags         members
 // @Produce      json
 // @Security     BearerAuth
@@ -198,7 +204,9 @@ func (h *Handler) Expiring(w http.ResponseWriter, r *http.Request) {
 // Update godoc
 // @Summary      Update member
 // @Description  Updates member details. Only provided fields are changed (PATCH semantics).
-//               gym_id cannot be changed — members always belong to their original gym.
+//
+//	gym_id cannot be changed — members always belong to their original gym.
+//
 // @Tags         members
 // @Accept       json
 // @Produce      json
@@ -237,8 +245,10 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // Delete godoc
 // @Summary      Delete member (soft delete)
 // @Description  Soft-deletes a member. The record is retained in the database for audit.
-//               Deleted members are excluded from all list and search queries automatically.
-//               This action cannot delete members from other gyms — tenant isolation enforced.
+//
+//	Deleted members are excluded from all list and search queries automatically.
+//	This action cannot delete members from other gyms — tenant isolation enforced.
+//
 // @Tags         members
 // @Produce      json
 // @Security     BearerAuth
@@ -263,8 +273,10 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 // DueForRenewal godoc
 // @Summary      Get members due for renewal
 // @Description  Returns members with an expiry_date set, enriched with plan name,
-//               days_remaining, and a computed status bucket (EXPIRED, DUE_TODAY,
-//               EXPIRING_SOON, UPCOMING, ACTIVE). Drives the Renewals screen.
+//
+//	days_remaining, and a computed status bucket (EXPIRED, DUE_TODAY,
+//	EXPIRING_SOON, UPCOMING, ACTIVE). Drives the Renewals screen.
+//
 // @Tags         members
 // @Produce      json
 // @Security     BearerAuth
@@ -289,9 +301,11 @@ func (h *Handler) DueForRenewal(w http.ResponseWriter, r *http.Request) {
 // Renew godoc
 // @Summary      Renew a member's membership
 // @Description  Creates a renewal for this member using the given plan. Extends
-//               expiry using max(current_expiry, today) + plan.duration_days.
-//               Thin wrapper over POST /api/v1/renewals — see that endpoint for
-//               the full audit-trail semantics.
+//
+//	expiry using max(current_expiry, today) + plan.duration_days.
+//	Thin wrapper over POST /api/v1/renewals — see that endpoint for
+//	the full audit-trail semantics.
+//
 // @Tags         members
 // @Accept       json
 // @Produce      json

@@ -47,11 +47,11 @@ func (r *Repository) FindByID(ctx context.Context, id int64) (*Lead, error) {
 
 // ListRequest holds query params for GET /api/v1/leads.
 type ListRequest struct {
-	Page     int
-	PerPage  int
-	Status   string // "" means all
-	Source   string // "" means all
-	Search   string // name or phone
+	Page    int
+	PerPage int
+	Status  string // "" means all
+	Source  string // "" means all
+	Search  string // name or phone
 
 	// AssignedTo filters by owner: a numeric user id, the literal
 	// "unassigned" for leads nobody owns, or "" for no filter.
@@ -154,7 +154,7 @@ type ConversionInput struct {
 //  2. Create member row
 //  3. Create payment + renewal + update member expiry
 //     (replicates payments.Repository.CollectPayment logic inline so
-//      everything runs inside THIS transaction, not a nested one)
+//     everything runs inside THIS transaction, not a nested one)
 //  4. Set lead.converted_member_id and lead.status = joined
 //
 // Why inline rather than calling payments.Repository.CollectPayment?
@@ -240,14 +240,14 @@ func (r *Repository) ConvertToMember(ctx context.Context, in ConversionInput) (i
 		userID := tc.UserID()
 		paidDate := today
 		paymentData := map[string]interface{}{
-			"gym_id":                tc.GymID(),
-			"member_id":             memberID,
-			"plan_id":               in.PlanID,
-			"amount_in_paise":       in.AmountInPaise,
-			"status":                "paid",
-			"payment_mode":          in.PaymentMode,
-			"paid_date":             paidDate,
-			"collected_by_user_id":  userID,
+			"gym_id":               tc.GymID(),
+			"member_id":            memberID,
+			"plan_id":              in.PlanID,
+			"amount_in_paise":      in.AmountInPaise,
+			"status":               "paid",
+			"payment_mode":         in.PaymentMode,
+			"paid_date":            paidDate,
+			"collected_by_user_id": userID,
 		}
 		if in.ReferenceNumber != "" {
 			paymentData["reference_number"] = in.ReferenceNumber
@@ -266,13 +266,13 @@ func (r *Repository) ConvertToMember(ctx context.Context, in ConversionInput) (i
 
 		// Step 3d: insert renewal
 		renewalData := map[string]interface{}{
-			"gym_id":              tc.GymID(),
-			"member_id":           memberID,
-			"plan_id":             in.PlanID,
+			"gym_id":               tc.GymID(),
+			"member_id":            memberID,
+			"plan_id":              in.PlanID,
 			"amount_paid_in_paise": in.AmountInPaise,
-			"new_expiry_date":     newExpiry,
-			"renewal_date":        today,
-			"renewed_by_user_id":  userID,
+			"new_expiry_date":      newExpiry,
+			"renewal_date":         today,
+			"renewed_by_user_id":   userID,
 		}
 		var newRenewal struct{ ID int64 }
 		if err := tx.Table("renewals").
@@ -303,8 +303,8 @@ func (r *Repository) ConvertToMember(ctx context.Context, in ConversionInput) (i
 		if err := tx.Table("leads").
 			Where("id = ?", in.LeadID).
 			Updates(map[string]interface{}{
-				"status":               string(LeadStatusJoined),
-				"converted_member_id":  memberID,
+				"status":              string(LeadStatusJoined),
+				"converted_member_id": memberID,
 			}).Error; err != nil {
 			return err
 		}

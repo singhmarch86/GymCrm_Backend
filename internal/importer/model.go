@@ -8,9 +8,9 @@ import "time"
 // The batch survives commit as an audit record: what was imported, when, by
 // whom, from which file, and with which duplicate policy.
 type ImportBatch struct {
-	ID         int64  `gorm:"primaryKey;autoIncrement" json:"id"`
-	GymID      int64  `gorm:"not null"                json:"gym_id"`
-	EntityType string `gorm:"type:varchar(20);not null" json:"entity_type"`
+	ID         int64   `gorm:"primaryKey;autoIncrement" json:"id"`
+	GymID      int64   `gorm:"not null"                json:"gym_id"`
+	EntityType string  `gorm:"type:varchar(20);not null" json:"entity_type"`
 	Filename   *string `gorm:"type:varchar(255)"      json:"filename,omitempty"`
 	// Retained so a disputed import can be checked against what was actually
 	// uploaded (FR-05 §5.3). Not returned in list responses.

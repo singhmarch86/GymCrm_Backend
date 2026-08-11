@@ -16,11 +16,11 @@ func ValidateCreateMemberRequest(req *CreateMemberRequest) error {
 	var errs []string
 
 	req.FirstName = strings.TrimSpace(req.FirstName)
-	req.LastName  = strings.TrimSpace(req.LastName)
-	req.Phone     = strings.TrimSpace(req.Phone)
-	req.Email     = strings.TrimSpace(req.Email)
-	req.Address   = strings.TrimSpace(req.Address)
-	req.Notes     = strings.TrimSpace(req.Notes)
+	req.LastName = strings.TrimSpace(req.LastName)
+	req.Phone = strings.TrimSpace(req.Phone)
+	req.Email = strings.TrimSpace(req.Email)
+	req.Address = strings.TrimSpace(req.Address)
+	req.Notes = strings.TrimSpace(req.Notes)
 
 	if req.FirstName == "" {
 		errs = append(errs, "first_name is required")

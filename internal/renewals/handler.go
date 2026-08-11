@@ -24,19 +24,21 @@ func NewHandler(svc *Service) *Handler {
 // RegisterRoutes mounts all renewal endpoints.
 // All routes require JWT — caller wraps with JWTMiddleware.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/v1/renewals",                        h.Create)
-	mux.HandleFunc("GET /api/v1/renewals",                         h.List)
-	mux.HandleFunc("GET /api/v1/renewals/recent",                  h.Recent)
-	mux.HandleFunc("GET /api/v1/renewals/{id}",                    h.GetByID)
-	mux.HandleFunc("GET /api/v1/members/{member_id}/renewals",     h.MemberRenewals)
+	mux.HandleFunc("POST /api/v1/renewals", h.Create)
+	mux.HandleFunc("GET /api/v1/renewals", h.List)
+	mux.HandleFunc("GET /api/v1/renewals/recent", h.Recent)
+	mux.HandleFunc("GET /api/v1/renewals/{id}", h.GetByID)
+	mux.HandleFunc("GET /api/v1/members/{member_id}/renewals", h.MemberRenewals)
 }
 
 // Create godoc
 // @Summary      Create a renewal
 // @Description  Creates a renewal for a member. Extends their expiry date using:
-//               new_expiry = max(current_expiry, today) + plan.duration_days
-//               Also updates member.expiry_date and sets status to active.
-//               gym_id and renewed_by_user_id come from JWT — never from payload.
+//
+//	new_expiry = max(current_expiry, today) + plan.duration_days
+//	Also updates member.expiry_date and sets status to active.
+//	gym_id and renewed_by_user_id come from JWT — never from payload.
+//
 // @Tags         renewals
 // @Accept       json
 // @Produce      json
@@ -68,7 +70,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // GetByID godoc
 // @Summary      Get renewal by ID
 // @Description  Returns a single renewal record with member and plan details.
-//               Only returns renewals belonging to the authenticated gym.
+//
+//	Only returns renewals belonging to the authenticated gym.
+//
 // @Tags         renewals
 // @Produce      json
 // @Security     BearerAuth
@@ -94,7 +98,9 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 // List godoc
 // @Summary      List renewals
 // @Description  Returns a paginated list of renewals for the authenticated gym.
-//               Supports filtering by member_id, plan_id, and date range.
+//
+//	Supports filtering by member_id, plan_id, and date range.
+//
 // @Tags         renewals
 // @Produce      json
 // @Security     BearerAuth
@@ -149,7 +155,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // MemberRenewals godoc
 // @Summary      Get renewal history for a member
 // @Description  Returns all renewals for a specific member, sorted by date descending.
-//               Returns 404 if the member doesn't belong to the authenticated gym.
+//
+//	Returns 404 if the member doesn't belong to the authenticated gym.
+//
 // @Tags         renewals
 // @Produce      json
 // @Security     BearerAuth
@@ -181,8 +189,10 @@ func (h *Handler) MemberRenewals(w http.ResponseWriter, r *http.Request) {
 // Recent godoc
 // @Summary      Get recent renewals
 // @Description  Returns the most recent N renewals for the authenticated gym.
-//               Useful for the owner dashboard activity feed.
-//               Default limit: 20. Max: 100.
+//
+//	Useful for the owner dashboard activity feed.
+//	Default limit: 20. Max: 100.
+//
 // @Tags         renewals
 // @Produce      json
 // @Security     BearerAuth

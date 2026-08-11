@@ -16,11 +16,11 @@ func NewHandler(svc *Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/v1/reports/revenue",  h.Revenue)
-	mux.HandleFunc("GET /api/v1/reports/members",  h.Members)
+	mux.HandleFunc("GET /api/v1/reports/revenue", h.Revenue)
+	mux.HandleFunc("GET /api/v1/reports/members", h.Members)
 	mux.HandleFunc("GET /api/v1/reports/payments", h.Payments)
 	mux.HandleFunc("GET /api/v1/reports/renewals", h.Renewals)
-	mux.HandleFunc("GET /api/v1/reports/plans",    h.Plans)
+	mux.HandleFunc("GET /api/v1/reports/plans", h.Plans)
 }
 
 // Revenue godoc

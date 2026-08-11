@@ -9,7 +9,6 @@ import (
 	"gymcrm/internal/shared/pagination"
 )
 
-
 // Service contains all renewal business logic.
 // Critical invariant: every renewal is created inside a logical transaction —
 // the renewal record is inserted AND the member's expiry_date is updated together.

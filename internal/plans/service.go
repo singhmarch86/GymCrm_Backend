@@ -105,10 +105,18 @@ func (s *Service) UpdatePlan(ctx context.Context, id int64, req UpdatePlanReques
 
 	updates := make(map[string]interface{})
 
-	if req.Name != nil         { updates["name"] = *req.Name }
-	if req.DurationDays != nil { updates["duration_days"] = *req.DurationDays }
-	if req.PriceInPaise != nil { updates["price_in_paise"] = *req.PriceInPaise }
-	if req.IsActive != nil     { updates["is_active"] = *req.IsActive }
+	if req.Name != nil {
+		updates["name"] = *req.Name
+	}
+	if req.DurationDays != nil {
+		updates["duration_days"] = *req.DurationDays
+	}
+	if req.PriceInPaise != nil {
+		updates["price_in_paise"] = *req.PriceInPaise
+	}
+	if req.IsActive != nil {
+		updates["is_active"] = *req.IsActive
+	}
 
 	if req.Description != nil {
 		if *req.Description == "" {

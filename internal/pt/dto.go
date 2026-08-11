@@ -46,10 +46,10 @@ type PackageResponse struct {
 // CreateAppointmentRequest books a 1:1 session against a package.
 // @Description Book a PT appointment. Does not consume a session credit — completing it does.
 type CreateAppointmentRequest struct {
-	PTPackageID     int64  `json:"pt_package_id"`     // required
-	ScheduledAt     string `json:"scheduled_at"`       // required, RFC3339
-	DurationMinutes int    `json:"duration_minutes"`  // optional, defaults to 60
-	Notes           string `json:"notes"`              // optional
+	PTPackageID     int64  `json:"pt_package_id"`    // required
+	ScheduledAt     string `json:"scheduled_at"`     // required, RFC3339
+	DurationMinutes int    `json:"duration_minutes"` // optional, defaults to 60
+	Notes           string `json:"notes"`            // optional
 }
 
 // MarkAttendanceRequest completes, cancels, or no-shows an appointment.

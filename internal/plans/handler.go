@@ -23,20 +23,22 @@ func NewHandler(svc *Service) *Handler {
 // RegisterRoutes mounts all plan endpoints.
 // All routes require JWT — caller wraps with JWTMiddleware.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/v1/plans",            h.Create)
-	mux.HandleFunc("GET /api/v1/plans",             h.List)
-	mux.HandleFunc("GET /api/v1/plans/active",      h.ListActive)
-	mux.HandleFunc("GET /api/v1/plans/{id}",        h.GetByID)
-	mux.HandleFunc("PUT /api/v1/plans/{id}",        h.Update)
-	mux.HandleFunc("DELETE /api/v1/plans/{id}",     h.Delete)
+	mux.HandleFunc("POST /api/v1/plans", h.Create)
+	mux.HandleFunc("GET /api/v1/plans", h.List)
+	mux.HandleFunc("GET /api/v1/plans/active", h.ListActive)
+	mux.HandleFunc("GET /api/v1/plans/{id}", h.GetByID)
+	mux.HandleFunc("PUT /api/v1/plans/{id}", h.Update)
+	mux.HandleFunc("DELETE /api/v1/plans/{id}", h.Delete)
 }
 
 // Create godoc
 // @Summary      Create a membership plan
 // @Description  Creates a new membership plan for the authenticated gym.
-//               Plan names are case-insensitively unique within a gym.
-//               "Monthly Basic" and "monthly basic" are treated as the same name.
-//               Price must be provided in paise (₹1,500 = 150000 paise).
+//
+//	Plan names are case-insensitively unique within a gym.
+//	"Monthly Basic" and "monthly basic" are treated as the same name.
+//	Price must be provided in paise (₹1,500 = 150000 paise).
+//
 // @Tags         plans
 // @Accept       json
 // @Produce      json
@@ -93,7 +95,9 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 // List godoc
 // @Summary      List membership plans
 // @Description  Returns a paginated list of plans for the authenticated gym.
-//               Filter by active status or search by name.
+//
+//	Filter by active status or search by name.
+//
 // @Tags         plans
 // @Produce      json
 // @Security     BearerAuth
@@ -133,8 +137,10 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // ListActive godoc
 // @Summary      List active plans
 // @Description  Returns only active, assignable plans for the authenticated gym.
-//               Use this endpoint to populate plan selection dropdowns in Flutter.
-//               Sorted alphabetically by name.
+//
+//	Use this endpoint to populate plan selection dropdowns in Flutter.
+//	Sorted alphabetically by name.
+//
 // @Tags         plans
 // @Produce      json
 // @Security     BearerAuth
@@ -159,9 +165,11 @@ func (h *Handler) ListActive(w http.ResponseWriter, r *http.Request) {
 // Update godoc
 // @Summary      Update a membership plan
 // @Description  Updates plan fields. Only provided fields are changed.
-//               Setting is_active=false hides the plan — existing members and
-//               renewals referencing this plan are unaffected.
-//               gym_id cannot be changed.
+//
+//	Setting is_active=false hides the plan — existing members and
+//	renewals referencing this plan are unaffected.
+//	gym_id cannot be changed.
+//
 // @Tags         plans
 // @Accept       json
 // @Produce      json
@@ -200,9 +208,11 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // Delete godoc
 // @Summary      Delete a plan (soft delete)
 // @Description  Soft-deletes a membership plan. The plan is hidden from all queries
-//               but existing member and renewal records referencing it are preserved.
-//               The plan name becomes available for reuse after deletion.
-//               Cannot delete plans from other gyms.
+//
+//	but existing member and renewal records referencing it are preserved.
+//	The plan name becomes available for reuse after deletion.
+//	Cannot delete plans from other gyms.
+//
 // @Tags         plans
 // @Produce      json
 // @Security     BearerAuth

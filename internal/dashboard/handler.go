@@ -29,4 +29,3 @@ func (h *Handler) GetDashboard(w http.ResponseWriter, r *http.Request) {
 
 	response.OK(w, data)
 }
-

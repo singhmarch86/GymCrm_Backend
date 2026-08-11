@@ -200,8 +200,8 @@ func (r *Repository) GetMemberReport(ctx context.Context) (*MemberReport, error)
 
 	// 12-month growth chart
 	type growthRow struct {
-		Month   time.Time
-		Joined  int64
+		Month  time.Time
+		Joined int64
 	}
 	var joinRows []growthRow
 	if err := r.db.WithContext(ctx).Raw(`

@@ -6,11 +6,11 @@ import "time"
 // gym_id comes from JWT.
 // @Description Check in a walk-in visitor.
 type CheckInRequest struct {
-	Name            string `json:"name"`             // required
-	Phone           string `json:"phone"`             // optional
-	Purpose         string `json:"purpose"`           // optional, defaults to "trial"
+	Name            string `json:"name"`               // required
+	Phone           string `json:"phone"`              // optional
+	Purpose         string `json:"purpose"`            // optional, defaults to "trial"
 	HostStaffUserID *int64 `json:"host_staff_user_id"` // optional
-	Notes           string `json:"notes"`             // optional
+	Notes           string `json:"notes"`              // optional
 }
 
 // ConvertToLeadRequest turns a visit into a lead, reusing the leads module's

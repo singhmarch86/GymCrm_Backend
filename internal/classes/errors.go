@@ -22,11 +22,11 @@ var (
 	ErrCannotCancelCompleted   = errors.New("a completed session cannot be cancelled")
 
 	// Booking
-	ErrSessionAlreadyStarted  = errors.New("this session has already started")
-	ErrSessionNotBookable     = errors.New("this session is cancelled and cannot be booked")
-	ErrAlreadyBooked          = errors.New("this member already has an active booking for this session")
-	ErrMemberFrozen           = errors.New("this member's membership is frozen and cannot book classes")
-	ErrMemberTerminated       = errors.New("this member's membership has ended")
+	ErrSessionAlreadyStarted   = errors.New("this session has already started")
+	ErrSessionNotBookable      = errors.New("this session is cancelled and cannot be booked")
+	ErrAlreadyBooked           = errors.New("this member already has an active booking for this session")
+	ErrMemberFrozen            = errors.New("this member's membership is frozen and cannot book classes")
+	ErrMemberTerminated        = errors.New("this member's membership has ended")
 	ErrBookingAlreadyCancelled = errors.New("this booking is already cancelled")
 	ErrCannotMarkBeforeSession = errors.New("attendance can only be marked after the session")
 )

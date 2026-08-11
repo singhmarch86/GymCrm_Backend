@@ -5,8 +5,8 @@ import "time"
 // CreateProductRequest adds something to the shelf.
 // @Description Create a product.
 type CreateProductRequest struct {
-	Name         string   `json:"name"`           // required
-	SKU          string   `json:"sku"`            // optional, unique per gym
+	Name         string   `json:"name"` // required
+	SKU          string   `json:"sku"`  // optional, unique per gym
 	Category     string   `json:"category"`
 	Description  string   `json:"description"`
 	PriceInPaise int64    `json:"price_in_paise"` // what the member pays

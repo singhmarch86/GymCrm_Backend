@@ -610,8 +610,8 @@ func toInvoiceResponse(r invoiceRow, items []InvoiceItem) InvoiceResponse {
 
 	return InvoiceResponse{
 		ID: r.ID, MemberID: r.MemberID,
-		MemberName:  strings.TrimSpace(r.MemberFirstName + " " + r.MemberLastName),
-		MemberPhone: r.MemberPhone,
+		MemberName:    strings.TrimSpace(r.MemberFirstName + " " + r.MemberLastName),
+		MemberPhone:   r.MemberPhone,
 		InvoiceNumber: r.InvoiceNumber, FinancialYear: r.FinancialYear, Status: r.Status,
 		PaymentState: derivePaymentState(r.TotalInPaise, r.PaidInPaise),
 		PaidInPaise:  r.PaidInPaise, DueInPaise: due,

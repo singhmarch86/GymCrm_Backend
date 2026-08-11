@@ -58,10 +58,10 @@ const (
 )
 
 var (
-	ErrMemberNotFound   = errors.New("member not found")
-	ErrAmountZero       = errors.New("amount must be greater than 0")
+	ErrMemberNotFound    = errors.New("member not found")
+	ErrAmountZero        = errors.New("amount must be greater than 0")
 	ErrInsufficientFunds = errors.New("not enough balance in the wallet")
-	ErrReasonRequired   = errors.New("a reason is required")
+	ErrReasonRequired    = errors.New("a reason is required")
 )
 
 // ─── Repository ───────────────────────────────────────────────────────────────
@@ -217,10 +217,10 @@ func (s *Service) Adjust(ctx context.Context, memberID, deltaInPaise int64, reas
 }
 
 type Summary struct {
-	MemberID       int64         `json:"member_id"`
-	BalanceInPaise int64         `json:"balance_in_paise"`
-	BalanceInRupees float64      `json:"balance_in_rupees"`
-	Transactions   []Transaction `json:"transactions"`
+	MemberID        int64         `json:"member_id"`
+	BalanceInPaise  int64         `json:"balance_in_paise"`
+	BalanceInRupees float64       `json:"balance_in_rupees"`
+	Transactions    []Transaction `json:"transactions"`
 }
 
 func (s *Service) Get(ctx context.Context, memberID int64) (*Summary, error) {

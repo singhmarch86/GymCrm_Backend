@@ -66,16 +66,16 @@ type Sale struct {
 	GymID    int64  `gorm:"not null" json:"gym_id"`
 	MemberID *int64 `json:"member_id,omitempty"`
 
-	SaleNumber       *string `gorm:"type:varchar(50)" json:"sale_number,omitempty"`
-	SubtotalInPaise  int64   `gorm:"not null;default:0" json:"subtotal_in_paise"`
-	TaxInPaise       int64   `gorm:"not null;default:0" json:"tax_in_paise"`
-	DiscountInPaise  int64   `gorm:"not null;default:0" json:"discount_in_paise"`
-	TotalInPaise     int64   `gorm:"not null;default:0" json:"total_in_paise"`
+	SaleNumber      *string `gorm:"type:varchar(50)" json:"sale_number,omitempty"`
+	SubtotalInPaise int64   `gorm:"not null;default:0" json:"subtotal_in_paise"`
+	TaxInPaise      int64   `gorm:"not null;default:0" json:"tax_in_paise"`
+	DiscountInPaise int64   `gorm:"not null;default:0" json:"discount_in_paise"`
+	TotalInPaise    int64   `gorm:"not null;default:0" json:"total_in_paise"`
 
-	PaymentMode     string  `gorm:"type:varchar(20);not null;default:'cash'" json:"payment_mode"`
-	IsRefund        bool    `gorm:"not null;default:false" json:"is_refund"`
-	RefundOfSaleID  *int64  `json:"refund_of_sale_id,omitempty"`
-	Reason          *string `gorm:"type:text" json:"reason,omitempty"`
+	PaymentMode    string  `gorm:"type:varchar(20);not null;default:'cash'" json:"payment_mode"`
+	IsRefund       bool    `gorm:"not null;default:false" json:"is_refund"`
+	RefundOfSaleID *int64  `json:"refund_of_sale_id,omitempty"`
+	Reason         *string `gorm:"type:text" json:"reason,omitempty"`
 
 	InvoiceID       *int64    `json:"invoice_id,omitempty"`
 	Notes           *string   `gorm:"type:text" json:"notes,omitempty"`

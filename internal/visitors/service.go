@@ -13,8 +13,8 @@ import (
 // delegates to leads.Service rather than duplicating lead-creation rules —
 // same cross-module pattern members already uses with renewals.
 type Service struct {
-	repo      *Repository
-	leadsSvc  *leads.Service
+	repo     *Repository
+	leadsSvc *leads.Service
 }
 
 func NewService(repo *Repository, leadsSvc *leads.Service) *Service {

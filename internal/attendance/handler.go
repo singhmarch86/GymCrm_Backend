@@ -22,18 +22,20 @@ func NewHandler(svc *Service) *Handler {
 // RegisterRoutes mounts all attendance endpoints.
 // All routes require JWT — caller wraps with JWTMiddleware.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/v1/attendance/checkin",           h.CheckIn)
-	mux.HandleFunc("GET /api/v1/attendance/today",              h.Today)
-	mux.HandleFunc("GET /api/v1/attendance/recent",             h.Recent)
-	mux.HandleFunc("GET /api/v1/attendance/date/{date}",        h.ByDate)
+	mux.HandleFunc("POST /api/v1/attendance/checkin", h.CheckIn)
+	mux.HandleFunc("GET /api/v1/attendance/today", h.Today)
+	mux.HandleFunc("GET /api/v1/attendance/recent", h.Recent)
+	mux.HandleFunc("GET /api/v1/attendance/date/{date}", h.ByDate)
 	mux.HandleFunc("GET /api/v1/attendance/member/{member_id}", h.ByMember)
 }
 
 // CheckIn godoc
 // @Summary      Check in a member
 // @Description  Records a member attendance for today. Server sets the timestamp.
-//               Returns 409 if the member has already checked in today.
-//               gym_id comes from JWT — never from payload.
+//
+//	Returns 409 if the member has already checked in today.
+//	gym_id comes from JWT — never from payload.
+//
 // @Tags         attendance
 // @Accept       json
 // @Produce      json
@@ -66,7 +68,9 @@ func (h *Handler) CheckIn(w http.ResponseWriter, r *http.Request) {
 // Today godoc
 // @Summary      Get today's attendance
 // @Description  Returns all check-ins for today in the authenticated gym.
-//               Sorted by check-in time descending (most recent first).
+//
+//	Sorted by check-in time descending (most recent first).
+//
 // @Tags         attendance
 // @Produce      json
 // @Security     BearerAuth
@@ -122,7 +126,9 @@ func (h *Handler) ByDate(w http.ResponseWriter, r *http.Request) {
 // ByMember godoc
 // @Summary      Get attendance history for a member
 // @Description  Returns all check-ins for a specific member, sorted by date descending.
-//               Returns 404 if the member doesn't belong to the authenticated gym.
+//
+//	Returns 404 if the member doesn't belong to the authenticated gym.
+//
 // @Tags         attendance
 // @Produce      json
 // @Security     BearerAuth
@@ -154,8 +160,10 @@ func (h *Handler) ByMember(w http.ResponseWriter, r *http.Request) {
 // Recent godoc
 // @Summary      Get recent check-ins
 // @Description  Returns the last N check-ins across all members in the gym.
-//               Sorted by check-in time descending. Use for live activity feed.
-//               Default limit: 20. Max: 100.
+//
+//	Sorted by check-in time descending. Use for live activity feed.
+//	Default limit: 20. Max: 100.
+//
 // @Tags         attendance
 // @Produce      json
 // @Security     BearerAuth

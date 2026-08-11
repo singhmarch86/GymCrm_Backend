@@ -8,10 +8,10 @@ import "time"
 // build an invoice up incrementally, which is how a front desk actually works.
 // @Description Create a draft invoice for a member.
 type CreateInvoiceRequest struct {
-	MemberID int64  `json:"member_id"` // required
-	DueDate  string `json:"due_date"`  // optional, YYYY-MM-DD
-	Notes    string `json:"notes"`     // optional
-	Items    []AddItemRequest `json:"items"` // optional — convenience for one-shot creation
+	MemberID int64            `json:"member_id"` // required
+	DueDate  string           `json:"due_date"`  // optional, YYYY-MM-DD
+	Notes    string           `json:"notes"`     // optional
+	Items    []AddItemRequest `json:"items"`     // optional — convenience for one-shot creation
 }
 
 // AddItemRequest appends a line to a draft invoice.
@@ -40,9 +40,9 @@ type AddPlanItemRequest struct {
 // Exactly one of code / ad_hoc_in_paise should be provided.
 // @Description Apply a discount to a draft invoice.
 type ApplyDiscountRequest struct {
-	Code           string `json:"code"`             // optional — a discounts.code
-	AdHocInPaise   int64  `json:"ad_hoc_in_paise"`  // optional — one-off negotiated amount
-	Reason         string `json:"reason"`           // required for ad-hoc
+	Code         string `json:"code"`            // optional — a discounts.code
+	AdHocInPaise int64  `json:"ad_hoc_in_paise"` // optional — one-off negotiated amount
+	Reason       string `json:"reason"`          // required for ad-hoc
 }
 
 // IssueInvoiceRequest turns a draft into a numbered document.
@@ -132,9 +132,9 @@ type InvoiceResponse struct {
 	Status        string  `json:"status"`
 
 	// Derived from linked payments, never stored — FR-04 §2.
-	PaymentState  string `json:"payment_state"`
-	PaidInPaise   int64  `json:"paid_in_paise"`
-	DueInPaise    int64  `json:"due_in_paise"`
+	PaymentState string `json:"payment_state"`
+	PaidInPaise  int64  `json:"paid_in_paise"`
+	DueInPaise   int64  `json:"due_in_paise"`
 
 	InvoiceDate *time.Time `json:"invoice_date,omitempty"`
 	DueDate     *time.Time `json:"due_date,omitempty"`

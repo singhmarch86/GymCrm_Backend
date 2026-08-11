@@ -31,15 +31,15 @@ type UpdateTrainerRequest struct {
 // TrainerResponse is the full trainer record.
 // @Description A trainer roster entry.
 type TrainerResponse struct {
-	ID             int64    `json:"id"`
-	FirstName      string   `json:"first_name"`
-	LastName       string   `json:"last_name"`
-	FullName       string   `json:"full_name"`
-	Phone          string   `json:"phone"`
-	Email          *string  `json:"email,omitempty"`
-	Specialization *string  `json:"specialization,omitempty"`
-	Status         string   `json:"status"`
-	SalaryInPaise  *int64   `json:"salary_in_paise,omitempty"`
-	CommissionPct  *float64 `json:"commission_pct,omitempty"`
+	ID             int64     `json:"id"`
+	FirstName      string    `json:"first_name"`
+	LastName       string    `json:"last_name"`
+	FullName       string    `json:"full_name"`
+	Phone          string    `json:"phone"`
+	Email          *string   `json:"email,omitempty"`
+	Specialization *string   `json:"specialization,omitempty"`
+	Status         string    `json:"status"`
+	SalaryInPaise  *int64    `json:"salary_in_paise,omitempty"`
+	CommissionPct  *float64  `json:"commission_pct,omitempty"`
 	CreatedAt      time.Time `json:"created_at"`
 }

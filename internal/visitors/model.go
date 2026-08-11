@@ -21,9 +21,9 @@ type Visitor struct {
 	Phone   *string `json:"phone,omitempty"`
 	Purpose string  `gorm:"type:varchar(20);not null;default:'trial'" json:"purpose"`
 
-	CheckedInAt      time.Time  `gorm:"autoCreateTime" json:"checked_in_at"`
-	CheckedOutAt     *time.Time `json:"checked_out_at,omitempty"`
-	HostStaffUserID  *int64     `json:"host_staff_user_id,omitempty"`
+	CheckedInAt     time.Time  `gorm:"autoCreateTime" json:"checked_in_at"`
+	CheckedOutAt    *time.Time `json:"checked_out_at,omitempty"`
+	HostStaffUserID *int64     `json:"host_staff_user_id,omitempty"`
 
 	ConvertedLeadID *int64 `json:"converted_lead_id,omitempty"`
 

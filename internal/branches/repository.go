@@ -172,8 +172,8 @@ type BranchSummary struct {
 	ExpiringSoon   int64   `json:"expiring_soon"`
 	RevenueInPaise int64   `json:"revenue_this_month_in_paise"`
 
-	NewMembersThisMonth int64 `json:"new_members_this_month"`
-	LapsedThisMonth     int64 `json:"lapsed_this_month"`
+	NewMembersThisMonth  int64 `json:"new_members_this_month"`
+	LapsedThisMonth      int64 `json:"lapsed_this_month"`
 	RevenueTargetInPaise int64 `json:"monthly_revenue_target_in_paise"`
 	MemberTarget         int64 `json:"monthly_member_target"`
 
@@ -299,14 +299,14 @@ type BranchPeriodReport struct {
 	RetailRevenueInPaise     int64 `json:"retail_revenue_in_paise"`
 	TotalRevenueInPaise      int64 `json:"total_revenue_in_paise"`
 
-	NewMembers      int64 `json:"new_members"`
-	ActiveMembers   int64 `json:"active_members"`
-	LapsedInPeriod  int64 `json:"lapsed_in_period"`
-	PaymentsCount   int64 `json:"payments_count"`
+	NewMembers     int64 `json:"new_members"`
+	ActiveMembers  int64 `json:"active_members"`
+	LapsedInPeriod int64 `json:"lapsed_in_period"`
+	PaymentsCount  int64 `json:"payments_count"`
 
-	RevenueTargetInPaise int64   `json:"monthly_revenue_target_in_paise"`
-	AttainmentPct        float64 `json:"attainment_pct"`
-	RevenuePerMemberInPaise int64 `json:"revenue_per_member_in_paise"`
+	RevenueTargetInPaise    int64   `json:"monthly_revenue_target_in_paise"`
+	AttainmentPct           float64 `json:"attainment_pct"`
+	RevenuePerMemberInPaise int64   `json:"revenue_per_member_in_paise"`
 	// Position in the chain by total revenue, 1 = best.
 	Rank int `json:"rank"`
 }
