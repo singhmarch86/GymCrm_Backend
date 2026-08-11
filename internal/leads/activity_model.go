@@ -39,10 +39,15 @@ func (LeadActivity) TableName() string { return "lead_activities" }
 type ActivityType string
 
 const (
-	ActivityCreated        ActivityType = "created"
-	ActivityStageChange    ActivityType = "stage_change"
-	ActivityCall           ActivityType = "call"
-	ActivityNote           ActivityType = "note"
+	ActivityCreated     ActivityType = "created"
+	ActivityStageChange ActivityType = "stage_change"
+	ActivityCall        ActivityType = "call"
+	ActivityNote        ActivityType = "note"
+	// The sit-down after a trial where plans and price get discussed — the
+	// highest-conversion moment in the pipeline, and until FR-18 it was
+	// indistinguishable from a note, so nobody could count whether it was
+	// happening at all.
+	ActivityCounselling    ActivityType = "counselling"
 	ActivityFollowUpSet    ActivityType = "follow_up_set"
 	ActivityTrialScheduled ActivityType = "trial_scheduled"
 	ActivityConverted      ActivityType = "converted"
@@ -117,7 +122,8 @@ func (t ActivityType) AcceptsOutcome() bool {
 // so they are deliberately excluded — a client cannot fake pipeline history.
 func IsValidActivityType(s string) bool {
 	switch ActivityType(s) {
-	case ActivityCall, ActivityNote, ActivityFollowUpSet, ActivityTrialScheduled:
+	case ActivityCall, ActivityNote, ActivityCounselling,
+		ActivityFollowUpSet, ActivityTrialScheduled:
 		return true
 	}
 	return false

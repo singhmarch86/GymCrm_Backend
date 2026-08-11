@@ -47,10 +47,15 @@ one just because somebody was busy:
 |---|---|---|
 | New Lead | Make first contact | Same day |
 | Contacted | Book a trial | +2 days |
-| Trial Scheduled | Confirm they are coming | day before trial |
+| Trial Scheduled | Confirm they are coming | day before the trial |
 | Trial Completed | **Counselling** — sit down, discuss plans | +1 day |
-| Negotiation | Close, or record the objection | +2 days |
 | Joined / Lost | *none — workflow ends* (§6) | — |
+
+An earlier draft of this table included a **Negotiation** stage. There is no
+such stage: the pipeline is new_lead → contacted → trial_scheduled →
+trial_completed → joined / lost, and inventing a sixth would have meant either
+a dead constant or a migration nobody asked for. Closing happens from Trial
+Completed, after counselling.
 
 These are defaults, not rules. Staff override any of them.
 

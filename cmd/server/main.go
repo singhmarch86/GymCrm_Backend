@@ -34,8 +34,8 @@ import (
 	"gymcrm/internal/renewals"
 	"gymcrm/internal/reports"
 	"gymcrm/internal/retention"
-	"gymcrm/internal/staffwork"
 	"gymcrm/internal/rhythm"
+	"gymcrm/internal/staffwork"
 	"gymcrm/internal/trainers"
 	"gymcrm/internal/users"
 	"gymcrm/internal/visitors"
@@ -282,6 +282,13 @@ func main() {
 	mux.Handle("GET /api/v1/leads/followups", jwt(http.HandlerFunc(leadsHandler.FollowUps)))
 	mux.Handle("GET /api/v1/leads/analytics", jwt(http.HandlerFunc(leadsHandler.Analytics)))
 	mux.Handle("GET /api/v1/leads/assignees", jwt(http.HandlerFunc(leadsHandler.Assignees)))
+
+	// The lead workflow (FR-18). Registered before /leads/{id} so the literal
+	// paths win — Go's mux prefers the more specific pattern, but keeping them
+	// adjacent makes that visible rather than incidental.
+	mux.Handle("GET /api/v1/leads/workflow", jwt(http.HandlerFunc(leadsHandler.Workflow)))
+	mux.Handle("GET /api/v1/leads/next-steps", jwt(http.HandlerFunc(leadsHandler.NextStepOptions)))
+	mux.Handle("PATCH /api/v1/leads/{id}/next-step", jwt(http.HandlerFunc(leadsHandler.SetNextStep)))
 	mux.Handle("GET /api/v1/leads/{id}/activities", jwt(http.HandlerFunc(leadsHandler.ListActivities)))
 	mux.Handle("POST /api/v1/leads/{id}/activities", jwt(http.HandlerFunc(leadsHandler.AddActivity)))
 	mux.Handle("PATCH /api/v1/leads/{id}/assign", jwt(http.HandlerFunc(leadsHandler.Assign)))

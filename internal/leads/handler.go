@@ -260,6 +260,10 @@ func (h *Handler) handleError(w http.ResponseWriter, err error) {
 		response.UnprocessableEntity(w, err.Error())
 	case errors.Is(err, ErrInvalidOutcome), errors.Is(err, ErrOutcomeNotAllowed):
 		response.UnprocessableEntity(w, err.Error())
+	case errors.Is(err, ErrInvalidNextStep), errors.Is(err, ErrNextStepDueRequired):
+		response.UnprocessableEntity(w, err.Error())
+	case errors.Is(err, ErrLeadClosed):
+		response.Conflict(w, err.Error())
 	case errors.Is(err, ErrLostReasonRequired):
 		response.UnprocessableEntity(w, err.Error())
 	case errors.Is(err, ErrAlreadyConverted):

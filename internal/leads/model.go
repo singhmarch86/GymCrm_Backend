@@ -9,41 +9,51 @@ import (
 // Lead is a prospective member moving through a 6-stage sales pipeline.
 // Soft-deleted (DeletedAt) — historical lead data is preserved.
 type Lead struct {
-	ID                int64          `gorm:"primaryKey;autoIncrement" json:"id"`
-	GymID             int64          `gorm:"not null"                 json:"gym_id"`
+	ID    int64 `gorm:"primaryKey;autoIncrement" json:"id"`
+	GymID int64 `gorm:"not null"                 json:"gym_id"`
 
 	// Basic info
-	Name              string         `gorm:"type:varchar(200);not null" json:"name"`
-	Phone             string         `gorm:"type:varchar(20);not null"  json:"phone"`
-	Email             *string        `gorm:"type:varchar(200)"          json:"email,omitempty"`
-	Gender            *string        `gorm:"type:varchar(10)"           json:"gender,omitempty"`
+	Name   string  `gorm:"type:varchar(200);not null" json:"name"`
+	Phone  string  `gorm:"type:varchar(20);not null"  json:"phone"`
+	Email  *string `gorm:"type:varchar(200)"          json:"email,omitempty"`
+	Gender *string `gorm:"type:varchar(10)"           json:"gender,omitempty"`
 
 	// Lead context
-	Source            LeadSource     `gorm:"type:varchar(50);not null;default:'walk_in'" json:"source"`
-	Goal              *LeadGoal      `gorm:"type:varchar(50)"           json:"goal,omitempty"`
-	Notes             *string        `gorm:"type:text"                  json:"notes,omitempty"`
+	Source LeadSource `gorm:"type:varchar(50);not null;default:'walk_in'" json:"source"`
+	Goal   *LeadGoal  `gorm:"type:varchar(50)"           json:"goal,omitempty"`
+	Notes  *string    `gorm:"type:text"                  json:"notes,omitempty"`
 
 	// Pipeline
-	Status            LeadStatus     `gorm:"type:varchar(30);not null;default:'new_lead'" json:"status"`
+	Status LeadStatus `gorm:"type:varchar(30);not null;default:'new_lead'" json:"status"`
 
 	// Key dates
-	TrialDate         *time.Time     `gorm:"type:date"                  json:"trial_date,omitempty"`
-	FollowUpDate      *time.Time     `gorm:"type:date"                  json:"follow_up_date,omitempty"`
-	LostReason        *string        `gorm:"type:text"                  json:"lost_reason,omitempty"`
+	TrialDate    *time.Time `gorm:"type:date"                  json:"trial_date,omitempty"`
+	FollowUpDate *time.Time `gorm:"type:date"                  json:"follow_up_date,omitempty"`
+
+	// The workflow (FR-18). Deliberately separate from FollowUpDate: that
+	// answers "when do I contact them again", these answer "what am I doing
+	// and why". A lead can have a trial next Tuesday and a confirmation call
+	// on Monday; one column loses the second every time.
+	//
+	// Nil is meaningful — it puts the lead in Unattended, which is the state
+	// this whole feature exists to make visible.
+	NextStep    *string    `gorm:"type:varchar(40)" json:"next_step,omitempty"`
+	NextStepDue *time.Time `gorm:"type:date"        json:"next_step_due,omitempty"`
+	LostReason  *string    `gorm:"type:text"                  json:"lost_reason,omitempty"`
 
 	// Assignment
-	AssignedUserID    *int64         `gorm:""                           json:"assigned_user_id,omitempty"`
+	AssignedUserID *int64 `gorm:""                           json:"assigned_user_id,omitempty"`
 	// Resolved via JOIN, never written. Must be `->` (read-only) and NOT `-`:
 	// `-` makes GORM ignore the field on reads as well, so the joined alias
 	// silently never populates and the name comes back empty.
-	AssignedUserName  string         `gorm:"->"                         json:"assigned_user_name,omitempty"`
+	AssignedUserName string `gorm:"->"                         json:"assigned_user_name,omitempty"`
 
 	// Future conversion hook
-	ConvertedMemberID *int64         `gorm:""                           json:"converted_member_id,omitempty"`
+	ConvertedMemberID *int64 `gorm:""                           json:"converted_member_id,omitempty"`
 
-	CreatedAt         time.Time      `gorm:"autoCreateTime"             json:"created_at"`
-	UpdatedAt         time.Time      `gorm:"autoUpdateTime"             json:"updated_at"`
-	DeletedAt         gorm.DeletedAt `gorm:"index"                      json:"-"`
+	CreatedAt time.Time      `gorm:"autoCreateTime"             json:"created_at"`
+	UpdatedAt time.Time      `gorm:"autoUpdateTime"             json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index"                      json:"-"`
 }
 
 func (Lead) TableName() string { return "leads" }
@@ -53,12 +63,12 @@ func (Lead) TableName() string { return "leads" }
 type LeadStatus string
 
 const (
-	LeadStatusNew              LeadStatus = "new_lead"
-	LeadStatusContacted        LeadStatus = "contacted"
-	LeadStatusTrialScheduled   LeadStatus = "trial_scheduled"
-	LeadStatusTrialCompleted   LeadStatus = "trial_completed"
-	LeadStatusJoined           LeadStatus = "joined"
-	LeadStatusLost             LeadStatus = "lost"
+	LeadStatusNew            LeadStatus = "new_lead"
+	LeadStatusContacted      LeadStatus = "contacted"
+	LeadStatusTrialScheduled LeadStatus = "trial_scheduled"
+	LeadStatusTrialCompleted LeadStatus = "trial_completed"
+	LeadStatusJoined         LeadStatus = "joined"
+	LeadStatusLost           LeadStatus = "lost"
 )
 
 // PipelineOrder defines the display/progression order of statuses.
