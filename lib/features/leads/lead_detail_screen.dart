@@ -442,6 +442,12 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
       final from = a.fromStatus != null ? stageFor(a.fromStatus!).label : '';
       final to = stageFor(a.toStatus!).label;
       title = from.isEmpty ? 'Moved to $to' : 'Moved from $from to $to';
+    } else if (a.outcome != null) {
+      // What came of it leads the line (FR-16): "No answer" is the fact
+      // somebody scanning the timeline needs, and the note is the detail.
+      final label = FollowUpOutcome.labelFor(a.outcome);
+      final note = a.note?.trim() ?? '';
+      title = note.isEmpty ? label : '$label — $note';
     } else {
       title = a.note ?? a.type.replaceAll('_', ' ');
     }

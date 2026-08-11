@@ -349,23 +349,58 @@ class _LeadsScreenState extends State<LeadsScreen>
 
   Future<void> _logCall(Lead lead) async {
     final noteController = TextEditingController();
+    // What came of it (FR-16). Chosen first because it is the answer staff
+    // actually have the moment they hang up — the note is often skipped, the
+    // outcome almost never is.
+    String? outcome;
+
     final saved = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Log call — ${lead.name}'),
-        content: TextField(
-          controller: noteController,
-          autofocus: true,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: 'What was discussed?',
-            hintText: 'e.g. Asked about pricing, will decide this week',
+      builder: (_) => StatefulBuilder(
+        builder: (context, setLocal) => AlertDialog(
+          title: Text('Log call — ${lead.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('What happened?',
+                  style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final o in FollowUpOutcome.all)
+                    ChoiceChip(
+                      label: Text(o.label, style: const TextStyle(fontSize: 12)),
+                      selected: outcome == o.value,
+                      onSelected: (sel) =>
+                          setLocal(() => outcome = sel ? o.value : null),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: noteController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Anything worth remembering?',
+                  hintText: 'e.g. Asked about pricing, will decide this week',
+                ),
+              ),
+            ],
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            // Deliberately enabled with no outcome selected: a staff member
+            // mid-shift must never be blocked by a dropdown (FR-16 §3).
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Save')),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Save')),
-        ],
       ),
     );
     if (saved != true || !mounted) return;
@@ -375,6 +410,7 @@ class _LeadsScreenState extends State<LeadsScreen>
         lead.id,
         type: 'call',
         note: noteController.text.trim(),
+        outcome: outcome ?? '',
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

@@ -55,6 +55,7 @@ class LeadFollowUpsView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: 100),
       children: [
+        _OutcomeSummary(queue: queue),
         _section(
           context,
           title: 'Overdue',
@@ -234,5 +235,110 @@ class LeadFollowUpsView extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// What the last week of calling produced (FR-16 §6).
+///
+/// "14 no answer, 3 call back" tells an owner in one line whether the phone
+/// work is landing. The same facts spread across nineteen timeline entries
+/// tell them nothing.
+class _OutcomeSummary extends StatelessWidget {
+  final FollowUpQueue queue;
+
+  const _OutcomeSummary({required this.queue});
+
+  @override
+  Widget build(BuildContext context) {
+    // Six zeros reads as broken rather than as "nobody has logged anything
+    // yet", so the row stays hidden until there is something to say.
+    if (!queue.hasLoggedOutcomes) return const SizedBox.shrink();
+
+    final total =
+        queue.outcomeCounts.fold<int>(0, (sum, c) => sum + c.count);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      child: AppCard(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.call_made_rounded,
+                    size: 15, color: AppColors.primary),
+                const SizedBox(width: 7),
+                Text(
+                  'Last ${queue.outcomeDays} days',
+                  style: const TextStyle(
+                      fontSize: 12.5, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                Text(
+                  total == 1 ? '1 logged' : '$total logged',
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+            const SizedBox(height: 9),
+            Wrap(
+              spacing: 7,
+              runSpacing: 7,
+              children: [
+                // Zero counts stay visible so the row keeps its shape between
+                // refreshes — a chart whose categories come and go is
+                // unreadable — but they are dimmed so the eye skips them.
+                for (final c in queue.outcomeCounts)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 9, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: c.count == 0
+                          ? Colors.grey.shade50
+                          : _tint(c.outcome).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: c.count == 0
+                            ? Colors.grey.shade200
+                            : _tint(c.outcome).withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Text(
+                      '${c.count}  ${c.label}',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight:
+                            c.count == 0 ? FontWeight.normal : FontWeight.w600,
+                        color: c.count == 0
+                            ? Colors.grey.shade400
+                            : _tint(c.outcome),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Colour carries meaning, not decoration: reached is good, unreachable is
+  /// a problem, a refusal is final.
+  Color _tint(String outcome) {
+    switch (outcome) {
+      case 'answered':
+      case 'interested':
+        return AppColors.success;
+      case 'no_answer':
+      case 'wrong_number':
+        return AppColors.danger;
+      case 'call_back':
+        return AppColors.warning;
+      case 'not_interested':
+        return Colors.grey.shade600;
+    }
+    return AppColors.info;
   }
 }

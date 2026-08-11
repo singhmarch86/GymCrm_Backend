@@ -151,8 +151,13 @@ class _LeadsAnalyticsTabState extends State<_LeadsAnalyticsTab>
     super.build(context);
     if (_loading) return const LoadingView();
     if (_error != null) return ErrorBanner(message: _error!, onRetry: _load);
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+
+    // Rendered directly, NOT inside a SingleChildScrollView. LeadAnalyticsView's
+    // own root is a ListView; nesting it in another scrollable gives it
+    // unbounded height, and it silently collapses to nothing — a blank tab with
+    // no error, which is exactly how this shipped the first time.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: LeadAnalyticsView(analytics: _analytics!),
     );
   }

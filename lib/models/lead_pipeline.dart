@@ -9,6 +9,10 @@ class LeadActivity {
   final String? userName;
   final String type;
   final String? note;
+
+  /// What came of it (FR-16). Null is a real answer — a note has no outcome,
+  /// and every row logged before this existed has none. Never inferred.
+  final String? outcome;
   final String? fromStatus;
   final String? toStatus;
   final String createdAt;
@@ -20,6 +24,7 @@ class LeadActivity {
     this.userName,
     required this.type,
     this.note,
+    this.outcome,
     this.fromStatus,
     this.toStatus,
     required this.createdAt,
@@ -32,6 +37,7 @@ class LeadActivity {
         userName: j['user_name'],
         type: j['type'] ?? 'note',
         note: j['note'],
+        outcome: j['outcome'],
         fromStatus: j['from_status'],
         toStatus: j['to_status'],
         createdAt: j['created_at'] ?? '',
@@ -60,11 +66,18 @@ class FollowUpQueue {
   final List<Lead> upcoming;
   final List<Lead> trials;
 
+  /// What the last [outcomeDays] of calling produced (FR-16 §6). Always all
+  /// six outcomes, zeros included, so the row keeps its shape between loads.
+  final List<OutcomeCount> outcomeCounts;
+  final int outcomeDays;
+
   FollowUpQueue({
     required this.overdue,
     required this.today,
     required this.upcoming,
     required this.trials,
+    this.outcomeCounts = const [],
+    this.outcomeDays = 7,
   });
 
   static List<Lead> _leads(dynamic raw) =>
@@ -75,6 +88,10 @@ class FollowUpQueue {
         today: _leads(j['today']),
         upcoming: _leads(j['upcoming']),
         trials: _leads(j['trials']),
+        outcomeCounts: ((j['outcome_counts'] as List?) ?? [])
+            .map((e) => OutcomeCount.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        outcomeDays: j['outcome_days'] ?? 7,
       );
 
   /// True when nothing at all needs attention — used to pick between the
@@ -83,6 +100,11 @@ class FollowUpQueue {
       overdue.isEmpty && today.isEmpty && upcoming.isEmpty && trials.isEmpty;
 
   int get actionableCount => overdue.length + today.length;
+
+  /// True when nothing has been logged in the window — the counts row is
+  /// suppressed rather than showing six zeros, which reads as broken.
+  bool get hasLoggedOutcomes =>
+      outcomeCounts.any((c) => c.count > 0);
 }
 
 /// One step of the conversion funnel. Maps backend FunnelStageResponse.
@@ -208,5 +230,54 @@ class Assignee {
         name: j['name'] ?? '',
         role: j['role'] ?? 'staff',
         leadCount: j['lead_count'] ?? 0,
+      );
+}
+
+/// The six follow-up outcomes (FR-16 §2).
+///
+/// Six, and the count is the point: a desk facing fifteen options picks the
+/// first plausible one and the data becomes noise that looks like signal.
+class FollowUpOutcome {
+  final String value;
+  final String label;
+
+  const FollowUpOutcome(this.value, this.label);
+
+  static const answered = FollowUpOutcome('answered', 'Answered');
+  static const noAnswer = FollowUpOutcome('no_answer', 'No answer');
+  static const callBack = FollowUpOutcome('call_back', 'Call back later');
+  static const interested = FollowUpOutcome('interested', 'Interested');
+  static const notInterested = FollowUpOutcome('not_interested', 'Not interested');
+  static const wrongNumber = FollowUpOutcome('wrong_number', 'Wrong number');
+
+  static const all = [
+    answered, noAnswer, callBack, interested, notInterested, wrongNumber,
+  ];
+
+  static String labelFor(String? value) {
+    if (value == null) return '';
+    for (final o in all) {
+      if (o.value == value) return o.label;
+    }
+    return value;
+  }
+}
+
+/// One grouped count on the follow-up screen.
+class OutcomeCount {
+  final String outcome;
+  final String label;
+  final int count;
+
+  const OutcomeCount({
+    required this.outcome,
+    required this.label,
+    required this.count,
+  });
+
+  factory OutcomeCount.fromJson(Map<String, dynamic> j) => OutcomeCount(
+        outcome: j['outcome'] ?? '',
+        label: j['label'] ?? '',
+        count: j['count'] ?? 0,
       );
 }

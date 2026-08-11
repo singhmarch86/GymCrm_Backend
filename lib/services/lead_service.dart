@@ -149,6 +149,7 @@ class LeadService {
     required String type,
     String note = '',
     String date = '',
+    String outcome = '',
   }) async {
     final response = await guardRequest(
       () async => http.post(
@@ -158,6 +159,7 @@ class LeadService {
           'type': type,
           if (note.isNotEmpty) 'note': note,
           if (date.isNotEmpty) 'date': date,
+          if (outcome.isNotEmpty) 'outcome': outcome,
         }),
       ),
     );
