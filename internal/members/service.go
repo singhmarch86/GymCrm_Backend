@@ -110,11 +110,11 @@ func (s *Service) GetMember(ctx context.Context, id int64) (*MemberResponse, err
 }
 
 func (s *Service) ListMembers(ctx context.Context, req ListMembersRequest) ([]MemberResponse, int64, error) {
-	members, total, err := s.repo.List(ctx, req)
+	rows, total, err := s.repo.ListDetailed(ctx, req)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list members: %w", err)
 	}
-	return ToResponseList(members), total, nil
+	return ToDetailResponseList(rows), total, nil
 }
 
 func (s *Service) SearchMembers(ctx context.Context, query string, p pagination.Params) ([]MemberResponse, int64, error) {
@@ -165,11 +165,21 @@ func (s *Service) UpdateMember(ctx context.Context, id int64, req UpdateMemberRe
 
 	updates := make(map[string]interface{})
 
-	if req.FirstName != nil        { updates["first_name"] = *req.FirstName }
-	if req.LastName != nil         { updates["last_name"] = *req.LastName }
-	if req.Phone != nil            { updates["phone"] = *req.Phone }
-	if req.MembershipPlanID != nil { updates["membership_plan_id"] = *req.MembershipPlanID }
-	if req.Status != nil           { updates["status"] = *req.Status }
+	if req.FirstName != nil {
+		updates["first_name"] = *req.FirstName
+	}
+	if req.LastName != nil {
+		updates["last_name"] = *req.LastName
+	}
+	if req.Phone != nil {
+		updates["phone"] = *req.Phone
+	}
+	if req.MembershipPlanID != nil {
+		updates["membership_plan_id"] = *req.MembershipPlanID
+	}
+	if req.Status != nil {
+		updates["status"] = *req.Status
+	}
 
 	// Pointer fields — empty string clears the value (sets NULL)
 	if req.Email != nil {
@@ -257,11 +267,11 @@ func (s *Service) DeleteMember(ctx context.Context, id int64) error {
 type RenewalFilter string
 
 const (
-	RenewalFilterAll       RenewalFilter = "all"
-	RenewalFilterToday     RenewalFilter = "today"
-	RenewalFilterTomorrow  RenewalFilter = "tomorrow"
-	RenewalFilterThisWeek  RenewalFilter = "this_week"
-	RenewalFilterExpired   RenewalFilter = "expired"
+	RenewalFilterAll      RenewalFilter = "all"
+	RenewalFilterToday    RenewalFilter = "today"
+	RenewalFilterTomorrow RenewalFilter = "tomorrow"
+	RenewalFilterThisWeek RenewalFilter = "this_week"
+	RenewalFilterExpired  RenewalFilter = "expired"
 )
 
 // GetDueForRenewal returns members relevant to the Renewals screen, filtered
