@@ -30,6 +30,7 @@ import (
 	"gymcrm/internal/plans"
 	"gymcrm/internal/pos"
 	"gymcrm/internal/pt"
+	"gymcrm/internal/queues"
 	"gymcrm/internal/referrals"
 	"gymcrm/internal/renewals"
 	"gymcrm/internal/reports"
@@ -159,6 +160,10 @@ func main() {
 	posRepo := pos.NewRepository(db)
 	posSvc := pos.NewService(posRepo)
 	posHandler := pos.NewHandler(posSvc)
+
+	queuesRepo := queues.NewRepository(db)
+	queuesSvc := queues.NewService(queuesRepo)
+	queuesHandler := queues.NewHandler(queuesSvc)
 
 	walletRepo := wallet.NewRepository(db)
 	walletSvc := wallet.NewService(walletRepo)
@@ -327,6 +332,11 @@ func main() {
 	mux.Handle("GET /api/v1/staff-work", jwt(http.HandlerFunc(staffWorkHandler.Day)))
 	mux.Handle("GET /api/v1/staff-work/items", jwt(http.HandlerFunc(staffWorkHandler.Items)))
 	mux.Handle("GET /api/v1/staff-work/leads", jwt(http.HandlerFunc(staffWorkHandler.LeadWork)))
+
+	// Work queues (FR-19). What is still owed, as opposed to what happened.
+	// Plain jwt: low stock is a fact about the shelf, not about a person, and
+	// the receptionist who notices it is the one who should be able to see it.
+	mux.Handle("GET /api/v1/queues/stock", jwt(http.HandlerFunc(queuesHandler.Stock)))
 
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention
