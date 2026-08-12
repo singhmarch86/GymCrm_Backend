@@ -652,8 +652,8 @@ class _LeadsScreenState extends State<LeadsScreen>
       stageLabel: item.stageLabel,
       currentStep: item.nextStep,
       currentDue: item.nextStepDue,
-      onSave: (step, due) =>
-          LeadService().setNextStep(item.leadId, step: step, due: due),
+      onSave: (step, due, note) => LeadService()
+          .setNextStep(item.leadId, step: step, due: due, note: note),
       // Clearing is deliberate, not a mistake to be prevented: a lead that
       // genuinely needs no next step should be closable back to Unattended
       // rather than carrying a fake date somebody stops believing.

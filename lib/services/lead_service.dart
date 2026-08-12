@@ -88,10 +88,21 @@ class LeadService {
 
   // ─── Advance status ──────────────────────────────────────────────────────────
 
-  Future<Lead> advanceStatus(int id, String status, {String? lostReason}) async {
+  /// [note] records why the lead moved. Optional, stored on the stage-change
+  /// activity. Without it a move says what happened and never why, which is
+  /// the thing the next person picking up the lead actually needs.
+  Future<Lead> advanceStatus(
+    int id,
+    String status, {
+    String? lostReason,
+    String? note,
+  }) async {
     final body = <String, dynamic>{'status': status};
     if (lostReason != null && lostReason.isNotEmpty) {
       body['lost_reason'] = lostReason;
+    }
+    if (note != null && note.trim().isNotEmpty) {
+      body['note'] = note.trim();
     }
 
     final response = await guardRequest(() async => http.patch(
@@ -185,10 +196,14 @@ class LeadService {
   /// Records what happens next. Pass both, or neither to clear it — the
   /// backend rejects a step without a date, because a step nobody will be
   /// reminded of is the failure this feature exists to remove.
+  /// [note] is why, in the staff member's words. Optional, and stored on the
+  /// timeline rather than on the lead — a note is what somebody said at a
+  /// moment, not a property later notes overwrite.
   Future<void> setNextStep(
     int leadId, {
     String step = '',
     DateTime? due,
+    String note = '',
   }) async {
     await guardRequest(
       () async => http.patch(
@@ -197,6 +212,7 @@ class LeadService {
         body: jsonEncode({
           'step': step,
           'due': due == null ? '' : _ymd(due),
+          'note': note,
         }),
       ),
     );

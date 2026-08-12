@@ -20,7 +20,7 @@ Future<bool?> showNextStepSheet(
   String? suggestedStep,
   DateTime? suggestedDue,
   String? suggestionReason,
-  required Future<void> Function(String step, DateTime due) onSave,
+  required Future<void> Function(String step, DateTime due, String note) onSave,
   Future<void> Function()? onClear,
 }) {
   return showModalBottomSheet<bool>(
@@ -49,7 +49,7 @@ class _NextStepSheet extends StatefulWidget {
   final String? suggestedStep;
   final DateTime? suggestedDue;
   final String? suggestionReason;
-  final Future<void> Function(String step, DateTime due) onSave;
+  final Future<void> Function(String step, DateTime due, String note) onSave;
   final Future<void> Function()? onClear;
 
   const _NextStepSheet({
@@ -75,6 +75,17 @@ class _NextStepSheetState extends State<_NextStepSheet> {
   bool _saving = false;
   String? _error;
 
+  /// Why this step. Optional on purpose — a required note gets filled with
+  /// "." within a week, and a timeline of full stops is worse than one with
+  /// gaps in it.
+  final _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -95,7 +106,7 @@ class _NextStepSheetState extends State<_NextStepSheet> {
       _error = null;
     });
     try {
-      await widget.onSave(_step!, _due);
+      await widget.onSave(_step!, _due, _noteController.text);
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
@@ -211,6 +222,36 @@ class _NextStepSheetState extends State<_NextStepSheet> {
                   ],
                 ),
               ),
+            ),
+
+            const SizedBox(height: 16),
+            TextField(
+              controller: _noteController,
+              maxLines: 2,
+              textCapitalization: TextCapitalization.sentences,
+              style: const TextStyle(fontSize: 13.5),
+              decoration: InputDecoration(
+                labelText: 'Why? (optional)',
+                hintText: 'e.g. wants evening slots, works till 8',
+                hintStyle:
+                    TextStyle(fontSize: 12.5, color: Colors.grey.shade400),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Goes on the lead\u2019s timeline. The next person to pick this '
+              'up reads it before they call.',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
             ),
 
             if (_error != null) ...[

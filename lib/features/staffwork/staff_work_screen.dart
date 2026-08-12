@@ -254,8 +254,8 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       stageLabel: item.stageLabel,
       currentStep: item.nextStep,
       currentDue: item.nextStepDue,
-      onSave: (step, due) =>
-          LeadService().setNextStep(item.leadId, step: step, due: due),
+      onSave: (step, due, note) => LeadService()
+          .setNextStep(item.leadId, step: step, due: due, note: note),
       // Clearing is deliberate, not a mistake to be prevented: a lead that
       // genuinely needs no next step should go back to Unattended rather than
       // carry a fake date somebody stops believing.
