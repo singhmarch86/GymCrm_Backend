@@ -22,6 +22,23 @@ class CollectionsView extends StatelessWidget {
     required this.onAct,
   });
 
+  /// The queue as a plain list of widgets, so Staff work can splice it into
+  /// its own scroll view — the same arrangement the lead workflow uses.
+  ///
+  /// [showHeadline] is off for the embedded copy: Staff work has its own
+  /// totals above, and two sets of numbers on one screen invites the reader to
+  /// wonder why there are two.
+  List<Widget> sections({bool showHeadline = true}) {
+    if (queue.isClear) return const [];
+    return [
+      if (showHeadline) ...[
+        _Headline(queue: queue),
+        const SizedBox(height: 6),
+      ],
+      for (final g in queue.groups) ..._group(g),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     if (queue.isClear) {

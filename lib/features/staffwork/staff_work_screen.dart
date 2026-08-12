@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../models/collection_queue.dart';
 import '../../models/date_span.dart';
 import '../../models/lead_pipeline.dart';
 import '../../models/staff_work.dart';
 import '../../services/lead_service.dart';
+import '../../services/queue_service.dart';
 import '../../services/staff_work_service.dart';
+import '../../services/storage_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/empty_state.dart';
@@ -12,6 +15,8 @@ import '../../widgets/error_banner.dart';
 import '../../widgets/date_span_bar.dart';
 import '../../widgets/loading_state.dart';
 import '../leads/lead_detail_screen.dart';
+import '../payments/collection_action_sheet.dart';
+import '../payments/collections_view.dart';
 import '../leads/lead_workflow_view.dart';
 import '../leads/next_step_sheet.dart';
 import 'staff_lead_work_view.dart';
@@ -55,6 +60,14 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   // and what is owed does not change because the date control moved.
   LeadWorkflow? _workflow;
 
+  // What is still owed in money, alongside what was collected. Same shape as
+  // the Leads tab: the record above, the outstanding work below.
+  //
+  // Not date-scoped. A due is owed now whatever date the bar is showing, the
+  // same reason the lead queue ignores it.
+  CollectionQueue? _collections;
+  bool _isOwner = false;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +76,9 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
         if (_tabs.indexIsChanging) return;
         if (_tabs.index == 1 && _leadWork == null) _loadLeadWork();
       });
+    StorageService.getRole().then((r) {
+      if (mounted) setState(() => _isOwner = r == 'owner');
+    });
     _load();
   }
 
@@ -105,10 +121,16 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       _error = null;
     });
     try {
-      final day = await _service.getDay(span: _span);
+      // Together, so the tab does not reflow under the reader when the second
+      // half lands.
+      final results = await Future.wait([
+        _service.getDay(span: _span),
+        QueueService().getCollections(),
+      ]);
       if (!mounted) return;
       setState(() {
-        _day = day;
+        _day = results[0] as StaffWorkDay;
+        _collections = results[1] as CollectionQueue;
         _loading = false;
       });
     } catch (e) {
@@ -209,6 +231,55 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
               )),
           const SizedBox(height: 12),
           const _Caveat(),
+
+          // What is still owed, under what was collected. Same arrangement as
+          // the Leads tab, and the same reason: the record answers "what
+          // happened", and the desk still needs "what is outstanding" without
+          // changing screens.
+          //
+          // Grouped by member, never by collector. Nothing below totals money
+          // against a staff member's name — a collections list that does is
+          // one decision away from the sales leaderboard FR-13 §1 exists to
+          // prevent.
+          if (_collections != null && !_collections!.isClear) ...[
+            const SizedBox(height: 18),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                      child: Divider(color: Colors.grey.shade300, height: 1)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      "MONEY STILL OWED",
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                          color: Colors.grey.shade500),
+                    ),
+                  ),
+                  Expanded(
+                      child: Divider(color: Colors.grey.shade300, height: 1)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+              child: Text(
+                '${_collections!.totalCount} dues from '
+                '${_collections!.membersInvolved} members. The same queue as '
+                'Payments → Collections, and it ignores the dates above — a '
+                'due is owed now whichever day you are looking at.',
+                style: TextStyle(
+                    fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+              ),
+            ),
+            ...CollectionsView(queue: _collections!, onAct: _actOnDue)
+                .sections(showHeadline: false),
+          ],
         ],
       ),
     );
@@ -238,6 +309,15 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
               ).sections(showHeadline: false),
       ),
     );
+  }
+
+  Future<void> _actOnDue(CollectionItem item) async {
+    final changed = await showCollectionActionSheet(
+      context,
+      item: item,
+      isOwner: _isOwner,
+    );
+    if (changed == true && mounted) await _load();
   }
 
   Future<void> _openLead(int leadId) async {
