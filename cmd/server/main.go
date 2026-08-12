@@ -357,6 +357,14 @@ func main() {
 	mux.Handle("POST /api/v1/payments/{id}/write-off",
 		jwt(http.HandlerFunc(queuesHandler.WriteOff)))
 
+	// Renewals due (FR-19 §4). Windowed at 30 days either side; anything
+	// lapsed longer ago is counted in the response but not listed.
+	mux.Handle("GET /api/v1/queues/renewals",
+		jwt(http.HandlerFunc(queuesHandler.Renewals)))
+	// Owner-only, enforced in the service from the token.
+	mux.Handle("POST /api/v1/members/{id}/confirm-lapse",
+		jwt(http.HandlerFunc(queuesHandler.ConfirmLapse)))
+
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention
 	// endpoint above — there is deliberately no second resolve route.

@@ -25,6 +25,9 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/payments/{id}/promise", h.RecordPromise)
 	mux.HandleFunc("POST /api/v1/payments/{id}/settle", h.Settle)
 	mux.HandleFunc("POST /api/v1/payments/{id}/write-off", h.WriteOff)
+
+	mux.HandleFunc("GET /api/v1/queues/renewals", h.Renewals)
+	mux.HandleFunc("POST /api/v1/members/{id}/confirm-lapse", h.ConfirmLapse)
 }
 
 // Stock godoc
