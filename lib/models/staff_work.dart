@@ -92,15 +92,26 @@ class StaffDay {
   }
 }
 
-/// The whole screen for one date.
+/// The whole screen for one span (FR-18 §9).
 class StaffWorkDay {
+  /// Empty when the span covers more than one day — a month has no single
+  /// date, and the server deliberately omits it rather than sending the first
+  /// day for something the reader might label the whole range with.
   final String date;
+
+  final String from;
+  final String to;
+  final int days;
+
   final List<StaffDay> staff;
   final int totalActions;
   final int totalHandledInPaise;
 
   const StaffWorkDay({
     required this.date,
+    required this.from,
+    required this.to,
+    required this.days,
     required this.staff,
     required this.totalActions,
     required this.totalHandledInPaise,
@@ -108,6 +119,9 @@ class StaffWorkDay {
 
   factory StaffWorkDay.fromJson(Map<String, dynamic> j) => StaffWorkDay(
         date: j['date'] as String? ?? '',
+        from: j['from'] as String? ?? '',
+        to: j['to'] as String? ?? '',
+        days: j['days'] as int? ?? 1,
         staff: ((j['staff'] as List?) ?? [])
             .map((e) => StaffDay.fromJson(e as Map<String, dynamic>))
             .toList(),
@@ -116,6 +130,7 @@ class StaffWorkDay {
       );
 
   bool get isEmpty => staff.isEmpty;
+  bool get isSingleDay => days <= 1;
 }
 
 /// One row behind a number. An aggregate nobody can open is an accusation.
@@ -141,6 +156,32 @@ class StaffWorkItem {
         who: j['who'] as String? ?? '',
         what: j['what'] as String? ?? '',
         amountInPaise: j['amount_in_paise'] as int?,
+      );
+}
+
+/// A drill-down list, plus whether it is the whole list.
+///
+/// A day rarely hit the cap; a month will. "Exactly 200 things happened" and
+/// "the first 200 of many" look identical on screen and mean very different
+/// things, so the server says which it is rather than leaving the reader to
+/// assume.
+class StaffWorkItems {
+  final List<StaffWorkItem> items;
+  final bool truncated;
+  final int limit;
+
+  const StaffWorkItems({
+    required this.items,
+    required this.truncated,
+    required this.limit,
+  });
+
+  factory StaffWorkItems.fromJson(Map<String, dynamic> j) => StaffWorkItems(
+        items: ((j['items'] as List?) ?? [])
+            .map((e) => StaffWorkItem.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        truncated: j['truncated'] as bool? ?? false,
+        limit: j['limit'] as int? ?? 0,
       );
 }
 
@@ -243,6 +284,10 @@ class StaffLeadWork {
 
 class LeadWorkReport {
   final String date;
+  final String from;
+  final String to;
+  final int days;
+
   final List<StaffLeadWork> staff;
   final int totalOpen;
   final int totalUnattended;
@@ -250,6 +295,9 @@ class LeadWorkReport {
 
   const LeadWorkReport({
     required this.date,
+    required this.from,
+    required this.to,
+    required this.days,
     required this.staff,
     required this.totalOpen,
     required this.totalUnattended,
@@ -258,6 +306,9 @@ class LeadWorkReport {
 
   factory LeadWorkReport.fromJson(Map<String, dynamic> j) => LeadWorkReport(
         date: j['date'] ?? '',
+        from: j['from'] ?? '',
+        to: j['to'] ?? '',
+        days: j['days'] ?? 1,
         staff: ((j['staff'] as List?) ?? [])
             .map((e) => StaffLeadWork.fromJson(e as Map<String, dynamic>))
             .toList(),

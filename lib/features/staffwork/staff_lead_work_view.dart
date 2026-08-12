@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../models/date_span.dart';
 import '../../models/staff_work.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
@@ -15,11 +16,13 @@ import '../../widgets/app_card.dart';
 /// list sorted by conversions is a ranking whatever the heading says.
 class StaffLeadWorkView extends StatelessWidget {
   final LeadWorkReport report;
+  final DateSpan span;
   final void Function(int leadId)? onOpenLead;
 
   const StaffLeadWorkView({
     super.key,
     required this.report,
+    required this.span,
     this.onOpenLead,
   });
 
@@ -44,6 +47,7 @@ class StaffLeadWorkView extends StatelessWidget {
         const SizedBox(height: 8),
         ...report.staff.map((s) => _StaffLeadCard(
               staff: s,
+              span: span,
               onOpenLead: onOpenLead,
             )),
         const SizedBox(height: 14),
@@ -57,10 +61,12 @@ class StaffLeadWorkView extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'What each person is carrying is counted as it stands now. '
-                  'What they worked is counted for the day shown. Somebody '
-                  'carrying sixty leads will have unattended ones — that is a '
-                  'staffing fact before it is anything else.',
+                  'What each person is carrying is counted as it stands now, '
+                  'whatever dates are showing — asking for July does not '
+                  'un-neglect a lead still sitting untouched today. What they '
+                  'worked is counted ${span.workedSuffix}, and covers calls, '
+                  'counselling, trials, joins and notes logged by hand; '
+                  'automatic stage history is not counted here.',
                   style: TextStyle(
                       fontSize: 11, height: 1.4, color: Colors.grey.shade600),
                 ),
@@ -117,9 +123,14 @@ class _GymTotals extends StatelessWidget {
 
 class _StaffLeadCard extends StatelessWidget {
   final StaffLeadWork staff;
+  final DateSpan span;
   final void Function(int leadId)? onOpenLead;
 
-  const _StaffLeadCard({required this.staff, this.onOpenLead});
+  const _StaffLeadCard({
+    required this.staff,
+    required this.span,
+    this.onOpenLead,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -176,8 +187,19 @@ class _StaffLeadCard extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Carrying. Unattended first, because a lead nobody picked up is a
-            // worse failure than one being chased late.
+            // Labelled "now" explicitly. Once a range is on screen, an
+            // unlabelled block of counts reads as being scoped to that range,
+            // and these are not.
+            Text('Carrying now',
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                    color: Colors.grey.shade600)),
+            const SizedBox(height: 6),
+
+            // Unattended first, because a lead nobody picked up is a worse
+            // failure than one being chased late.
             Row(
               children: [
                 _stat('${c.unattended}', 'unattended',
@@ -228,7 +250,7 @@ class _StaffLeadCard extends StatelessWidget {
             Divider(height: 1, color: Colors.grey.shade200),
             const SizedBox(height: 10),
 
-            Text('Worked this day',
+            Text('Worked ${span.workedSuffix}',
                 style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -249,16 +271,21 @@ class _StaffLeadCard extends StatelessWidget {
                   // fact: a call that rang out is work done, but it is not
                   // contact, and conflating them makes a bad day look good.
                   if (w.calls > 0)
-                    _chip('${w.calls} calls · ${w.reached} reached',
-                        AppColors.info),
+                    _chip('${w.calls} ${_plural(w.calls, 'call')} · '
+                        '${w.reached} reached', AppColors.info),
                   if (w.counselling > 0)
                     _chip('${w.counselling} counselling', AppColors.primary),
                   if (w.trialsBooked > 0)
-                    _chip('${w.trialsBooked} trials booked', AppColors.warning),
+                    _chip(
+                        '${w.trialsBooked} '
+                        '${_plural(w.trialsBooked, 'trial')} booked',
+                        AppColors.warning),
                   if (w.joined > 0)
                     _chip('${w.joined} joined', AppColors.success),
                   if (w.notesLogged > 0)
-                    _chip('${w.notesLogged} notes', Colors.grey.shade600),
+                    _chip(
+                        '${w.notesLogged} ${_plural(w.notesLogged, 'note')}',
+                        Colors.grey.shade600),
                 ],
               ),
           ],
@@ -293,6 +320,8 @@ class _StaffLeadCard extends StatelessWidget {
             style: TextStyle(
                 fontSize: 11.5, fontWeight: FontWeight.w600, color: colour)),
       );
+
+  static String _plural(int n, String word) => n == 1 ? word : '${word}s';
 
   static String _due(DateTime d) {
     final now = DateTime.now();

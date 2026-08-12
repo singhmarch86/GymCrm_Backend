@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../models/date_span.dart';
 import '../../models/staff_work.dart';
 import '../../services/staff_work_service.dart';
 import '../../theme/app_colors.dart';
@@ -7,10 +8,11 @@ import '../../widgets/app_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
+import 'date_span_bar.dart';
 import 'staff_lead_work_view.dart';
 import 'staff_work_items_sheet.dart';
 
-/// What each person did on one day (FR-13).
+/// What each person did over a day, a month, or a range (FR-13, FR-18 §9).
 ///
 /// Deliberately not a leaderboard. The list is ordered by name, there is no
 /// score, and no row is ever coloured red for being low — the owner is being
@@ -32,7 +34,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   bool _loading = true;
   String? _error;
   StaffWorkDay? _day;
-  DateTime _date = DateTime.now();
+  DateSpan _span = DateSpan.today();
 
   // Leads (FR-18 §7). Loaded on first visit — the money view is what most
   // people open, and paying for both on entry doubles the wait for nothing.
@@ -63,7 +65,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       _leadsError = null;
     });
     try {
-      final data = await _service.getLeadWork(date: _date);
+      final data = await _service.getLeadWork(span: _span);
       if (!mounted) return;
       setState(() {
         _leadWork = data;
@@ -84,7 +86,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       _error = null;
     });
     try {
-      final day = await _service.getDay(date: _date);
+      final day = await _service.getDay(span: _span);
       if (!mounted) return;
       setState(() {
         _day = day;
@@ -99,24 +101,18 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
     }
   }
 
-  void _shiftDay(int days) {
-    final next = _date.add(Duration(days: days));
-    // No future days: the ledgers cannot contain tomorrow, and an empty screen
-    // would look like a failure rather than like a date that has not happened.
-    if (next.isAfter(DateTime.now())) return;
+  void _setSpan(DateSpan next) {
+    if (next == _span) return;
     setState(() {
-      _date = next;
+      _span = next;
+      // Dropped rather than left stale. The Leads tab is not visible right now
+      // if we are on the money tab, and showing July's funnel under an August
+      // heading for the split second before the reload lands is worse than
+      // showing a spinner.
       _leadWork = null;
     });
     _load();
     if (_tabs.index == 1) _loadLeadWork();
-  }
-
-  bool get _isToday {
-    final now = DateTime.now();
-    return _date.year == now.year &&
-        _date.month == now.month &&
-        _date.day == now.day;
   }
 
   @override
@@ -149,12 +145,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       ),
       body: Column(
         children: [
-          _DateBar(
-            date: _date,
-            isToday: _isToday,
-            onPrevious: () => _shiftDay(-1),
-            onNext: _isToday ? null : () => _shiftDay(1),
-          ),
+          DateSpanBar(span: _span, onChanged: _setSpan),
           Expanded(
             child: TabBarView(
               controller: _tabs,
@@ -174,11 +165,15 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
 
     final day = _day;
     if (day == null || day.isEmpty) {
-      return const EmptyStateView(
+      return EmptyStateView(
         icon: Icons.beach_access_rounded,
         title: 'Nothing recorded',
-        body: 'No payments, renewals, sales or member work were logged on this '
-            'day. If the gym was open, nobody was signed in.',
+        body: _span.isSingleDay
+            ? 'No payments, renewals, sales or member work were logged on this '
+                'day. If the gym was open, nobody was signed in.'
+            : 'Nothing was logged between ${_span.fromParam} and '
+                '${_span.toParam}. For a stretch this long that usually means '
+                'the system was not in use yet, rather than a quiet spell.',
       );
     }
 
@@ -187,11 +182,10 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       child: ListView(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
         children: [
-          _DayTotals(day: day),
+          _DayTotals(day: day, span: _span),
           const SizedBox(height: 8),
           ...day.staff.map((s) => _StaffCard(
                 staff: s,
-                date: _date,
                 onOpenCategory: (category) => _openItems(s, category),
               )),
           const SizedBox(height: 12),
@@ -210,7 +204,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
 
     return RefreshIndicator(
       onRefresh: _loadLeadWork,
-      child: StaffLeadWorkView(report: _leadWork!),
+      child: StaffLeadWorkView(report: _leadWork!, span: _span),
     );
   }
 
@@ -220,7 +214,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => StaffWorkItemsSheet(
-        date: _date,
+        span: _span,
         userId: staff.userId,
         staffName: staff.name,
         category: tally.category,
@@ -230,98 +224,47 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   }
 }
 
-/// Date navigation. One day at a time, on purpose — a week view is a different
-/// question and would need a different query.
-class _DateBar extends StatelessWidget {
-  final DateTime date;
-  final bool isToday;
-  final VoidCallback onPrevious;
-  final VoidCallback? onNext;
-
-  const _DateBar({
-    required this.date,
-    required this.isToday,
-    required this.onPrevious,
-    this.onNext,
-  });
-
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static const _weekdays = [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final label = isToday
-        ? 'Today'
-        : '${_weekdays[date.weekday - 1]} ${date.day} ${_months[date.month - 1]}';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      color: Colors.white,
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: 'Previous day',
-            icon: const Icon(Icons.chevron_left_rounded),
-            onPressed: onPrevious,
-          ),
-          Expanded(
-            child: Column(
-              children: [
-                Text(label,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15)),
-                if (!isToday)
-                  Text(
-                    '${date.day} ${_months[date.month - 1]} ${date.year}',
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade500),
-                  ),
-              ],
-            ),
-          ),
-          IconButton(
-            tooltip: onNext == null ? 'Already on today' : 'Next day',
-            icon: const Icon(Icons.chevron_right_rounded),
-            onPressed: onNext,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _DayTotals extends StatelessWidget {
   final StaffWorkDay day;
+  final DateSpan span;
 
-  const _DayTotals({required this.day});
+  const _DayTotals({required this.day, required this.span});
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
       padding: const EdgeInsets.all(14),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: _figure(
-              '${day.totalActions}',
-              day.totalActions == 1 ? 'thing recorded' : 'things recorded',
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _figure(
+                  '${day.totalActions}',
+                  day.totalActions == 1 ? 'thing recorded' : 'things recorded',
+                ),
+              ),
+              Container(width: 1, height: 34, color: Colors.grey.shade200),
+              Expanded(
+                child: _figure(
+                  _rupees(day.totalHandledInPaise),
+                  // "handled", never "earned" — a receptionist taking a ₹40,000
+                  // renewal did not generate ₹40,000 of value.
+                  'handled at the desk',
+                ),
+              ),
+            ],
           ),
-          Container(width: 1, height: 34, color: Colors.grey.shade200),
-          Expanded(
-            child: _figure(
-              _rupees(day.totalHandledInPaise),
-              // "handled", never "earned" — a receptionist taking a ₹40,000
-              // renewal did not generate ₹40,000 of value.
-              'handled at the desk',
+          // Over a span, the window has to be on the card. The heading above
+          // scrolls away, and a screenshot of "302 things recorded" with no
+          // dates on it is the kind of number that gets quoted at somebody.
+          if (!span.isSingleDay) ...[
+            const SizedBox(height: 10),
+            Text(
+              'across ${span.sublabel}',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -340,12 +283,10 @@ class _DayTotals extends StatelessWidget {
 
 class _StaffCard extends StatelessWidget {
   final StaffDay staff;
-  final DateTime date;
   final void Function(StaffTally) onOpenCategory;
 
   const _StaffCard({
     required this.staff,
-    required this.date,
     required this.onOpenCategory,
   });
 
