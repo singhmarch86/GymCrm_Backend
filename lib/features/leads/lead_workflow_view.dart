@@ -25,6 +25,29 @@ class LeadWorkflowView extends StatelessWidget {
     required this.onSetNextStep,
   });
 
+  /// The queue as a plain list of widgets, so it can be spliced into somebody
+  /// else's scroll view.
+  ///
+  /// Staff work → Leads shows this underneath the per-person cards. Rendering
+  /// the whole widget there would nest a ListView inside a ListView; exposing
+  /// the sections instead means both screens run the same code and the queue
+  /// cannot drift between them.
+  ///
+  /// [showHeadline] is off for the embedded copy — Staff work already shows
+  /// the same open/unattended/overdue totals at the top of its own tab, and
+  /// printing them twice on one screen invites the reader to wonder why there
+  /// are two.
+  List<Widget> sections({bool showHeadline = true}) {
+    if (workflow.isEmpty) return const [];
+    return [
+      if (showHeadline) ...[
+        _Headline(workflow: workflow),
+        const SizedBox(height: 6),
+      ],
+      for (final g in workflow.groups) _group(g),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     if (workflow.isEmpty) {
@@ -54,11 +77,7 @@ class LeadWorkflowView extends StatelessWidget {
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
-      children: [
-        _Headline(workflow: workflow),
-        const SizedBox(height: 6),
-        for (final g in workflow.groups) _group(g),
-      ],
+      children: sections(),
     );
   }
 

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../../models/date_span.dart';
+import '../../models/lead_pipeline.dart';
 import '../../models/staff_work.dart';
+import '../../services/lead_service.dart';
 import '../../services/staff_work_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
+import '../leads/lead_detail_screen.dart';
+import '../leads/lead_workflow_view.dart';
+import '../leads/next_step_sheet.dart';
 import 'date_span_bar.dart';
 import 'staff_lead_work_view.dart';
 import 'staff_work_items_sheet.dart';
@@ -42,6 +47,14 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   bool _leadsLoading = false;
   String? _leadsError;
 
+  // The workflow queue, the same one Leads → Workflow shows. Fetched here
+  // rather than passed in, because this screen can be reached without going
+  // through Leads at all.
+  //
+  // Deliberately not date-scoped: it is a list of decisions currently owed,
+  // and what is owed does not change because the date control moved.
+  LeadWorkflow? _workflow;
+
   @override
   void initState() {
     super.initState();
@@ -65,10 +78,16 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       _leadsError = null;
     });
     try {
-      final data = await _service.getLeadWork(span: _span);
+      // Both together: the tab is one screen and half of it arriving first
+      // would reflow under the reader.
+      final results = await Future.wait([
+        _service.getLeadWork(span: _span),
+        LeadService().getWorkflow(),
+      ]);
       if (!mounted) return;
       setState(() {
-        _leadWork = data;
+        _leadWork = results[0] as LeadWorkReport;
+        _workflow = results[1] as LeadWorkflow;
         _leadsLoading = false;
       });
     } catch (e) {
@@ -202,10 +221,49 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
     }
     if (_leadWork == null) return const LoadingView();
 
+    final workflow = _workflow;
+
     return RefreshIndicator(
       onRefresh: _loadLeadWork,
-      child: StaffLeadWorkView(report: _leadWork!, span: _span),
+      child: StaffLeadWorkView(
+        report: _leadWork!,
+        span: _span,
+        onOpenLead: _openLead,
+        queueSections: workflow == null
+            ? const []
+            : LeadWorkflowView(
+                workflow: workflow,
+                onTap: (item) => _openLead(item.leadId),
+                onSetNextStep: _setNextStep,
+              ).sections(showHeadline: false),
+      ),
     );
+  }
+
+  Future<void> _openLead(int leadId) async {
+    final changed = await showLeadDetailPanel(context, leadId);
+    if (!mounted) return;
+    if (changed == true) await _loadLeadWork();
+  }
+
+  /// The only write on this screen, and always a human confirming.
+  Future<void> _setNextStep(WorkflowItem item) async {
+    final saved = await showNextStepSheet(
+      context,
+      leadName: item.name,
+      stageLabel: item.stageLabel,
+      currentStep: item.nextStep,
+      currentDue: item.nextStepDue,
+      onSave: (step, due) =>
+          LeadService().setNextStep(item.leadId, step: step, due: due),
+      // Clearing is deliberate, not a mistake to be prevented: a lead that
+      // genuinely needs no next step should go back to Unattended rather than
+      // carry a fake date somebody stops believing.
+      onClear: item.nextStep == null
+          ? null
+          : () => LeadService().setNextStep(item.leadId),
+    );
+    if (saved == true && mounted) await _loadLeadWork();
   }
 
   void _openItems(StaffDay staff, StaffTally tally) {
