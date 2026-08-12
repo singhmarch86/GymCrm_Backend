@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/collection_queue.dart';
+import '../models/renewal_queue.dart';
 import '../models/stock_queue.dart';
 import 'api_config.dart';
 import 'api_response.dart';
@@ -33,6 +34,32 @@ class QueueService {
           headers: headers),
     );
     return CollectionQueue.fromJson(unwrapJson(response)['data']);
+  }
+
+  Future<RenewalQueue> getRenewals() async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.get(Uri.parse('$kBaseUrl/api/v1/queues/renewals'),
+          headers: headers),
+    );
+    return RenewalQueue.fromJson(unwrapJson(response)['data']);
+  }
+
+  /// Records that a member did not come back.
+  ///
+  /// Owner only, and the server enforces it. Takes them out of the queue
+  /// without money arriving, which is why it needs a reason — "churned, no
+  /// reason given" is a row nobody can interpret six months later.
+  Future<void> confirmLapse(int memberId, {required String reason}) async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/members/$memberId/confirm-lapse'),
+        headers: {...headers, 'Content-Type': 'application/json'},
+        body: jsonEncode({'reason': reason}),
+      ),
+    );
+    unwrapJson(response);
   }
 
   /// Records an attempt, reached or not.
