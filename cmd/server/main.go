@@ -369,6 +369,12 @@ func main() {
 	mux.Handle("POST /api/v1/members/{id}/confirm-lapse",
 		jwt(http.HandlerFunc(queuesHandler.ConfirmLapse)))
 
+	// Expected payments (FR-19 §5). The only date-scoped queue endpoint: what
+	// is owed is owed whatever range you ask for, but what is *coming* is a
+	// question about a window. Takes the same date/from/to as staff work.
+	mux.Handle("GET /api/v1/queues/expected",
+		jwt(http.HandlerFunc(queuesHandler.Expected)))
+
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention
 	// endpoint above — there is deliberately no second resolve route.
