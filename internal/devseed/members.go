@@ -66,21 +66,41 @@ var localities = []string{
 	"Salem Tabri", "Jamalpur", "Shimlapuri", "Tajpur Road",
 }
 
-// exactCounts sums to memberCountTarget — chosen up front (rather than
-// per-member weighted rolls) so the 60/15/10/15 mix in the plan is exact,
-// not just approximate.
+// segmentAssignments produces exactly memberCountTarget segments in the
+// 60/15/10/15 mix — chosen up front rather than by per-member weighted rolls,
+// so the mix is exact rather than approximate.
+//
+// Derived from memberCountTarget rather than written out. These used to be
+// four literals summing to 150 while the target said 800, so seeding panicked
+// on assignments[150] the moment anybody reseeded an empty database — invisible
+// until then, because the seeder skips a database that already has users. Two
+// numbers that must agree and are maintained apart will eventually disagree; a
+// share of the target cannot.
+//
+// Ordered slice rather than a map: Go randomises map iteration, which would
+// make the fixed rng seed produce a different gym on every run and quietly
+// destroy the reproducibility the seed exists for.
 func segmentAssignments(rng *rand.Rand) []segment {
-	assignments := make([]segment, 0, memberCountTarget)
-	counts := map[segment]int{
-		segHealthy:      90,
-		segExpiringSoon: 22,
-		segUpcoming:     15,
-		segExpired:      23,
+	shares := []struct {
+		seg segment
+		pct int
+	}{
+		{segExpiringSoon, 15},
+		{segUpcoming, 10},
+		{segExpired, 15},
 	}
-	for seg, n := range counts {
-		for i := 0; i < n; i++ {
-			assignments = append(assignments, seg)
+
+	assignments := make([]segment, 0, memberCountTarget)
+	for _, sh := range shares {
+		for i := 0; i < memberCountTarget*sh.pct/100; i++ {
+			assignments = append(assignments, sh.seg)
 		}
+	}
+
+	// Healthy takes the remainder, so the total is exact whatever integer
+	// division loses.
+	for len(assignments) < memberCountTarget {
+		assignments = append(assignments, segHealthy)
 	}
 	return assignments
 }
