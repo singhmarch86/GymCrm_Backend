@@ -27,12 +27,17 @@ class QueueService {
     return StockQueue.fromJson(unwrapJson(response)['data']);
   }
 
-  Future<CollectionQueue> getCollections() async {
+  /// [from]/[to] filter by DUE DATE and are optional. Omitting them returns
+  /// everything outstanding, which is the safe default: narrowing a debt list
+  /// by date hides the oldest and worst of it.
+  Future<CollectionQueue> getCollections({DateTime? from, DateTime? to}) async {
     final headers = await _headers();
-    final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/queues/collections'),
-          headers: headers),
+    final uri = Uri.parse('$kBaseUrl/api/v1/queues/collections').replace(
+      queryParameters: (from == null || to == null)
+          ? null
+          : {'from': _ymd(from), 'to': _ymd(to)},
     );
+    final response = await guardRequest(() => http.get(uri, headers: headers));
     return CollectionQueue.fromJson(unwrapJson(response)['data']);
   }
 

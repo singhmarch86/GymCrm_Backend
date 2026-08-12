@@ -112,12 +112,20 @@ class CollectionQueue {
   final int unchasedCount;
   final int membersInvolved;
 
+  /// What a due-date window is hiding. Filtering a debt list is not like
+  /// filtering a report — the oldest debt is the worst debt — so the amount
+  /// left out is returned and shown rather than quietly dropped.
+  final int outsideCount;
+  final int outsideInPaise;
+
   const CollectionQueue({
     required this.groups,
     required this.totalCount,
     required this.totalInPaise,
     required this.unchasedCount,
     required this.membersInvolved,
+    this.outsideCount = 0,
+    this.outsideInPaise = 0,
   });
 
   factory CollectionQueue.fromJson(Map<String, dynamic> j) => CollectionQueue(
@@ -128,6 +136,8 @@ class CollectionQueue {
         totalInPaise: j['total_in_paise'] ?? 0,
         unchasedCount: j['unchased_count'] ?? 0,
         membersInvolved: j['members_involved'] ?? 0,
+        outsideCount: j['outside_count'] ?? 0,
+        outsideInPaise: j['outside_in_paise'] ?? 0,
       );
 
   bool get isClear => totalCount == 0;

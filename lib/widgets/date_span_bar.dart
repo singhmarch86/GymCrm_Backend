@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/date_span.dart';
-import '../../theme/app_colors.dart';
+import '../models/date_span.dart';
+import '../theme/app_colors.dart';
 
 /// Day · Month · Custom, with a calendar (FR-18 §9).
 ///
@@ -17,17 +17,30 @@ class DateSpanBar extends StatelessWidget {
   final DateSpan span;
   final ValueChanged<DateSpan> onChanged;
 
+  /// Adds an "All" segment. Used where a date filter is optional and the
+  /// unfiltered view is the safe default — collections, where narrowing by due
+  /// date hides the oldest and worst debt.
+  final bool allowAll;
+
+  /// True when "All" is the current selection.
+  final bool showingAll;
+
+  final VoidCallback? onShowAll;
+
   const DateSpanBar({
     super.key,
     required this.span,
     required this.onChanged,
+    this.allowAll = false,
+    this.showingAll = false,
+    this.onShowAll,
   });
 
   @override
   Widget build(BuildContext context) {
-    final back = span.shift(-1);
-    final forward = span.shift(1);
-    final sub = span.sublabel;
+    final back = showingAll ? null : span.shift(-1);
+    final forward = showingAll ? null : span.shift(1);
+    final sub = showingAll ? null : span.sublabel;
 
     return Container(
       color: Colors.white,
@@ -45,7 +58,7 @@ class DateSpanBar extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      span.label,
+                      showingAll ? 'Everything outstanding' : span.label,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 15),
@@ -73,20 +86,36 @@ class DateSpanBar extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: SegmentedButton<SpanMode>(
+                // Keyed by string rather than SpanMode: "All" is a state of
+                // this control, not a kind of DateSpan, and adding it to the
+                // enum would force every DateSpan consumer to handle a mode
+                // that can never be constructed.
+                child: SegmentedButton<String>(
                   style: ButtonStyle(
                     visualDensity: VisualDensity.compact,
                     textStyle: WidgetStatePropertyAll(
                         TextStyle(fontSize: 12.5)),
                   ),
-                  segments: const [
-                    ButtonSegment(value: SpanMode.day, label: Text('Day')),
-                    ButtonSegment(value: SpanMode.month, label: Text('Month')),
-                    ButtonSegment(value: SpanMode.custom, label: Text('Custom')),
+                  segments: [
+                    if (allowAll)
+                      const ButtonSegment(value: 'all', label: Text('All')),
+                    const ButtonSegment(value: 'day', label: Text('Day')),
+                    const ButtonSegment(value: 'month', label: Text('Month')),
+                    const ButtonSegment(value: 'custom', label: Text('Custom')),
                   ],
-                  selected: {span.mode},
+                  selected: {showingAll ? 'all' : span.mode.name},
                   showSelectedIcon: false,
-                  onSelectionChanged: (s) => _switchTo(context, s.first),
+                  onSelectionChanged: (s) {
+                    final picked = s.first;
+                    if (picked == 'all') {
+                      onShowAll?.call();
+                      return;
+                    }
+                    _switchTo(
+                      context,
+                      SpanMode.values.byName(picked),
+                    );
+                  },
                 ),
               ),
               IconButton(
@@ -105,7 +134,9 @@ class DateSpanBar extends StatelessWidget {
   /// Switching mode keeps you where you were rather than jumping to today.
   /// Somebody looking at 3 July who taps Month means July, not August.
   void _switchTo(BuildContext context, SpanMode mode) {
-    if (mode == span.mode) return;
+    // Coming back from "All" always re-applies, even if the mode matches the
+    // span we were holding — otherwise the tap would do nothing visible.
+    if (mode == span.mode && !showingAll) return;
     switch (mode) {
       case SpanMode.day:
         // From a month, the anchor day is its end — the last day with data,

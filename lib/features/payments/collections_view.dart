@@ -51,6 +51,42 @@ class CollectionsView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
       children: [
+        // Said above the list, not below it. A filter that hides Rs 1.45L of
+        // older debt must be visible before the reader starts working the
+        // rows, not after they have finished.
+        if (queue.outsideCount > 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Container(
+              width: double.infinity,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                    color: AppColors.warning.withValues(alpha: 0.35)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.filter_alt_off_rounded,
+                      size: 16, color: AppColors.warning),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      'These dates hide ${queue.outsideCount} other '
+                      '${queue.outsideCount == 1 ? 'due' : 'dues'} worth '
+                      '${_rupees(queue.outsideInPaise)}. Older debt is usually '
+                      'the worse debt — switch to All before deciding nothing '
+                      'is outstanding.',
+                      style: const TextStyle(fontSize: 11.5, height: 1.35),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         _Headline(queue: queue),
         const SizedBox(height: 6),
         for (final g in queue.groups) ..._group(g),

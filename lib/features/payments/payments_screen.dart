@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../models/collection_queue.dart';
+import '../../models/date_span.dart';
 import '../../models/payment.dart';
 import '../../services/api_response.dart';
 import '../../services/payment_service.dart';
 import '../../services/queue_service.dart';
 import '../../services/storage_service.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/date_span_bar.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 
@@ -33,6 +35,11 @@ class _PaymentsScreenState extends State<PaymentsScreen>
   bool _collectionsLoading = false;
   String? _collectionsError;
   bool _isOwner = false;
+
+  // Null means everything outstanding, and that is where the screen opens.
+  // Narrowing a debt list by due date hides the oldest and worst of it, so the
+  // filter is opt-in rather than a default somebody has to notice.
+  DateSpan? _dueSpan;
 
   bool _isLoading = true;
   String? _error;
@@ -73,7 +80,10 @@ class _PaymentsScreenState extends State<PaymentsScreen>
       _collectionsError = null;
     });
     try {
-      final q = await _queues.getCollections();
+      final q = await _queues.getCollections(
+        from: _dueSpan?.from,
+        to: _dueSpan?.to,
+      );
       if (!mounted) return;
       setState(() {
         _collections = q;
@@ -107,9 +117,31 @@ class _PaymentsScreenState extends State<PaymentsScreen>
       return ErrorBanner(message: _collectionsError!, onRetry: _loadCollections);
     }
     if (_collections == null) return const LoadingView();
-    return RefreshIndicator(
-      onRefresh: _loadCollections,
-      child: CollectionsView(queue: _collections!, onAct: _act),
+
+    return Column(
+      children: [
+        DateSpanBar(
+          // The bar needs a span even while showing All, for when the reader
+          // switches back into a dated mode.
+          span: _dueSpan ?? DateSpan.month(DateTime.now()),
+          allowAll: true,
+          showingAll: _dueSpan == null,
+          onShowAll: () {
+            setState(() => _dueSpan = null);
+            _loadCollections();
+          },
+          onChanged: (next) {
+            setState(() => _dueSpan = next);
+            _loadCollections();
+          },
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadCollections,
+            child: CollectionsView(queue: _collections!, onAct: _act),
+          ),
+        ),
+      ],
     );
   }
 
