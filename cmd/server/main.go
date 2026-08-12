@@ -27,6 +27,7 @@ import (
 	"gymcrm/internal/members"
 	"gymcrm/internal/middleware"
 	"gymcrm/internal/payments"
+	"gymcrm/internal/payouts"
 	"gymcrm/internal/plans"
 	"gymcrm/internal/pos"
 	"gymcrm/internal/pt"
@@ -160,6 +161,10 @@ func main() {
 	posRepo := pos.NewRepository(db)
 	posSvc := pos.NewService(posRepo)
 	posHandler := pos.NewHandler(posSvc)
+
+	payoutsRepo := payouts.NewRepository(db)
+	payoutsSvc := payouts.NewService(payoutsRepo)
+	payoutsHandler := payouts.NewHandler(payoutsSvc)
 
 	queuesRepo := queues.NewRepository(db)
 	queuesSvc := queues.NewService(queuesRepo, invoicingSvc)
@@ -384,6 +389,20 @@ func main() {
 	// which is why none of it appears in the collections queue.
 	mux.Handle("GET /api/v1/queues/leakage",
 		jwt(http.HandlerFunc(queuesHandler.Leakage)))
+
+	// Trainer payouts (FR-21 §2). The other direction of the same problem:
+	// money the gym owes, which nothing recorded until now.
+	mux.Handle("GET /api/v1/trainers/{trainer_id}/payout-preview",
+		jwt(http.HandlerFunc(payoutsHandler.Preview)))
+	mux.Handle("GET /api/v1/payouts", jwt(http.HandlerFunc(payoutsHandler.List)))
+	mux.Handle("POST /api/v1/payouts", jwt(http.HandlerFunc(payoutsHandler.Create)))
+	mux.Handle("GET /api/v1/payouts/{id}", jwt(http.HandlerFunc(payoutsHandler.Get)))
+	mux.Handle("POST /api/v1/payouts/{id}/cancel",
+		jwt(http.HandlerFunc(payoutsHandler.Cancel)))
+	// Owner-only, enforced in the service from the token: this is the one
+	// operation in the system that moves cash out of the gym.
+	mux.Handle("POST /api/v1/payouts/{id}/pay",
+		jwt(http.HandlerFunc(payoutsHandler.MarkPaid)))
 
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention
