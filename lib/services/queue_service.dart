@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../models/collection_queue.dart';
 import '../models/date_span.dart';
 import '../models/expected_payments.dart';
+import '../models/invoice_batch.dart';
 import '../models/renewal_queue.dart';
 import '../models/stock_queue.dart';
 import 'api_config.dart';
@@ -67,6 +68,30 @@ class QueueService {
         .replace(queryParameters: _spanParams(span));
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return ExpectedPayments.fromJson(unwrapJson(response)['data']);
+  }
+
+  /// Draft invoices for raised dues (FR-19 §6).
+  ///
+  /// Raised dues only. An expiring membership is a plan price nobody has
+  /// agreed to pay, and it carries no payment id, so there is nothing to send
+  /// — which is the point: the mistake is not expressible. To invoice a
+  /// renewal, raise the due first and invoice that.
+  ///
+  /// Everything comes back as a draft. Issuing burns a permanent number and
+  /// is a decision made one invoice at a time.
+  Future<InvoiceBatch> invoiceDues({
+    required List<int> paymentIds,
+    String notes = '',
+  }) async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/queues/expected/invoice'),
+        headers: {...headers, 'Content-Type': 'application/json'},
+        body: jsonEncode({'payment_ids': paymentIds, 'notes': notes}),
+      ),
+    );
+    return InvoiceBatch.fromJson(unwrapJson(response)['data']);
   }
 
   /// A single day still goes as `date`, matching StaffWorkService — the two

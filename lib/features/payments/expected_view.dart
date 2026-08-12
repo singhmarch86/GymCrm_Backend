@@ -20,7 +20,26 @@ class ExpectedView extends StatelessWidget {
   /// Opens a member. Null on screens with nowhere to go.
   final void Function(int memberId)? onOpenMember;
 
-  const ExpectedView({super.key, required this.data, this.onOpenMember});
+  /// Payment ids currently ticked. Raised dues only — see [onToggle].
+  final Set<int> selected;
+
+  /// Ticks a raised due. Only ever called for rows that carry a payment id;
+  /// expiring rows have none, which is what stops a renewal nobody agreed to
+  /// from reaching the invoice endpoint.
+  final void Function(int paymentId)? onToggle;
+
+  /// Offered on an expiring row. The honest path to invoicing a renewal:
+  /// record that the member agreed, which raises a real due, and invoice that.
+  final void Function(ExpectedItem item)? onRaiseDue;
+
+  const ExpectedView({
+    super.key,
+    required this.data,
+    this.onOpenMember,
+    this.selected = const {},
+    this.onToggle,
+    this.onRaiseDue,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +76,17 @@ class ExpectedView extends StatelessWidget {
         ],
         _Caveat(data: data),
         const SizedBox(height: 6),
-        ...data.items.map((i) => _Row(item: i, onOpen: onOpenMember)),
+        ...data.items.map((i) => _Row(
+              item: i,
+              onOpen: onOpenMember,
+              selected: i.paymentId != null && selected.contains(i.paymentId),
+              onToggle: (i.paymentId == null || onToggle == null)
+                  ? null
+                  : () => onToggle!(i.paymentId!),
+              onRaiseDue: (i.isRaised || onRaiseDue == null)
+                  ? null
+                  : () => onRaiseDue!(i),
+            )),
         if (data.truncated) ...[
           const SizedBox(height: 10),
           Padding(
@@ -298,8 +327,17 @@ class _Caveat extends StatelessWidget {
 class _Row extends StatelessWidget {
   final ExpectedItem item;
   final void Function(int memberId)? onOpen;
+  final bool selected;
+  final VoidCallback? onToggle;
+  final VoidCallback? onRaiseDue;
 
-  const _Row({required this.item, this.onOpen});
+  const _Row({
+    required this.item,
+    this.onOpen,
+    this.selected = false,
+    this.onToggle,
+    this.onRaiseDue,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -310,13 +348,31 @@ class _Row extends StatelessWidget {
       child: AppCard(
         padding: EdgeInsets.zero,
         child: InkWell(
-          onTap: onOpen == null ? null : () => onOpen!(item.memberId),
+          // Tapping a raised row ticks it; there is a batch waiting at the
+          // bottom of the screen. An expiring row has nothing to tick.
+          onTap: onToggle ?? (onOpen == null
+              ? null
+              : () => onOpen!(item.memberId)),
           borderRadius: BorderRadius.circular(10),
           child: Padding(
             padding: const EdgeInsets.all(13),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (onToggle != null) ...[
+                  SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: Checkbox(
+                      value: selected,
+                      onChanged: (_) => onToggle!(),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,6 +405,24 @@ class _Row extends StatelessWidget {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.danger)),
+                      ],
+                      // The only honest route from an estimate to an invoice.
+                      // An expiring membership cannot be invoiced, because
+                      // nobody has agreed to pay it — so this records the
+                      // agreement, and the due it creates is invoiceable.
+                      if (onRaiseDue != null) ...[
+                        const SizedBox(height: 6),
+                        InkWell(
+                          onTap: onRaiseDue,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Text('They have agreed — raise the due',
+                                style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary)),
+                          ),
+                        ),
                       ],
                     ],
                   ),

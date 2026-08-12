@@ -77,6 +77,13 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   bool _expectedLoading = false;
   String? _expectedError;
 
+  // Raised dues ticked for invoicing. Cleared whenever the span changes: the
+  // rows underneath are about to be different ones, and a selection that
+  // survives a reload would invoice something the reader is no longer looking
+  // at.
+  final Set<int> _toInvoice = {};
+  bool _invoicing = false;
+
   bool _isOwner = false;
 
   @override
@@ -134,6 +141,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
     setState(() {
       _expectedLoading = true;
       _expectedError = null;
+      _toInvoice.clear();
     });
     try {
       final data = await QueueService().getExpected(span: _span);
@@ -280,10 +288,125 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
     final data = _expected;
     if (data == null) return const LoadingView();
 
-    return RefreshIndicator(
-      onRefresh: _loadExpected,
-      child: ExpectedView(data: data),
+    return Column(
+      children: [
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadExpected,
+            child: ExpectedView(
+              data: data,
+              selected: _toInvoice,
+              onToggle: (paymentId) => setState(() {
+                if (!_toInvoice.remove(paymentId)) _toInvoice.add(paymentId);
+              }),
+              onRaiseDue: _agreeAndRaise,
+            ),
+          ),
+        ),
+        if (_toInvoice.isNotEmpty) _invoiceBar(),
+      ],
     );
+  }
+
+  /// Only appears once something is ticked, and says the two things a person
+  /// needs before pressing it: how many documents this makes, and that they
+  /// are drafts.
+  Widget _invoiceBar() {
+    final n = _toInvoice.length;
+    return Material(
+      elevation: 8,
+      color: Colors.white,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('$n ${n == 1 ? 'due' : 'dues'} selected',
+                        style: const TextStyle(
+                            fontSize: 13.5, fontWeight: FontWeight.bold)),
+                    Text('Creates drafts — nothing is issued',
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey.shade600)),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: _invoicing
+                    ? null
+                    : () => setState(_toInvoice.clear),
+                child: const Text('Clear'),
+              ),
+              const SizedBox(width: 4),
+              ElevatedButton(
+                onPressed: _invoicing ? null : _createInvoices,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+                child: _invoicing
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text('Create invoices'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _createInvoices() async {
+    setState(() => _invoicing = true);
+    try {
+      final result = await QueueService()
+          .invoiceDues(paymentIds: _toInvoice.toList());
+      if (!mounted) return;
+
+      // Both halves reported. A batch that says only what it created lets an
+      // already-invoiced due look handled.
+      final parts = <String>[
+        '${result.invoiceCount} '
+            '${result.invoiceCount == 1 ? 'draft invoice' : 'draft invoices'}',
+        if (result.skipped.isNotEmpty) '${result.skipped.length} skipped',
+      ];
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('${parts.join(' · ')}. '
+            'Find them under Invoices to check and issue.'),
+        duration: const Duration(seconds: 5),
+      ));
+      setState(() => _invoicing = false);
+      await _loadExpected();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _invoicing = false);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
+  /// An expiring membership becomes invoiceable only once somebody records
+  /// that the member agreed to renew. That is what this does — it raises a
+  /// real due, which the next refresh shows as a tickable row.
+  Future<void> _agreeAndRaise(ExpectedItem item) async {
+    final raised = await showRaiseDueSheet(
+      context,
+      member: RaiseDuePrefill(
+        memberId: item.memberId,
+        name: item.member,
+        phone: item.phone,
+        amountInPaise: item.amountInPaise,
+      ),
+    );
+    if (raised == true && mounted) await _loadExpected();
   }
 
   /// Everything still owed, as its own tab rather than a footer under the

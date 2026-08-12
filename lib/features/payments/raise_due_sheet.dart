@@ -12,17 +12,42 @@ import '../../widgets/member_picker.dart';
 /// row. Until this existed the collections queue could only show dues that
 /// some other process happened to create, so it looked emptier than reality —
 /// and a gym that cannot raise a due cannot chase it.
-Future<bool?> showRaiseDueSheet(BuildContext context) {
+/// What the Expected view knows about a member whose membership is expiring.
+///
+/// Fills the sheet in rather than making somebody search for a person they
+/// were already looking at. The amount is the plan's price and is a *starting
+/// point*: the member may have agreed to something else, which is exactly why
+/// it lands in an editable field rather than being posted straight through.
+class RaiseDuePrefill {
+  final int memberId;
+  final String name;
+  final String phone;
+  final int amountInPaise;
+
+  const RaiseDuePrefill({
+    required this.memberId,
+    required this.name,
+    required this.phone,
+    required this.amountInPaise,
+  });
+}
+
+Future<bool?> showRaiseDueSheet(
+  BuildContext context, {
+  RaiseDuePrefill? member,
+}) {
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => const _RaiseDueSheet(),
+    builder: (_) => _RaiseDueSheet(prefill: member),
   );
 }
 
 class _RaiseDueSheet extends StatefulWidget {
-  const _RaiseDueSheet();
+  final RaiseDuePrefill? prefill;
+
+  const _RaiseDueSheet({this.prefill});
 
   @override
   State<_RaiseDueSheet> createState() => _RaiseDueSheetState();
@@ -34,6 +59,36 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
   final _notes = TextEditingController();
 
   Member? _member;
+
+  /// Set when the sheet was opened from a row that already named somebody.
+  /// Cleared the moment the picker returns, so there is only ever one answer
+  /// to "who owes this".
+  RaiseDuePrefill? _prefill;
+
+  int? get _memberId => _member?.id ?? _prefill?.memberId;
+
+  String? get _memberLabel {
+    final m = _member;
+    if (m != null) {
+      return '${m.firstName} ${m.lastName}'
+          '${m.phone.isEmpty ? '' : ' · ${m.phone}'}';
+    }
+    final p = _prefill;
+    if (p == null) return null;
+    return '${p.name}${p.phone.isEmpty ? '' : ' · ${p.phone}'}';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.prefill;
+    if (p == null) return;
+    _prefill = p;
+    // The plan price, as a starting point somebody can overwrite. What the
+    // member actually agreed to is the thing being recorded, and it is not
+    // always the list price.
+    _amount.text = '${p.amountInPaise ~/ 100}';
+  }
 
   /// No default. The due date decides which group the row lands in, and
   /// quietly assuming today would put somebody in "nobody has chased these"
@@ -51,7 +106,7 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
   }
 
   bool get _canSave =>
-      _member != null &&
+      _memberId != null &&
       _due != null &&
       (int.tryParse(_amount.text.trim()) ?? 0) > 0 &&
       !_saving;
@@ -63,7 +118,12 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
       subtitle: 'Search by name or phone',
       emptyHint: 'No matching member.',
     );
-    if (picked != null && mounted) setState(() => _member = picked);
+    if (picked != null && mounted) {
+      setState(() {
+        _member = picked;
+        _prefill = null;
+      });
+    }
   }
 
   Future<void> _pickDate() async {
@@ -87,7 +147,7 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
     });
     try {
       await _service.raiseDue(
-        memberId: _member!.id,
+        memberId: _memberId!,
         amountInPaise: int.parse(_amount.text.trim()) * 100,
         dueDate: _due!,
         notes: _notes.text,
@@ -143,10 +203,7 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
                 const SizedBox(height: 16),
                 _field(
                   label: 'Member',
-                  value: _member == null
-                      ? null
-                      : '${_member!.firstName} ${_member!.lastName}'
-                          '${_member!.phone.isEmpty ? '' : ' · ${_member!.phone}'}',
+                  value: _memberLabel,
                   placeholder: 'Choose a member',
                   icon: Icons.person_search_rounded,
                   onTap: _saving ? null : _pickMember,
