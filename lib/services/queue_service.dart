@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
+import '../models/collection_queue.dart';
 import '../models/stock_queue.dart';
 import 'api_config.dart';
 import 'api_response.dart';
@@ -22,4 +25,102 @@ class QueueService {
     );
     return StockQueue.fromJson(unwrapJson(response)['data']);
   }
+
+  Future<CollectionQueue> getCollections() async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.get(Uri.parse('$kBaseUrl/api/v1/queues/collections'),
+          headers: headers),
+    );
+    return CollectionQueue.fromJson(unwrapJson(response)['data']);
+  }
+
+  /// Records an attempt, reached or not.
+  ///
+  /// A call that rang out still counts — somebody tried, and the next person
+  /// should not repeat it. Whether they got through is a separate field so the
+  /// two never get conflated.
+  Future<void> recordContact(
+    int paymentId, {
+    required String channel,
+    required bool reached,
+    String note = '',
+  }) async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/payments/$paymentId/contact'),
+        headers: {...headers, 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'channel': channel,
+          'reached': reached,
+          'note': note,
+        }),
+      ),
+    );
+    unwrapJson(response);
+  }
+
+  Future<void> recordPromise(
+    int paymentId, {
+    required DateTime date,
+    String note = '',
+  }) async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/payments/$paymentId/promise'),
+        headers: {...headers, 'Content-Type': 'application/json'},
+        body: jsonEncode({'date': _ymd(date), 'note': note}),
+      ),
+    );
+    unwrapJson(response);
+  }
+
+  /// Settles a due that already exists.
+  ///
+  /// Deliberately not PaymentService.collectPayment, which creates a *new*
+  /// payment: collecting through that would leave the original pending and
+  /// record the same money twice, so the queue could never reach zero by
+  /// actually being paid.
+  Future<void> settle(
+    int paymentId, {
+    required String paymentMode,
+    String reference = '',
+  }) async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/payments/$paymentId/settle'),
+        headers: {...headers, 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'payment_mode': paymentMode,
+          'reference_number': reference,
+        }),
+      ),
+    );
+    unwrapJson(response);
+  }
+
+  /// Owner only, and the server enforces it. The reason is required because
+  /// the money stops being receivable, and an unexplained write-off is
+  /// indistinguishable from money going missing.
+  Future<void> writeOff(int paymentId, {required String reason}) async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/payments/$paymentId/write-off'),
+        headers: {...headers, 'Content-Type': 'application/json'},
+        body: jsonEncode({'reason': reason}),
+      ),
+    );
+    unwrapJson(response);
+  }
+
+  /// Local date, never UTC — toIso8601String() would hand the server yesterday
+  /// for anything before 05:30 IST.
+  static String _ymd(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
 }

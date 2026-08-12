@@ -24,6 +24,13 @@ class ApiException implements Exception {
 /// calling `jsonDecode(response.body)` directly.
 Map<String, dynamic> unwrapJson(http.Response response) {
   if (response.statusCode >= 200 && response.statusCode < 300) {
+    // A 204 has no body by definition, and several endpoints legitimately
+    // return one. Decoding an empty string throws a FormatException that no
+    // caller expects on the success path — the very bug class this function
+    // exists to prevent, so it is handled here rather than in each caller.
+    if (response.statusCode == 204 || response.body.trim().isEmpty) {
+      return const {};
+    }
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
