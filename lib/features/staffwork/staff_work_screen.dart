@@ -17,6 +17,7 @@ import '../../widgets/loading_state.dart';
 import '../leads/lead_detail_screen.dart';
 import '../payments/collection_action_sheet.dart';
 import '../payments/collections_view.dart';
+import '../payments/raise_due_sheet.dart';
 import '../leads/lead_workflow_view.dart';
 import '../leads/next_step_sheet.dart';
 import 'staff_lead_work_view.dart';
@@ -71,10 +72,13 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 2, vsync: this)
+    _tabs = TabController(length: 3, vsync: this)
       ..addListener(() {
         if (_tabs.indexIsChanging) return;
-        if (_tabs.index == 1 && _leadWork == null) _loadLeadWork();
+        // Rebuild on every settled tab change: the date bar and the button
+        // below both depend on which tab is showing.
+        setState(() {});
+        if (_tabs.index == 2 && _leadWork == null) _loadLeadWork();
       });
     StorageService.getRole().then((r) {
       if (mounted) setState(() => _isOwner = r == 'owner');
@@ -153,7 +157,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       _leadWork = null;
     });
     _load();
-    if (_tabs.index == 1) _loadLeadWork();
+    if (_tabs.index == 2) _loadLeadWork();
   }
 
   @override
@@ -169,7 +173,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
             icon: const Icon(Icons.refresh_rounded),
             onPressed: _loading ? null : () {
               _load();
-              if (_tabs.index == 1) _loadLeadWork();
+              if (_tabs.index == 2) _loadLeadWork();
             },
           ),
         ],
@@ -180,22 +184,59 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           indicatorColor: AppColors.primary,
           tabs: const [
             Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Money & work'),
+            Tab(icon: Icon(Icons.request_quote_rounded, size: 18), text: 'Collect'),
             Tab(icon: Icon(Icons.person_search_rounded, size: 18), text: 'Leads'),
           ],
         ),
       ),
+      floatingActionButton: _tabs.index == 1
+          ? FloatingActionButton.extended(
+              onPressed: _raiseDue,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: const Text('Raise a due'),
+            )
+          : null,
       body: Column(
         children: [
-          DateSpanBar(span: _span, onChanged: _setSpan),
+          // Hidden on Collect. That queue ignores dates entirely, and a date
+          // control sitting above a list it does not filter invites the reader
+          // to trust a narrowing that never happened.
+          if (_tabs.index != 1)
+            DateSpanBar(span: _span, onChanged: _setSpan),
           Expanded(
             child: TabBarView(
               controller: _tabs,
-              children: [_body(), _leadsBody()],
+              children: [_body(), _collectBody(), _leadsBody()],
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// Everything still owed, as its own tab rather than a footer under the
+  /// record. Money & work answers "what happened"; this answers "what is left
+  /// to do" — different readers, different times of day, and the queue was
+  /// nine tenths of the tab it used to be buried in.
+  Widget _collectBody() {
+    if (_loading) return const LoadingView();
+    if (_error != null) {
+      return ErrorBanner(message: _error!, onRetry: _load);
+    }
+    final queue = _collections;
+    if (queue == null) return const LoadingView();
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: CollectionsView(queue: queue, onAct: _actOnDue),
+    );
+  }
+
+  Future<void> _raiseDue() async {
+    final raised = await showRaiseDueSheet(context);
+    if (raised == true && mounted) await _load();
   }
 
   Widget _body() {
@@ -232,53 +273,16 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           const SizedBox(height: 12),
           const _Caveat(),
 
-          // What is still owed, under what was collected. Same arrangement as
-          // the Leads tab, and the same reason: the record answers "what
-          // happened", and the desk still needs "what is outstanding" without
-          // changing screens.
-          //
-          // Grouped by member, never by collector. Nothing below totals money
-          // against a staff member's name — a collections list that does is
-          // one decision away from the sales leaderboard FR-13 §1 exists to
-          // prevent.
+          // What is still owed lives in the Collect tab next door, not here.
+          // This card is a record of a chosen day; that is a worklist owed
+          // now. Pointed at rather than duplicated, so the desk never works
+          // the same due from two places.
           if (_collections != null && !_collections!.isClear) ...[
-            const SizedBox(height: 18),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: Divider(color: Colors.grey.shade300, height: 1)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      "MONEY STILL OWED",
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
-                          color: Colors.grey.shade500),
-                    ),
-                  ),
-                  Expanded(
-                      child: Divider(color: Colors.grey.shade300, height: 1)),
-                ],
-              ),
+            const SizedBox(height: 14),
+            _OwedPointer(
+              queue: _collections!,
+              onOpen: () => _tabs.animateTo(1),
             ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
-              child: Text(
-                '${_collections!.totalCount} dues from '
-                '${_collections!.membersInvolved} members. The same queue as '
-                'Payments → Collections, and it ignores the dates above — a '
-                'due is owed now whichever day you are looking at.',
-                style: TextStyle(
-                    fontSize: 11, height: 1.4, color: Colors.grey.shade600),
-              ),
-            ),
-            ...CollectionsView(queue: _collections!, onAct: _actOnDue)
-                .sections(showHeadline: false),
           ],
         ],
       ),
@@ -357,6 +361,66 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
         staffName: staff.name,
         category: tally.category,
         title: tally.label,
+      ),
+    );
+  }
+}
+
+/// A signpost to the Collect tab, not a second copy of it.
+///
+/// The record above is about a chosen day. Outstanding money is not — so it
+/// gets a headline figure and a way through, and the rows stay in one place
+/// where two people cannot chase the same due from two screens.
+class _OwedPointer extends StatelessWidget {
+  final CollectionQueue queue;
+  final VoidCallback onOpen;
+
+  const _OwedPointer({required this.queue, required this.onOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        onTap: onOpen,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Icon(Icons.request_quote_rounded,
+                  size: 20,
+                  color: queue.unchasedCount > 0
+                      ? AppColors.danger
+                      : AppColors.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${_rupees(queue.totalInPaise)} still owed',
+                        style: const TextStyle(
+                            fontSize: 14.5, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${queue.totalCount} dues from '
+                      '${queue.membersInvolved} members'
+                      '${queue.unchasedCount == 0 ? '' : ' · ${queue.unchasedCount} with nobody on them'}'
+                      '. Not tied to the dates above.',
+                      style: TextStyle(
+                          fontSize: 11.5,
+                          height: 1.35,
+                          color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right_rounded,
+                  size: 20, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
       ),
     );
   }
