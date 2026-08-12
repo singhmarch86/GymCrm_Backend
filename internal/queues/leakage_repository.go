@@ -158,3 +158,77 @@ func (r *Repository) TrainingAfterExpiry(ctx context.Context) ([]leakRow, error)
 		map[string]interface{}{"gym": tc.GymID()}).Scan(&rows).Error
 	return rows, err
 }
+
+// UnpaidMemberships finds active members with no payment recorded at all.
+//
+// "At all" is the point: a member with a pending due is already in the
+// collections queue and is being chased. This finds the ones where nothing was
+// ever written down — no payment, no due — so there is nothing to chase and
+// nobody knows they owe anything.
+//
+// Frozen, terminated and churned are excluded for the same reasons as
+// everywhere else. Members who joined today are excluded too: the desk has not
+// finished with them yet, and flagging a sale in progress trains people to
+// ignore the screen.
+func (r *Repository) UnpaidMemberships(ctx context.Context) ([]leakRow, error) {
+	tc := database.MustGetTenant(ctx)
+
+	var rows []leakRow
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT m.id AS member_id,
+		       TRIM(m.first_name || ' ' || COALESCE(m.last_name, '')) AS member,
+		       COALESCE(m.phone, '') AS phone,
+		       NULL::bigint AS trainer_id,
+		       NULL::varchar AS trainer,
+		       NULL::bigint AS package_id,
+		       1 AS count,
+		       COALESCE(pl.price_in_paise, 0) AS value_in_paise,
+		       m.start_date::timestamptz AS since,
+		       COALESCE(pl.name, '') AS extra
+		  FROM members m
+		  LEFT JOIN membership_plans pl ON pl.id = m.membership_plan_id
+		 WHERE m.gym_id = @gym
+		   AND m.deleted_at IS NULL
+		   AND m.status = 'active'
+		   AND m.join_date < CURRENT_DATE
+		   AND NOT EXISTS (
+		       SELECT 1 FROM payments p WHERE p.member_id = m.id
+		   )
+		 ORDER BY value_in_paise DESC, member ASC`,
+		map[string]interface{}{"gym": tc.GymID()}).Scan(&rows).Error
+	return rows, err
+}
+
+// UncollectedInvoices finds issued invoices with no payment row of any kind.
+//
+// Deliberately not "invoices that are unpaid". An invoice raised from a due
+// already has that due linked to it and the due is in the collections queue;
+// listing it here as well would report the same rupees twice, and a leak total
+// that double-counts is worse than none.
+func (r *Repository) UncollectedInvoices(ctx context.Context) ([]leakRow, error) {
+	tc := database.MustGetTenant(ctx)
+
+	var rows []leakRow
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT i.member_id,
+		       TRIM(m.first_name || ' ' || COALESCE(m.last_name, '')) AS member,
+		       COALESCE(m.phone, '') AS phone,
+		       NULL::bigint AS trainer_id,
+		       NULL::varchar AS trainer,
+		       NULL::bigint AS package_id,
+		       1 AS count,
+		       i.total_in_paise AS value_in_paise,
+		       i.invoice_date::timestamptz AS since,
+		       COALESCE(i.invoice_number, '') AS extra
+		  FROM invoices i
+		  JOIN members m ON m.id = i.member_id AND m.deleted_at IS NULL
+		 WHERE i.gym_id = @gym
+		   AND i.status = 'issued'
+		   AND i.total_in_paise > 0
+		   AND NOT EXISTS (
+		       SELECT 1 FROM payments p WHERE p.invoice_id = i.id
+		   )
+		 ORDER BY i.total_in_paise DESC, member ASC`,
+		map[string]interface{}{"gym": tc.GymID()}).Scan(&rows).Error
+	return rows, err
+}

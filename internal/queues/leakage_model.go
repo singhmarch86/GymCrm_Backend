@@ -30,6 +30,20 @@ const (
 	// The classic gym leak: the door keeps opening because nobody told the
 	// desk to stop.
 	LeakTrainingExpired = "training_expired"
+
+	// An active membership with no payment recorded against it, ever — not
+	// paid, and not even raised as a due. The same shape as PT sold without
+	// money, which is now impossible: somebody was let in and nothing was
+	// written down, so there is nothing to chase.
+	LeakUnpaidMembership = "unpaid_membership"
+
+	// An invoice issued with no payment row of any kind against it.
+	//
+	// Narrower than "unpaid invoice" on purpose. An invoice raised from a due
+	// already has that due linked to it, and dues sit in the collections
+	// queue — counting them here would report the same money twice and
+	// inflate the total the owner reads.
+	LeakUncollectedInvoice = "uncollected_invoice"
 )
 
 // LeakItem is one finding.

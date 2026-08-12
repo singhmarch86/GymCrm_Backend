@@ -20,6 +20,14 @@ func (s *Service) Leakage(ctx context.Context) (*LeakageReport, error) {
 	if err != nil {
 		return nil, err
 	}
+	unpaid, err := s.repo.UnpaidMemberships(ctx)
+	if err != nil {
+		return nil, err
+	}
+	invoices, err := s.repo.UncollectedInvoices(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	out := &LeakageReport{Groups: []LeakGroup{
 		buildGroup(LeakOversoldPT,
@@ -36,6 +44,22 @@ func (s *Service) Leakage(ctx context.Context) (*LeakageReport, error) {
 				"purpose. Valued at their own plan's daily rate, which is "+
 				"deliberately less than a walk-in would pay.",
 			"urgent", expired, expiredDetail),
+
+		buildGroup(LeakUnpaidMembership,
+			"Members who never paid",
+			"Active memberships with no payment recorded at all — not paid, "+
+				"and not even raised as a due. A member with an unpaid due is "+
+				"not here; that one is already being chased in Collect. These "+
+				"are the ones nobody wrote down. Valued at their plan price.",
+			"urgent", unpaid, unpaidDetail),
+
+		buildGroup(LeakUncollectedInvoice,
+			"Invoices with nothing against them",
+			"Issued invoices carrying no payment row of any kind. Invoices "+
+				"raised from a due are excluded on purpose — that due is "+
+				"already counted in Collect, and listing it twice would "+
+				"inflate the figure above.",
+			"warn", invoices, invoiceDetail),
 
 		buildGroup(LeakSessionDrift,
 			"Counters that disagree",
@@ -101,6 +125,21 @@ func expiredDetail(r leakRow) (string, string) {
 	n := plural(r.Count, "visit")
 	return itoa(r.Count) + " " + n + " after the membership expired",
 		"their plan's daily rate"
+}
+
+func unpaidDetail(r leakRow) (string, string) {
+	plan := r.Extra
+	if plan == "" {
+		plan = "No plan on record"
+	}
+	return plan + " — nothing ever recorded", "their plan price"
+}
+
+func invoiceDetail(r leakRow) (string, string) {
+	if r.Extra == "" {
+		return "Issued invoice, nothing collected", "the invoice total"
+	}
+	return "Invoice " + r.Extra + " — nothing collected", "the invoice total"
 }
 
 func driftDetail(r leakRow) (string, string) {
