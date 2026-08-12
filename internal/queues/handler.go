@@ -17,6 +17,14 @@ func NewHandler(svc *Service) *Handler {
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/queues/stock", h.Stock)
+	mux.HandleFunc("GET /api/v1/queues/collections", h.Collections)
+
+	// The writes hang off the payment, not off the queue: they are facts about
+	// a due, and they stay true whichever screen recorded them.
+	mux.HandleFunc("POST /api/v1/payments/{id}/contact", h.RecordContact)
+	mux.HandleFunc("POST /api/v1/payments/{id}/promise", h.RecordPromise)
+	mux.HandleFunc("POST /api/v1/payments/{id}/settle", h.Settle)
+	mux.HandleFunc("POST /api/v1/payments/{id}/write-off", h.WriteOff)
 }
 
 // Stock godoc

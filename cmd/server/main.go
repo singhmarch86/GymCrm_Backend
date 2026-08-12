@@ -338,6 +338,25 @@ func main() {
 	// the receptionist who notices it is the one who should be able to see it.
 	mux.Handle("GET /api/v1/queues/stock", jwt(http.HandlerFunc(queuesHandler.Stock)))
 
+	// Collections (FR-19 §3). Not narrowed by user: unlike staff work this is
+	// a worklist rather than a record of who did what, and a receptionist
+	// working the desk needs the whole list for it to be useful.
+	mux.Handle("GET /api/v1/queues/collections",
+		jwt(http.HandlerFunc(queuesHandler.Collections)))
+	mux.Handle("POST /api/v1/payments/{id}/contact",
+		jwt(http.HandlerFunc(queuesHandler.RecordContact)))
+	mux.Handle("POST /api/v1/payments/{id}/promise",
+		jwt(http.HandlerFunc(queuesHandler.RecordPromise)))
+	// Settles an existing due. Distinct from POST /api/v1/payments, which
+	// creates a new one — collecting through that would leave the original
+	// pending and double-count the money.
+	mux.Handle("POST /api/v1/payments/{id}/settle",
+		jwt(http.HandlerFunc(queuesHandler.Settle)))
+	// Write-off is owner-only, enforced in the service from the token rather
+	// than here, so the rule travels with the operation.
+	mux.Handle("POST /api/v1/payments/{id}/write-off",
+		jwt(http.HandlerFunc(queuesHandler.WriteOff)))
+
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention
 	// endpoint above — there is deliberately no second resolve route.
