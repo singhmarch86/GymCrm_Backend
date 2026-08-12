@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"gymcrm/internal/shared/response"
 )
@@ -15,10 +16,21 @@ import (
 // @Tags         queues
 // @Produce      json
 // @Security     BearerAuth
+// @Param        window  query  int  false  "Days either side of today; default 30, max 365"
 // @Success      200  {object}  RenewalQueue
 // @Router       /api/v1/queues/renewals [get]
 func (h *Handler) Renewals(w http.ResponseWriter, r *http.Request) {
-	queue, err := h.svc.Renewals(r.Context())
+	window := 0
+	if raw := strings.TrimSpace(r.URL.Query().Get("window")); raw != "" {
+		n, convErr := strconv.Atoi(raw)
+		if convErr != nil || n <= 0 {
+			response.BadRequest(w, "window must be a positive number of days")
+			return
+		}
+		window = n
+	}
+
+	queue, err := h.svc.Renewals(r.Context(), window)
 	if err != nil {
 		log.Printf("queues: renewals: %v", err)
 		response.InternalServerError(w)

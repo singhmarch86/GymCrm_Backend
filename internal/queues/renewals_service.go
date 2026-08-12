@@ -3,6 +3,7 @@ package queues
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"gymcrm/internal/database"
@@ -11,20 +12,34 @@ import (
 var ErrNotLapsable = errors.New("queues: member is already closed or does not exist")
 
 // Renewals builds the queue (FR-19 §4).
-func (s *Service) Renewals(ctx context.Context) (*RenewalQueue, error) {
-	rows, err := s.repo.Renewals(ctx, RenewalWindowDays)
+//
+// The window widens on request (FR-20 §3). The default stays 30 — what the
+// screen opens on — but the long-lapsed tail has to be reachable, because
+// retiring the expiry alerts took away the only other place those people
+// appeared.
+func (s *Service) Renewals(ctx context.Context, windowDays int) (*RenewalQueue, error) {
+	if windowDays <= 0 {
+		windowDays = RenewalWindowDays
+	}
+	if windowDays > MaxRenewalWindowDays {
+		windowDays = MaxRenewalWindowDays
+	}
+
+	rows, err := s.repo.Renewals(ctx, windowDays)
 	if err != nil {
 		return nil, err
 	}
-	beyond, err := s.repo.LapsedBeyondWindow(ctx, RenewalWindowDays)
+	beyond, err := s.repo.LapsedBeyondWindow(ctx, windowDays)
 	if err != nil {
 		return nil, err
 	}
 
 	lapsed := RenewalGroup{
-		Key:      GroupLapsed,
-		Label:    "Lapsed — still worth a call",
-		Note:     "Expired in the last 30 days and not renewed. The window where somebody usually still comes back.",
+		Key:   GroupLapsed,
+		Label: "Lapsed — still worth a call",
+		Note: fmt.Sprintf(
+			"Expired in the last %d days and not renewed. The window where somebody usually still comes back.",
+			windowDays),
 		Severity: "urgent",
 		Items:    []RenewalItem{},
 	}
@@ -50,7 +65,7 @@ func (s *Service) Renewals(ctx context.Context) (*RenewalQueue, error) {
 		Items:    []RenewalItem{},
 	}
 
-	queue := &RenewalQueue{WindowDays: RenewalWindowDays, BeyondWindow: beyond}
+	queue := &RenewalQueue{WindowDays: windowDays, BeyondWindow: beyond}
 
 	for _, r := range rows {
 		item := RenewalItem{

@@ -57,64 +57,25 @@ func (s *Service) Scan(ctx context.Context) (*ScanResult, error) {
 	var candidates int64
 	var pending []NewAlert
 
-	// ── Expiring in N days ────────────────────────────────────────────────
-	rows, err := s.repo.FindExpiringInDays(ctx, expiringSoonDays)
-	if err != nil {
-		return nil, fmt.Errorf("retention scan: expiring soon: %w", err)
-	}
-	for _, c := range rows {
-		pending = append(pending, NewAlert{
-			MemberID:  c.MemberID,
-			AlertType: AlertExpiringIn3Days,
-			Severity:  SeverityLow,
-			Message: fmt.Sprintf(
-				"Hi %s, your gym membership expires in %d days. Renew now to keep your streak going!",
-				firstName(c.MemberName), c.DaysValue,
-			),
-		})
-	}
-	candidates += int64(len(rows))
-
-	// ── Expiring today ────────────────────────────────────────────────────
-	rows, err = s.repo.FindExpiringInDays(ctx, 0)
-	if err != nil {
-		return nil, fmt.Errorf("retention scan: expiring today: %w", err)
-	}
-	for _, c := range rows {
-		pending = append(pending, NewAlert{
-			MemberID:  c.MemberID,
-			AlertType: AlertExpiringToday,
-			Severity:  SeverityHigh,
-			Message: fmt.Sprintf(
-				"Hi %s, your membership expires today. Renew today to avoid a break in your training.",
-				firstName(c.MemberName),
-			),
-		})
-	}
-	candidates += int64(len(rows))
-
-	// ── Expired, no renewal ───────────────────────────────────────────────
-	rows, err = s.repo.FindExpiredWithoutRenewal(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("retention scan: expired: %w", err)
-	}
-	for _, c := range rows {
-		pending = append(pending, NewAlert{
-			MemberID:  c.MemberID,
-			AlertType: AlertExpiredNoRenewal,
-			Severity:  SeverityHigh,
-			Message: fmt.Sprintf(
-				"Hi %s, your membership lapsed %s ago. We'd love to have you back — reply to renew.",
-				firstName(c.MemberName), pluralDays(c.DaysValue),
-			),
-		})
-	}
-	candidates += int64(len(rows))
+	// ── Expiry is not scanned here any more (FR-20) ───────────────────────
+	//
+	// expiring_in_3_days, expiring_today and expired_no_renewal used to be
+	// raised here. The renewals queue (FR-19 §4) computes all three from the
+	// same expiry_date, so they were duplicates: 240 of 470 open alerts, and
+	// 229 members appearing on both screens with neither resolution touching
+	// the other.
+	//
+	// At Risk now means one thing — a member whose *behaviour* changed. Their
+	// contract ending is the renewals queue's job, and it is better at it: it
+	// knows the plan price, the renewal history and the last visit.
+	//
+	// AutoResolve below still handles the historical expiry alerts. Those
+	// branches must stay.
 
 	// ── Inactive 7–13 days ────────────────────────────────────────────────
 	// Bounded below the churn tier so a member absent 20 days appears once, as
 	// churn risk, not twice.
-	rows, err = s.repo.FindInactive(ctx, inactiveWarnDays, inactiveRiskDays)
+	rows, err := s.repo.FindInactive(ctx, inactiveWarnDays, inactiveRiskDays)
 	if err != nil {
 		return nil, fmt.Errorf("retention scan: inactive 1 week: %w", err)
 	}

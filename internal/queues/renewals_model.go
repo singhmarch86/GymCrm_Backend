@@ -15,6 +15,13 @@ import "time"
 // that quietly drops people is worse than one that admits its own edge.
 const RenewalWindowDays = 30
 
+// MaxRenewalWindowDays caps how far the window can be widened.
+//
+// Same argument as the range limit in FR-19 §9: unbounded, this scans every
+// member the gym has ever had, and no renewal conversation is worth having two
+// years late.
+const MaxRenewalWindowDays = 365
+
 // Renewal group keys.
 const (
 	GroupLapsed   = "lapsed"
