@@ -18,6 +18,8 @@ import '../../features/renewals/renewals_screen.dart';
 import '../../features/reports/reports_screen.dart';
 import '../../features/retention/at_risk_screen.dart';
 import '../../features/staff/staff_screen.dart';
+import '../../features/money/leakage_screen.dart';
+import '../../features/payouts/payouts_screen.dart';
 import '../../features/staffwork/staff_work_screen.dart';
 import '../../features/trainers/trainers_screen.dart';
 import '../../features/visitors/visitors_screen.dart';
@@ -280,6 +282,20 @@ class DashboardQuickActions extends StatelessWidget {
           screen: () => const PaymentsScreen(),
         ),
         _Action(
+          title: 'Money leaks',
+          subtitle: 'Given away, never billed',
+          icon: Icons.water_damage_rounded,
+          color: AppColors.danger,
+          screen: () => const LeakageScreen(),
+        ),
+        _Action(
+          title: 'Trainer pay',
+          subtitle: 'Salary, commission, sessions',
+          icon: Icons.account_balance_wallet_rounded,
+          color: AppColors.warning,
+          screen: () => const PayoutsScreen(),
+        ),
+        _Action(
           title: 'Staff work',
           subtitle: 'What each person did today',
           icon: Icons.badge_rounded,
@@ -410,7 +426,7 @@ class DashboardQuickActions extends StatelessWidget {
     (
       'Money and oversight',
       'Billing, reporting, and who did what',
-      ['Invoices', 'Reports', 'Staff work'],
+      ['Invoices', 'Money leaks', 'Trainer pay', 'Reports', 'Staff work'],
     ),
     (
       'Setup',

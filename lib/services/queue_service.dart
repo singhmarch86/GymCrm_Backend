@@ -6,6 +6,7 @@ import '../models/collection_queue.dart';
 import '../models/date_span.dart';
 import '../models/expected_payments.dart';
 import '../models/invoice_batch.dart';
+import '../models/leakage.dart';
 import '../models/renewal_queue.dart';
 import '../models/stock_queue.dart';
 import 'api_config.dart';
@@ -68,6 +69,20 @@ class QueueService {
         .replace(queryParameters: _spanParams(span));
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return ExpectedPayments.fromJson(unwrapJson(response)['data']);
+  }
+
+  /// Value handed over and never billed (FR-21).
+  ///
+  /// Read-only, and deliberately so. Every finding here needs a human to
+  /// decide what it was — goodwill, an unrecorded cash payment, or a real
+  /// loss — and nothing on this screen charges anybody.
+  Future<LeakageReport> getLeakage() async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.get(Uri.parse('$kBaseUrl/api/v1/queues/leakage'),
+          headers: headers),
+    );
+    return LeakageReport.fromJson(unwrapJson(response)['data']);
   }
 
   /// Draft invoices for raised dues (FR-19 §6).
