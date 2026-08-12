@@ -7,9 +7,10 @@ import '../../widgets/app_card.dart';
 
 /// Per-person lead workflow (FR-18 §7).
 ///
-/// The owner's view, not the worker's. The Leads → Workflow tab answers "what
-/// do I do next"; this answers "is Simran coping". Same data, different
-/// question, different person — which is why the queue was not moved here.
+/// The owner's view, not the worker's. The Follow up tab answers "what do I do
+/// next"; this answers "is Simran coping". Same data, different question,
+/// different person — which is why the queue lives next door rather than
+/// underneath.
 ///
 /// Ordered by name, never by output. This is the screen where the leaderboard
 /// risk is highest, because it is the one an owner reads *about people*, and a
@@ -19,19 +20,16 @@ class StaffLeadWorkView extends StatelessWidget {
   final DateSpan span;
   final void Function(int leadId)? onOpenLead;
 
-  /// The workflow queue, spliced in below the per-person cards.
-  ///
-  /// Built by LeadWorkflowView so there is exactly one implementation of the
-  /// queue, rendered in two places. The owner reads "is Simran coping" at the
-  /// top and "what is actually owed" underneath, without changing screens.
-  final List<Widget> queueSections;
+  /// Shown under the caveat. A signpost to the queue, not a copy of it — an
+  /// owner who spots a problem here should have somewhere to go.
+  final Widget? footer;
 
   const StaffLeadWorkView({
     super.key,
     required this.report,
     required this.span,
     this.onOpenLead,
-    this.queueSections = const [],
+    this.footer,
   });
 
   @override
@@ -83,46 +81,9 @@ class StaffLeadWorkView extends StatelessWidget {
           ),
         ),
 
-        // The queue. Below the people, because the question this screen opens
-        // with is "who is carrying what" — but an owner who spots a problem
-        // should be able to act on it here rather than being sent elsewhere.
-        if (queueSections.isNotEmpty) ...[
-          const SizedBox(height: 18),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Divider(color: Colors.grey.shade300, height: 1),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    "WHAT'S OWED",
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        color: Colors.grey.shade500),
-                  ),
-                ),
-                Expanded(
-                  child: Divider(color: Colors.grey.shade300, height: 1),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
-            child: Text(
-              'The same queue as Leads → Workflow. Every open lead, and the '
-              'decision owed on it.',
-              style: TextStyle(
-                  fontSize: 11, height: 1.4, color: Colors.grey.shade600),
-            ),
-          ),
-          ...queueSections,
+        if (footer != null) ...[
+          const SizedBox(height: 14),
+          footer!,
         ],
       ],
     );

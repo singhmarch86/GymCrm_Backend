@@ -72,13 +72,13 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 3, vsync: this)
+    _tabs = TabController(length: 4, vsync: this)
       ..addListener(() {
         if (_tabs.indexIsChanging) return;
         // Rebuild on every settled tab change: the date bar and the button
         // below both depend on which tab is showing.
         setState(() {});
-        if (_tabs.index == 2 && _leadWork == null) _loadLeadWork();
+        if (_tabs.index >= 2 && _leadWork == null) _loadLeadWork();
       });
     StorageService.getRole().then((r) {
       if (mounted) setState(() => _isOwner = r == 'owner');
@@ -157,7 +157,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       _leadWork = null;
     });
     _load();
-    if (_tabs.index == 2) _loadLeadWork();
+    if (_tabs.index >= 2) _loadLeadWork();
   }
 
   @override
@@ -173,7 +173,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
             icon: const Icon(Icons.refresh_rounded),
             onPressed: _loading ? null : () {
               _load();
-              if (_tabs.index == 2) _loadLeadWork();
+              if (_tabs.index >= 2) _loadLeadWork();
             },
           ),
         ],
@@ -182,10 +182,13 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           labelColor: AppColors.primary,
           unselectedLabelColor: Colors.grey,
           indicatorColor: AppColors.primary,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Money & work'),
             Tab(icon: Icon(Icons.request_quote_rounded, size: 18), text: 'Collect'),
             Tab(icon: Icon(Icons.person_search_rounded, size: 18), text: 'Leads'),
+            Tab(icon: Icon(Icons.checklist_rounded, size: 18), text: 'Follow up'),
           ],
         ),
       ),
@@ -200,15 +203,21 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           : null,
       body: Column(
         children: [
-          // Hidden on Collect. That queue ignores dates entirely, and a date
-          // control sitting above a list it does not filter invites the reader
-          // to trust a narrowing that never happened.
-          if (_tabs.index != 1)
+          // Hidden on the two queues. Both are lists of what is owed right
+          // now, neither is date-scoped, and a date control sitting above a
+          // list it does not filter invites the reader to trust a narrowing
+          // that never happened.
+          if (_tabs.index != 1 && _tabs.index != 3)
             DateSpanBar(span: _span, onChanged: _setSpan),
           Expanded(
             child: TabBarView(
               controller: _tabs,
-              children: [_body(), _collectBody(), _leadsBody()],
+              children: [
+                _body(),
+                _collectBody(),
+                _leadsBody(),
+                _followUpBody(),
+              ],
             ),
           ),
         ],
@@ -279,8 +288,14 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           // the same due from two places.
           if (_collections != null && !_collections!.isClear) ...[
             const SizedBox(height: 14),
-            _OwedPointer(
-              queue: _collections!,
+            _QueuePointer(
+              icon: Icons.request_quote_rounded,
+              headline: '${_rupees(_collections!.totalInPaise)} still owed',
+              detail: '${_collections!.totalCount} dues from '
+                  '${_collections!.membersInvolved} members'
+                  '${_collections!.unchasedCount == 0 ? '' : ' · ${_collections!.unchasedCount} with nobody on them'}'
+                  '. Not tied to the dates above.',
+              alarming: _collections!.unchasedCount > 0,
               onOpen: () => _tabs.animateTo(1),
             ),
           ],
@@ -304,13 +319,41 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
         report: _leadWork!,
         span: _span,
         onOpenLead: _openLead,
-        queueSections: workflow == null
-            ? const []
-            : LeadWorkflowView(
-                workflow: workflow,
-                onTap: (item) => _openLead(item.leadId),
-                onSetNextStep: _setNextStep,
-              ).sections(showHeadline: false),
+        footer: workflow == null || workflow.isEmpty
+            ? null
+            : _QueuePointer(
+                icon: Icons.checklist_rounded,
+                headline: workflow.unattended == 0
+                    ? '${workflow.totalOpen} open leads'
+                    : '${workflow.unattended} leads nobody has picked up',
+                detail: '${workflow.totalOpen} open · '
+                    '${workflow.overdue} overdue · '
+                    '${workflow.dueToday} due today. Counted as it stands '
+                    'now, not for the dates above.',
+                alarming: workflow.unattended > 0,
+                onOpen: () => _tabs.animateTo(3),
+              ),
+      ),
+    );
+  }
+
+  /// The decisions owed on open leads. The tab next door is the record — who
+  /// is carrying what, and how they are coping. This is the worklist, and it
+  /// was nine tenths of that tab when the two shared one.
+  Widget _followUpBody() {
+    if (_leadsLoading) return const LoadingView();
+    if (_leadsError != null) {
+      return ErrorBanner(message: _leadsError!, onRetry: _loadLeadWork);
+    }
+    final workflow = _workflow;
+    if (workflow == null) return const LoadingView();
+
+    return RefreshIndicator(
+      onRefresh: _loadLeadWork,
+      child: LeadWorkflowView(
+        workflow: workflow,
+        onTap: (item) => _openLead(item.leadId),
+        onSetNextStep: _setNextStep,
       ),
     );
   }
@@ -366,16 +409,29 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   }
 }
 
-/// A signpost to the Collect tab, not a second copy of it.
+/// A signpost to a queue tab, not a second copy of it.
 ///
-/// The record above is about a chosen day. Outstanding money is not — so it
-/// gets a headline figure and a way through, and the rows stay in one place
-/// where two people cannot chase the same due from two screens.
-class _OwedPointer extends StatelessWidget {
-  final CollectionQueue queue;
+/// The record above it is about a chosen day. What is owed is not — so it gets
+/// a headline figure and a way through, and the rows stay in one place where
+/// two people cannot work the same item from two screens.
+class _QueuePointer extends StatelessWidget {
+  final IconData icon;
+  final String headline;
+  final String detail;
+
+  /// Colours the icon and nothing else. The card must never turn into a
+  /// warning banner — it is a doorway, and the queue behind it does the
+  /// arguing.
+  final bool alarming;
   final VoidCallback onOpen;
 
-  const _OwedPointer({required this.queue, required this.onOpen});
+  const _QueuePointer({
+    required this.icon,
+    required this.headline,
+    required this.detail,
+    required this.alarming,
+    required this.onOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -388,30 +444,23 @@ class _OwedPointer extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              Icon(Icons.request_quote_rounded,
+              Icon(icon,
                   size: 20,
-                  color: queue.unchasedCount > 0
-                      ? AppColors.danger
-                      : AppColors.primary),
+                  color: alarming ? AppColors.danger : AppColors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${_rupees(queue.totalInPaise)} still owed',
+                    Text(headline,
                         style: const TextStyle(
                             fontSize: 14.5, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 2),
-                    Text(
-                      '${queue.totalCount} dues from '
-                      '${queue.membersInvolved} members'
-                      '${queue.unchasedCount == 0 ? '' : ' · ${queue.unchasedCount} with nobody on them'}'
-                      '. Not tied to the dates above.',
-                      style: TextStyle(
-                          fontSize: 11.5,
-                          height: 1.35,
-                          color: Colors.grey.shade600),
-                    ),
+                    Text(detail,
+                        style: TextStyle(
+                            fontSize: 11.5,
+                            height: 1.35,
+                            color: Colors.grey.shade600)),
                   ],
                 ),
               ),
