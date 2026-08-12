@@ -143,3 +143,128 @@ class StaffWorkItem {
         amountInPaise: j['amount_in_paise'] as int?,
       );
 }
+
+/// What one person is carrying right now (FR-18 §7).
+///
+/// Deliberately not date-scoped: a lead nobody has picked up is unattended
+/// today regardless of which day the screen is showing.
+class LeadWorkload {
+  final int openLeads;
+  final int unattended;
+  final int overdue;
+  final int dueToday;
+  final int? nextLeadId;
+  final String? nextLeadName;
+  final DateTime? nextDue;
+
+  const LeadWorkload({
+    required this.openLeads,
+    required this.unattended,
+    required this.overdue,
+    required this.dueToday,
+    this.nextLeadId,
+    this.nextLeadName,
+    this.nextDue,
+  });
+
+  factory LeadWorkload.fromJson(Map<String, dynamic> j) => LeadWorkload(
+        openLeads: j['open_leads'] ?? 0,
+        unattended: j['unattended'] ?? 0,
+        overdue: j['overdue'] ?? 0,
+        dueToday: j['due_today'] ?? 0,
+        nextLeadId: j['next_lead_id'],
+        nextLeadName: j['next_lead_name'],
+        nextDue: j['next_due'] == null
+            ? null
+            : DateTime.tryParse(j['next_due'])?.toLocal(),
+      );
+}
+
+/// What one person did on the chosen day. Counts, never rates — a rate over
+/// one person's single day is noise, and it invites ranking.
+class LeadFunnel {
+  final int calls;
+  final int reached;
+  final int counselling;
+  final int trialsBooked;
+  final int joined;
+  final int notesLogged;
+
+  const LeadFunnel({
+    required this.calls,
+    required this.reached,
+    required this.counselling,
+    required this.trialsBooked,
+    required this.joined,
+    required this.notesLogged,
+  });
+
+  factory LeadFunnel.fromJson(Map<String, dynamic> j) => LeadFunnel(
+        calls: j['calls'] ?? 0,
+        reached: j['reached'] ?? 0,
+        counselling: j['counselling'] ?? 0,
+        trialsBooked: j['trials_booked'] ?? 0,
+        joined: j['joined'] ?? 0,
+        notesLogged: j['notes_logged'] ?? 0,
+      );
+
+  bool get isEmpty =>
+      calls == 0 && counselling == 0 && trialsBooked == 0 &&
+      joined == 0 && notesLogged == 0;
+}
+
+class StaffLeadWork {
+  final int? userId;
+  final String name;
+  final String? role;
+  final LeadWorkload carrying;
+  final LeadFunnel worked;
+
+  const StaffLeadWork({
+    this.userId,
+    required this.name,
+    this.role,
+    required this.carrying,
+    required this.worked,
+  });
+
+  factory StaffLeadWork.fromJson(Map<String, dynamic> j) => StaffLeadWork(
+        userId: j['user_id'],
+        name: j['name'] ?? '',
+        role: j['role'],
+        carrying: LeadWorkload.fromJson(
+            (j['carrying'] as Map<String, dynamic>?) ?? {}),
+        worked:
+            LeadFunnel.fromJson((j['worked'] as Map<String, dynamic>?) ?? {}),
+      );
+
+  bool get isUnassignedBucket => userId == null;
+}
+
+class LeadWorkReport {
+  final String date;
+  final List<StaffLeadWork> staff;
+  final int totalOpen;
+  final int totalUnattended;
+  final int totalOverdue;
+
+  const LeadWorkReport({
+    required this.date,
+    required this.staff,
+    required this.totalOpen,
+    required this.totalUnattended,
+    required this.totalOverdue,
+  });
+
+  factory LeadWorkReport.fromJson(Map<String, dynamic> j) => LeadWorkReport(
+        date: j['date'] ?? '',
+        staff: ((j['staff'] as List?) ?? [])
+            .map((e) => StaffLeadWork.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        totalOpen: j['total_open'] ?? 0,
+        totalUnattended: j['total_unattended'] ?? 0,
+        totalOverdue: j['total_overdue'] ?? 0,
+      );
+
+  bool get isEmpty => staff.isEmpty;
+}

@@ -7,6 +7,7 @@ import '../../widgets/app_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
+import 'staff_lead_work_view.dart';
 import 'staff_work_items_sheet.dart';
 
 /// What each person did on one day (FR-13).
@@ -22,18 +23,59 @@ class StaffWorkScreen extends StatefulWidget {
   State<StaffWorkScreen> createState() => _StaffWorkScreenState();
 }
 
-class _StaffWorkScreenState extends State<StaffWorkScreen> {
+class _StaffWorkScreenState extends State<StaffWorkScreen>
+    with SingleTickerProviderStateMixin {
   final _service = StaffWorkService();
+
+  late final TabController _tabs;
 
   bool _loading = true;
   String? _error;
   StaffWorkDay? _day;
   DateTime _date = DateTime.now();
 
+  // Leads (FR-18 §7). Loaded on first visit — the money view is what most
+  // people open, and paying for both on entry doubles the wait for nothing.
+  LeadWorkReport? _leadWork;
+  bool _leadsLoading = false;
+  String? _leadsError;
+
   @override
   void initState() {
     super.initState();
+    _tabs = TabController(length: 2, vsync: this)
+      ..addListener(() {
+        if (_tabs.indexIsChanging) return;
+        if (_tabs.index == 1 && _leadWork == null) _loadLeadWork();
+      });
     _load();
+  }
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadLeadWork() async {
+    setState(() {
+      _leadsLoading = true;
+      _leadsError = null;
+    });
+    try {
+      final data = await _service.getLeadWork(date: _date);
+      if (!mounted) return;
+      setState(() {
+        _leadWork = data;
+        _leadsLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _leadsError = e.toString();
+        _leadsLoading = false;
+      });
+    }
   }
 
   Future<void> _load() async {
@@ -62,8 +104,12 @@ class _StaffWorkScreenState extends State<StaffWorkScreen> {
     // No future days: the ledgers cannot contain tomorrow, and an empty screen
     // would look like a failure rather than like a date that has not happened.
     if (next.isAfter(DateTime.now())) return;
-    setState(() => _date = next);
+    setState(() {
+      _date = next;
+      _leadWork = null;
+    });
     _load();
+    if (_tabs.index == 1) _loadLeadWork();
   }
 
   bool get _isToday {
@@ -79,13 +125,27 @@ class _StaffWorkScreenState extends State<StaffWorkScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Staff work"),
+        toolbarHeight: 48,
         actions: [
           IconButton(
             tooltip: 'Refresh',
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: _loading ? null : _load,
+            onPressed: _loading ? null : () {
+              _load();
+              if (_tabs.index == 1) _loadLeadWork();
+            },
           ),
         ],
+        bottom: TabBar(
+          controller: _tabs,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: AppColors.primary,
+          tabs: const [
+            Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Money & work'),
+            Tab(icon: Icon(Icons.person_search_rounded, size: 18), text: 'Leads'),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -95,7 +155,12 @@ class _StaffWorkScreenState extends State<StaffWorkScreen> {
             onPrevious: () => _shiftDay(-1),
             onNext: _isToday ? null : () => _shiftDay(1),
           ),
-          Expanded(child: _body()),
+          Expanded(
+            child: TabBarView(
+              controller: _tabs,
+              children: [_body(), _leadsBody()],
+            ),
+          ),
         ],
       ),
     );
@@ -133,6 +198,19 @@ class _StaffWorkScreenState extends State<StaffWorkScreen> {
           const _Caveat(),
         ],
       ),
+    );
+  }
+
+  Widget _leadsBody() {
+    if (_leadsLoading) return const LoadingView();
+    if (_leadsError != null) {
+      return ErrorBanner(message: _leadsError!, onRetry: _loadLeadWork);
+    }
+    if (_leadWork == null) return const LoadingView();
+
+    return RefreshIndicator(
+      onRefresh: _loadLeadWork,
+      child: StaffLeadWorkView(report: _leadWork!),
     );
   }
 

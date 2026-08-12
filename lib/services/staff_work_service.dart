@@ -29,6 +29,18 @@ class StaffWorkService {
     return StaffWorkDay.fromJson(unwrapJson(response)['data']);
   }
 
+  /// Per-person lead workflow (FR-18 §7). Carrying counts are "now"; the
+  /// funnel is scoped to [date].
+  Future<LeadWorkReport> getLeadWork({DateTime? date}) async {
+    final headers = await _headers();
+    final query = date == null ? '' : '?date=${_ymd(date)}';
+    final response = await guardRequest(
+      () => http.get(Uri.parse('$kBaseUrl/api/v1/staff-work/leads$query'),
+          headers: headers),
+    );
+    return LeadWorkReport.fromJson(unwrapJson(response)['data']);
+  }
+
   /// The individual rows behind one number.
   ///
   /// A null [userId] means the unattributed bucket — a real query, not a
