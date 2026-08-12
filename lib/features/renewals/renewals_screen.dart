@@ -34,6 +34,9 @@ class _RenewalsScreenState extends State<RenewalsScreen>
   String? _queueError;
   bool _isOwner = false;
 
+  /// Null means the server default (30). Widened from the footnote.
+  int? _windowDays;
+
   bool isLoading = true;
   String? error;
 
@@ -128,7 +131,7 @@ class _RenewalsScreenState extends State<RenewalsScreen>
       _queueError = null;
     });
     try {
-      final q = await _queues.getRenewals();
+      final q = await _queues.getRenewals(windowDays: _windowDays);
       if (!mounted) return;
       setState(() {
         _queue = q;
@@ -164,7 +167,14 @@ class _RenewalsScreenState extends State<RenewalsScreen>
     if (_queue == null) return const LoadingView();
     return RefreshIndicator(
       onRefresh: _loadQueue,
-      child: RenewalQueueView(queue: _queue!, onAct: _act),
+      child: RenewalQueueView(
+        queue: _queue!,
+        onAct: _act,
+        onWiden: (days) {
+          setState(() => _windowDays = days == 30 ? null : days);
+          _loadQueue();
+        },
+      ),
     );
   }
 

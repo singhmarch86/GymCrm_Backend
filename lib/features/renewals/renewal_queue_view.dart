@@ -17,10 +17,16 @@ class RenewalQueueView extends StatelessWidget {
   final RenewalQueue queue;
   final void Function(RenewalItem) onAct;
 
+  /// Widens the window. The footnote is the way in — those people used to
+  /// appear as At Risk alerts, and retiring those (FR-20) would otherwise have
+  /// left them on no screen at all.
+  final void Function(int days)? onWiden;
+
   const RenewalQueueView({
     super.key,
     required this.queue,
     required this.onAct,
+    this.onWiden,
   });
 
   @override
@@ -58,7 +64,7 @@ class RenewalQueueView extends StatelessWidget {
         const SizedBox(height: 6),
         for (final g in queue.groups) ..._group(g),
         const SizedBox(height: 16),
-        _Footnote(queue: queue),
+        _Footnote(queue: queue, onWiden: onWiden),
       ],
     );
   }
@@ -187,32 +193,70 @@ class _Headline extends StatelessWidget {
 /// worse than one that admits its own edge.
 class _Footnote extends StatelessWidget {
   final RenewalQueue queue;
+  final void Function(int days)? onWiden;
 
-  const _Footnote({required this.queue});
+  const _Footnote({required this.queue, this.onWiden});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded,
-              size: 14, color: Colors.grey.shade500),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              queue.beyondWindow == 0
-                  ? 'Anything that lapsed more than ${queue.windowDays} days '
-                      'ago is left out of this list on purpose.'
-                  : '${queue.beyondWindow} more lapsed over '
-                      '${queue.windowDays} days ago and are not listed here — '
-                      'past the point where a renewal call usually works. '
-                      'They are still in Members, and in At Risk.',
-              style: TextStyle(
-                  fontSize: 11, height: 1.4, color: Colors.grey.shade600),
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  size: 14, color: Colors.grey.shade500),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  queue.beyondWindow == 0
+                      ? 'Showing everything that lapsed in the last '
+                          '${queue.windowDays} days. Nothing is hidden.'
+                      : '${queue.beyondWindow} more lapsed over '
+                          '${queue.windowDays} days ago — past the point where '
+                          'a renewal call usually works, so they are kept off '
+                          'the working list rather than dropped.',
+                  style: TextStyle(
+                      fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+                ),
+              ),
+            ],
           ),
+          if (queue.beyondWindow > 0 && onWiden != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 22, top: 2),
+              child: TextButton(
+                onPressed: () => onWiden!(365),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                ),
+                child: Text('Show them anyway',
+                    style: TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ),
+          if (queue.beyondWindow == 0 && queue.windowDays > 30 && onWiden != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 22, top: 2),
+              child: TextButton(
+                onPressed: () => onWiden!(30),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                ),
+                child: Text('Back to the last 30 days',
+                    style: TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ),
         ],
       ),
     );

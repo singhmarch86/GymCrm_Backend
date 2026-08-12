@@ -36,12 +36,16 @@ class QueueService {
     return CollectionQueue.fromJson(unwrapJson(response)['data']);
   }
 
-  Future<RenewalQueue> getRenewals() async {
+  /// [windowDays] omitted uses the server default of 30. Widening it is how
+  /// the long-lapsed tail stays reachable now that the expiry alerts are gone
+  /// (FR-20 §3).
+  Future<RenewalQueue> getRenewals({int? windowDays}) async {
     final headers = await _headers();
-    final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/queues/renewals'),
-          headers: headers),
+    final uri = Uri.parse('$kBaseUrl/api/v1/queues/renewals').replace(
+      queryParameters:
+          windowDays == null ? null : {'window': '$windowDays'},
     );
+    final response = await guardRequest(() => http.get(uri, headers: headers));
     return RenewalQueue.fromJson(unwrapJson(response)['data']);
   }
 
