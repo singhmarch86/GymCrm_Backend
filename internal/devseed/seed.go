@@ -38,8 +38,10 @@ type seeder struct {
 	gymID       int64
 	ownerUserID int64
 
-	plans   []plans.MembershipPlan
-	members []seedMember
+	plans    []plans.MembershipPlan
+	members  []seedMember
+	trainers []seedTrainer
+	products []seedProduct
 
 	// counts for the closing summary log
 	memberCount     int
@@ -47,6 +49,11 @@ type seeder struct {
 	renewalCount    int
 	paymentCount    int
 	leadCount       int
+	trainerCount    int
+	ptPackageCount  int
+	ptSessionCount  int
+	productCount    int
+	saleCount       int
 }
 
 // Run seeds the database if it looks fresh. Safe to call on every startup —
@@ -87,6 +94,21 @@ func Run(ctx context.Context, db *gorm.DB) error {
 		if err := s.seedLeads(); err != nil {
 			return fmt.Errorf("leads: %w", err)
 		}
+		// Trainers before packages: a package needs somebody to deliver it.
+		if err := s.seedTrainers(); err != nil {
+			return fmt.Errorf("trainers: %w", err)
+		}
+		if err := s.seedPTPackages(); err != nil {
+			return fmt.Errorf("pt packages: %w", err)
+		}
+		if err := s.seedProducts(); err != nil {
+			return fmt.Errorf("products: %w", err)
+		}
+		// Sales draw stock down through the movements ledger, so they must
+		// follow the opening purchases that put it there.
+		if err := s.seedSales(); err != nil {
+			return fmt.Errorf("sales: %w", err)
+		}
 		return nil
 	})
 	if err != nil {
@@ -96,6 +118,8 @@ func Run(ctx context.Context, db *gorm.DB) error {
 	log.Printf("devseed: seeded demo gym %q — owner login phone=9876543210 password=secure123", "Demo Fitness Gym")
 	log.Printf("devseed: %d members, %d attendance records, %d renewals, %d payments, %d leads",
 		s.memberCount, s.attendanceCount, s.renewalCount, s.paymentCount, s.leadCount)
+	log.Printf("devseed: %d trainers, %d PT packages, %d sessions, %d products, %d counter sales",
+		len(s.trainers), s.ptPackageCount, s.ptSessionCount, s.productCount, s.saleCount)
 	return nil
 }
 
