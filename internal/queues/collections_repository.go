@@ -34,10 +34,22 @@ type collectionRow struct {
 // Written off is excluded by the status filter, which is the whole reason
 // write-off exists as a status rather than a note: the gym needs a way to
 // clear a due it has given up on without pretending the money arrived.
-func (r *Repository) Collections(ctx context.Context) ([]collectionRow, error) {
+func (r *Repository) Collections(
+	ctx context.Context, from, to string,
+) ([]collectionRow, error) {
 	tc := database.MustGetTenant(ctx)
 
 	memberName := `TRIM(m.first_name || ' ' || COALESCE(m.last_name, ''))`
+
+	// Empty from/to means everything. The filter is written so that a due with
+	// no date at all survives it — a missing due date is a data problem, and
+	// silently dropping those rows would hide the problem rather than show it.
+	window := ``
+	if from != "" && to != "" {
+		window = `
+		   AND (p.due_date IS NULL
+		        OR p.due_date BETWEEN CAST(@from AS date) AND CAST(@to AS date))`
+	}
 
 	sql := `
 		SELECT p.id AS payment_id, p.member_id,
@@ -85,7 +97,7 @@ func (r *Repository) Collections(ctx context.Context) ([]collectionRow, error) {
 
 		 WHERE p.gym_id = @gym
 		   AND p.status IN ('pending', 'overdue')
-		   AND m.deleted_at IS NULL
+		   AND m.deleted_at IS NULL` + window + `
 
 		 -- Oldest first within the groups the service builds. A due with no
 		 -- date sorts last rather than first: it is a data problem, not the
@@ -94,9 +106,41 @@ func (r *Repository) Collections(ctx context.Context) ([]collectionRow, error) {
 
 	var rows []collectionRow
 	err := r.db.WithContext(ctx).Raw(sql, map[string]interface{}{
-		"gym": tc.GymID(),
+		"gym":  tc.GymID(),
+		"from": from,
+		"to":   to,
 	}).Scan(&rows).Error
 	return rows, err
+}
+
+// OutsideWindow counts the dues a window excludes.
+//
+// Reported, never silently dropped. Filtering collections by due date hides
+// the oldest debt, which is the worst debt — the reader has to be told.
+func (r *Repository) OutsideWindow(
+	ctx context.Context, from, to string,
+) (int, int64, error) {
+	tc := database.MustGetTenant(ctx)
+
+	var row struct {
+		N      int
+		Amount int64
+	}
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT COUNT(*) AS n, COALESCE(SUM(p.amount_in_paise), 0) AS amount
+		  FROM payments p
+		  JOIN members m ON m.id = p.member_id
+		 WHERE p.gym_id = @gym
+		   AND p.status IN ('pending', 'overdue')
+		   AND m.deleted_at IS NULL
+		   AND p.due_date IS NOT NULL
+		   AND p.due_date NOT BETWEEN CAST(@from AS date) AND CAST(@to AS date)`,
+		map[string]interface{}{
+			"gym":  tc.GymID(),
+			"from": from,
+			"to":   to,
+		}).Scan(&row).Error
+	return row.N, row.Amount, err
 }
 
 // PaymentActivity is one insert into the collections ledger.

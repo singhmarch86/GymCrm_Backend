@@ -86,4 +86,16 @@ type CollectionQueue struct {
 	TotalInPaise    int64 `json:"total_in_paise"`
 	UnchasedCount   int   `json:"unchased_count"`
 	MembersInvolved int   `json:"members_involved"`
+
+	// The window, when one was asked for. Empty means everything outstanding,
+	// which is the default and the safe answer.
+	From string `json:"from,omitempty"`
+	To   string `json:"to,omitempty"`
+
+	// What the window hides. Filtering a worklist by due date is dangerous in
+	// a way filtering a report is not: the oldest debt is the worst debt, and
+	// a month filter quietly drops it. These are returned so the screen can
+	// say what it is not showing.
+	OutsideCount   int   `json:"outside_count"`
+	OutsideInPaise int64 `json:"outside_in_paise"`
 }

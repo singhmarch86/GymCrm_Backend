@@ -18,10 +18,35 @@ import (
 // @Tags         queues
 // @Produce      json
 // @Security     BearerAuth
+// @Param        from  query  string  false  "YYYY-MM-DD, filters by due date; must be paired with to"
+// @Param        to    query  string  false  "YYYY-MM-DD, filters by due date; must be paired with from"
 // @Success      200  {object}  CollectionQueue
 // @Router       /api/v1/queues/collections [get]
 func (h *Handler) Collections(w http.ResponseWriter, r *http.Request) {
-	queue, err := h.svc.Collections(r.Context())
+	q := r.URL.Query()
+	from := strings.TrimSpace(q.Get("from"))
+	to := strings.TrimSpace(q.Get("to"))
+
+	// Both or neither. A lone bound silently completed to today would answer a
+	// question nobody asked, and on a debt list that means hiding money.
+	if (from == "") != (to == "") {
+		response.BadRequest(w, "from and to must both be given")
+		return
+	}
+	if from != "" {
+		f, errF := time.ParseInLocation("2006-01-02", from, IST)
+		t, errT := time.ParseInLocation("2006-01-02", to, IST)
+		if errF != nil || errT != nil {
+			response.BadRequest(w, "from and to must be in YYYY-MM-DD format")
+			return
+		}
+		if t.Before(f) {
+			response.BadRequest(w, "to must not be before from")
+			return
+		}
+	}
+
+	queue, err := h.svc.Collections(r.Context(), from, to)
 	if err != nil {
 		log.Printf("queues: collections: %v", err)
 		response.InternalServerError(w)

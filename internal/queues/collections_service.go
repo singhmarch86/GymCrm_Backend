@@ -24,8 +24,17 @@ var (
 // not a record of who did what — it is a worklist, and a receptionist working
 // the desk needs the whole list to be useful (FR-19 §7.3). Nothing here is
 // attributed to a staff member in a way that could be totalled.
-func (s *Service) Collections(ctx context.Context) (*CollectionQueue, error) {
-	rows, err := s.repo.Collections(ctx)
+// The window filters by DUE DATE, and is off by default.
+//
+// That default is deliberate. Filtering a worklist by date is not the same as
+// filtering a report: the oldest debt is the worst debt, and a month filter
+// silently drops it. Live, a filter to August would show 15 dues worth
+// Rs 58,500 and hide 27 older ones worth Rs 1,45,000. So the queue opens on
+// everything, and whenever a window is set the screen is told what it hides.
+func (s *Service) Collections(
+	ctx context.Context, from, to string,
+) (*CollectionQueue, error) {
+	rows, err := s.repo.Collections(ctx, from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +73,16 @@ func (s *Service) Collections(ctx context.Context) (*CollectionQueue, error) {
 
 	members := map[int64]bool{}
 
-	queue := &CollectionQueue{}
+	queue := &CollectionQueue{From: from, To: to}
+
+	if from != "" && to != "" {
+		n, amount, err := s.repo.OutsideWindow(ctx, from, to)
+		if err != nil {
+			return nil, err
+		}
+		queue.OutsideCount = n
+		queue.OutsideInPaise = amount
+	}
 
 	for _, r := range rows {
 		item := CollectionItem{
