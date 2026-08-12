@@ -41,6 +41,16 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
   final _sessionsController = TextEditingController(text: '10');
   final _amountController = TextEditingController();
 
+  /// How the money was taken. Empty means it was not — the server raises a
+  /// due, and the sale shows up in the collections queue instead of vanishing.
+  /// Never pre-set to cash: assuming payment for an unpaid package is the leak
+  /// this closes.
+  String _paymentMode = '';
+
+  /// Blank means the full price. A smaller figure is a part payment, and the
+  /// balance is raised as a due automatically.
+  final _paidController = TextEditingController();
+
   Timer? _debounce;
   List<Member> _results = [];
   Member? _member;
@@ -64,6 +74,7 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
     _packageNameController.dispose();
     _sessionsController.dispose();
     _amountController.dispose();
+    _paidController.dispose();
     super.dispose();
   }
 
@@ -122,6 +133,24 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
       return;
     }
 
+    final priceInPaise = (rupees * 100).round();
+
+    // Blank means "all of it", which is the common case at the desk.
+    final paidText = _paidController.text.trim();
+    final paidInPaise = paidText.isEmpty
+        ? priceInPaise
+        : ((double.tryParse(paidText) ?? -1) * 100).round();
+
+    if (_paymentMode.isNotEmpty && paidInPaise <= 0) {
+      setState(() => _error = 'Enter how much was taken, or leave it blank '
+          'for the full amount');
+      return;
+    }
+    if (paidInPaise > priceInPaise) {
+      setState(() => _error = 'Amount taken is more than the package price');
+      return;
+    }
+
     setState(() {
       _saving = true;
       _error = null;
@@ -132,8 +161,10 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
         trainerId: trainerId,
         packageName: packageName,
         totalSessions: sessions,
-        amountInPaise: (rupees * 100).round(),
+        amountInPaise: priceInPaise,
         expiryDate: _expiryDate,
+        paymentMode: _paymentMode,
+        amountPaidInPaise: _paymentMode.isEmpty ? 0 : paidInPaise,
       );
       if (!mounted) return;
       Navigator.pop(context, pkg);
@@ -276,6 +307,59 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
               child: Text(_expiryDate != null ? formatDate(_expiryDate!) : 'No expiry'),
             ),
           ),
+          AppSpacing.gapLg,
+
+          // The money. Present on the sale itself rather than as a follow-up
+          // step somebody can skip: a package with no payment row is money the
+          // gym can neither count nor chase, and that was the state of every
+          // package in the system before this.
+          const LifecycleFieldLabel('Money taken now'),
+          AppSpacing.gapXs,
+          DropdownButtonFormField<String>(
+            initialValue: _paymentMode,
+            items: const [
+              // First, and the default, because it is the honest answer when
+              // nobody has handed anything over. The server raises a due and
+              // the sale appears in Collect.
+              DropdownMenuItem(value: '', child: Text('Nothing yet — raise a due')),
+              DropdownMenuItem(value: 'cash', child: Text('Cash')),
+              DropdownMenuItem(value: 'upi', child: Text('UPI')),
+              DropdownMenuItem(value: 'credit_card', child: Text('Credit card')),
+              DropdownMenuItem(value: 'debit_card', child: Text('Debit card')),
+              DropdownMenuItem(value: 'bank_transfer', child: Text('Bank transfer')),
+            ],
+            onChanged: _saving
+                ? null
+                : (v) => setState(() => _paymentMode = v ?? ''),
+          ),
+
+          if (_paymentMode.isNotEmpty) ...[
+            AppSpacing.gapMd,
+            const LifecycleFieldLabel('How much (₹) — blank means all of it'),
+            AppSpacing.gapXs,
+            TextField(
+              controller: _paidController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              autofillHints: const [],
+              decoration: const InputDecoration(
+                hintText: 'Leave blank for the full price',
+              ),
+            ),
+            AppSpacing.gapXs,
+            Text(
+              'Less than the price is a part payment. The balance is raised as '
+              'a due automatically, so it gets chased instead of forgotten.',
+              style: TextStyle(fontSize: 11, height: 1.35, color: Colors.grey.shade600),
+            ),
+          ] else ...[
+            AppSpacing.gapXs,
+            Text(
+              'The full amount is raised as a due, dated today, and appears in '
+              'Staff work → Collect.',
+              style: TextStyle(fontSize: 11, height: 1.35, color: Colors.grey.shade600),
+            ),
+          ],
+
           AppSpacing.gapMd,
 
           const LifecycleNotice(

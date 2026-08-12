@@ -43,6 +43,16 @@ class PtService {
     required int totalSessions,
     required int amountInPaise,
     DateTime? expiryDate,
+
+    // The money, recorded with the sale (FR-21 section 3).
+    //
+    // An empty [paymentMode] means nothing was taken and the server raises a
+    // due instead. Never defaulted to cash here or on the server: assuming
+    // payment for an unpaid package is the leak this closes.
+    String paymentMode = '',
+    int amountPaidInPaise = 0,
+    DateTime? dueDate,
+    String referenceNumber = '',
   }) async {
     final headers = await _headers();
     final response = await guardRequest(() => http.post(
@@ -55,6 +65,10 @@ class PtService {
             'total_sessions': totalSessions,
             'amount_in_paise': amountInPaise,
             if (expiryDate != null) 'expiry_date': _ymd(expiryDate),
+            'payment_mode': paymentMode,
+            'amount_paid_in_paise': amountPaidInPaise,
+            if (dueDate != null) 'due_date': _ymd(dueDate),
+            'reference_number': referenceNumber,
           }),
         ));
     return PtPackage.fromJson(unwrapJson(response)['data']);
