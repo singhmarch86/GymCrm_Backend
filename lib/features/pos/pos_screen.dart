@@ -7,7 +7,6 @@ import '../../models/product.dart';
 import '../../models/stock_queue.dart';
 import '../../models/wallet.dart';
 import '../../services/api_response.dart';
-import '../../services/member_service.dart';
 import '../../services/pos_service.dart';
 import '../../services/queue_service.dart';
 import '../../services/wallet_service.dart';
@@ -18,6 +17,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../lifecycle/lifecycle_shared.dart';
+import '../../widgets/member_picker.dart';
 import 'stock_queue_view.dart';
 
 /// Retail: the counter, the shelf, and what was sold.
@@ -271,9 +271,11 @@ class _SellTabState extends State<_SellTab> {
       _member != null && _wallet != null && _wallet!.balanceInPaise >= _cartTotal && _cartTotal > 0;
 
   Future<void> _pickMember() async {
-    final picked = await showDialog<Member?>(
-      context: context,
-      builder: (_) => const _MemberPickerDialog(),
+    final picked = await showMemberPicker(
+      context,
+      title: 'Who is buying?',
+      subtitle: 'Attach a member, or cancel for a walk-in',
+      emptyHint: 'No matching member. Cancel to sell as a walk-in.',
     );
     // The dialog returns null when dismissed and a sentinel-free null member is
     // indistinguishable, so "clear" is handled by its own button below.
@@ -1149,114 +1151,6 @@ class _AddProductDialogState extends State<_AddProductDialog> {
 
 /// Attaches a member to a counter sale — which is what makes wallet payment,
 /// and per-member purchase history, possible.
-class _MemberPickerDialog extends StatefulWidget {
-  const _MemberPickerDialog();
-
-  @override
-  State<_MemberPickerDialog> createState() => _MemberPickerDialogState();
-}
-
-class _MemberPickerDialogState extends State<_MemberPickerDialog> {
-  final _memberService = MemberService();
-  final _controller = TextEditingController();
-  Timer? _debounce;
-  List<Member> _results = [];
-  bool _searching = false;
-  bool _searched = false;
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onChanged(String q) {
-    _debounce?.cancel();
-    if (q.trim().length < 2) {
-      setState(() {
-        _results = [];
-        _searched = false;
-      });
-      return;
-    }
-    _debounce = Timer(const Duration(milliseconds: 350), () => _search(q.trim()));
-  }
-
-  Future<void> _search(String q) async {
-    setState(() => _searching = true);
-    try {
-      final all = await _memberService.searchMembers(q);
-      if (!mounted) return;
-      setState(() {
-        _results = all.take(6).toList();
-        _searching = false;
-        _searched = true;
-      });
-    } on ApiException {
-      if (!mounted) return;
-      setState(() => _searching = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LifecycleDialogShell(
-      title: 'Who is buying?',
-      subtitle: 'Attach a member, or cancel for a walk-in',
-      icon: Icons.person_search,
-      accent: AppColors.primary,
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-      ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _controller,
-            onChanged: _onChanged,
-            autofillHints: const [],
-            decoration: InputDecoration(
-              hintText: 'Search by name or phone…',
-              prefixIcon: const Icon(Icons.search, size: 18),
-              suffixIcon: _searching
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                          width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
-                    )
-                  : null,
-            ),
-          ),
-          AppSpacing.gapSm,
-          if (!_searching && _searched && _results.isEmpty)
-            const LifecycleNotice(
-              tone: LifecycleTone.info,
-              text: 'No matching member. Cancel to sell as a walk-in.',
-            ),
-          for (final m in _results) ...[
-            InkWell(
-              onTap: () => Navigator.pop(context, m),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.card,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Text('${m.firstName} ${m.lastName} · ${m.phone}',
-                    style: const TextStyle(fontSize: 13.5)),
-              ),
-            ),
-            AppSpacing.gapXs,
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 class _Adjustment {
   final int quantity;
   final String movementType;

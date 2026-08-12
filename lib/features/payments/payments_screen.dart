@@ -14,6 +14,7 @@ import '../../widgets/loading_state.dart';
 
 import 'collection_action_sheet.dart';
 import 'collections_view.dart';
+import 'raise_due_sheet.dart';
 import 'payment_filter_bar.dart';
 import 'payments_body.dart';
 
@@ -95,6 +96,18 @@ class _PaymentsScreenState extends State<PaymentsScreen>
         _collectionsError = e.message;
         _collectionsLoading = false;
       });
+    }
+  }
+
+  /// Records money owed. Lives in the app bar rather than as a floating
+  /// button: it is a correction to the record, not the main thing anybody does
+  /// on this screen, and a FAB over a debt list reads as "add debt".
+  Future<void> _raiseDue() async {
+    final raised = await showRaiseDueSheet(context);
+    if (raised == true && mounted) {
+      _dataChanged = true;
+      await _loadCollections();
+      await _load();
     }
   }
 
@@ -216,6 +229,11 @@ class _PaymentsScreenState extends State<PaymentsScreen>
         appBar: AppBar(
           title: const Text('Payments'),
           actions: [
+            IconButton(
+              tooltip: 'Raise a due',
+              icon: const Icon(Icons.playlist_add_rounded),
+              onPressed: _raiseDue,
+            ),
             IconButton(
               tooltip: 'Refresh',
               icon: const Icon(Icons.refresh_rounded),

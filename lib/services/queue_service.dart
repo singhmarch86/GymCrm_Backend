@@ -54,6 +54,34 @@ class QueueService {
     return RenewalQueue.fromJson(unwrapJson(response)['data']);
   }
 
+  /// Records that a member owes money.
+  ///
+  /// Deliberately not PaymentService.collectPayment, which only ever writes a
+  /// *paid* row. This is the only way to enter a due that has not been paid.
+  Future<int> raiseDue({
+    required int memberId,
+    required int amountInPaise,
+    required DateTime dueDate,
+    int? planId,
+    String notes = '',
+  }) async {
+    final headers = await _headers();
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/payments/due'),
+        headers: {...headers, 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'member_id': memberId,
+          'amount_in_paise': amountInPaise,
+          'due_date': _ymd(dueDate),
+          if (planId != null) 'plan_id': planId,
+          'notes': notes,
+        }),
+      ),
+    );
+    return unwrapJson(response)['data']?['id'] as int? ?? 0;
+  }
+
   /// Records that a member did not come back.
   ///
   /// Owner only, and the server enforces it. Takes them out of the queue

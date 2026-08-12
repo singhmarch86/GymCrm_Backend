@@ -8,13 +8,13 @@ import '../../services/api_response.dart';
 import '../../services/member_service.dart';
 import '../../services/referral_service.dart';
 import '../../theme/app_colors.dart';
-import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_spacing.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../lifecycle/lifecycle_shared.dart';
+import '../../widgets/member_picker.dart';
 
 /// Member-to-member referral tracking. Reward is free membership days
 /// credited to the referrer — never cash, never automatic. Status flows
@@ -408,241 +408,21 @@ Future<int?> _pickMember(
   BuildContext context, {
   required int excludeMemberId,
   String initialQuery = '',
-}) {
-  return showDialog<int>(
-    context: context,
-    builder: (_) => _MemberPickerDialog(excludeMemberId: excludeMemberId, initialQuery: initialQuery),
+}) async {
+  // Referrals only ever needed the id; the shared picker returns the member,
+  // so the id is taken here rather than giving the picker a second shape.
+  final picked = await showMemberPicker(
+    context,
+    title: 'Who referred them?',
+    subtitle: 'Search by name or phone',
+    emptyHint: 'No matching member.',
+    excludeIds: {excludeMemberId},
+    initialQuery: initialQuery,
   );
+  return picked?.id;
 }
 
 enum _JoinMode { existing, newMember }
-
-class _MemberPickerDialog extends StatefulWidget {
-  final int excludeMemberId;
-  final String initialQuery;
-  const _MemberPickerDialog({required this.excludeMemberId, this.initialQuery = ''});
-
-  @override
-  State<_MemberPickerDialog> createState() => _MemberPickerDialogState();
-}
-
-class _MemberPickerDialogState extends State<_MemberPickerDialog> {
-  final _memberService = MemberService();
-  late final _controller = TextEditingController(text: widget.initialQuery);
-  final _newFirstNameController = TextEditingController();
-  final _newLastNameController = TextEditingController();
-  final _newPhoneController = TextEditingController();
-
-  _JoinMode _mode = _JoinMode.existing;
-  Timer? _debounce;
-  List<Member> _results = [];
-  bool _searching = false;
-  bool _creating = false;
-  String? _error;
-  // Distinguishes "haven't searched yet" from "searched, found nothing" —
-  // the latter needs an explicit explanation, not a blank dialog that looks
-  // frozen.
-  bool _searchedAtLeastOnce = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Pre-fill the search AND the new-member phone from the referral's own
-    // record — staff shouldn't have to retype what we already have.
-    _newPhoneController.text = widget.initialQuery;
-    if (widget.initialQuery.trim().isNotEmpty) {
-      _runSearch(widget.initialQuery.trim());
-    }
-  }
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    _controller.dispose();
-    _newFirstNameController.dispose();
-    _newLastNameController.dispose();
-    _newPhoneController.dispose();
-    super.dispose();
-  }
-
-  void _onChanged(String q) {
-    _debounce?.cancel();
-    if (q.trim().length < 2) {
-      setState(() {
-        _results = [];
-        _searchedAtLeastOnce = false;
-      });
-      return;
-    }
-    _debounce = Timer(const Duration(milliseconds: 350), () => _runSearch(q.trim()));
-  }
-
-  Future<void> _runSearch(String q) async {
-    setState(() => _searching = true);
-    final all = await _memberService.searchMembers(q);
-    if (!mounted) return;
-    setState(() {
-      _results = all.where((m) => m.id != widget.excludeMemberId).take(6).toList();
-      _searching = false;
-      _searchedAtLeastOnce = true;
-    });
-  }
-
-  bool get _newMemberValid =>
-      _newFirstNameController.text.trim().isNotEmpty &&
-      _newLastNameController.text.trim().isNotEmpty &&
-      Validators.phone(_newPhoneController.text.trim()) == null;
-
-  Future<void> _createAndSelect() async {
-    if (!_newMemberValid) {
-      setState(() => _error = 'Enter a first name, last name and a valid 10-digit phone');
-      return;
-    }
-    setState(() {
-      _creating = true;
-      _error = null;
-    });
-    try {
-      final created = await _memberService.createMember(
-        firstName: _newFirstNameController.text.trim(),
-        lastName: _newLastNameController.text.trim(),
-        phone: _newPhoneController.text.trim(),
-      );
-      if (!mounted) return;
-      Navigator.pop(context, created.id);
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.message;
-        _creating = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LifecycleDialogShell(
-      title: 'Which member joined?',
-      subtitle: 'Search the new signup, or add them now',
-      icon: Icons.person_search,
-      accent: AppColors.info,
-      error: _error,
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        if (_mode == _JoinMode.newMember)
-          AppButton(
-            text: 'Add & link',
-            loading: _creating,
-            onPressed: _newMemberValid && !_creating ? _createAndSelect : null,
-          ),
-      ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _ModeButton(
-                  label: 'Existing member',
-                  selected: _mode == _JoinMode.existing,
-                  onTap: () => setState(() => _mode = _JoinMode.existing),
-                ),
-              ),
-              AppSpacing.gapXs,
-              Expanded(
-                child: _ModeButton(
-                  label: 'New member',
-                  selected: _mode == _JoinMode.newMember,
-                  onTap: () => setState(() => _mode = _JoinMode.newMember),
-                ),
-              ),
-            ],
-          ),
-          AppSpacing.gapMd,
-
-          if (_mode == _JoinMode.existing) ...[
-            TextField(
-              controller: _controller,
-              onChanged: _onChanged,
-              autofillHints: const [],
-              decoration: InputDecoration(
-                hintText: 'Search by name or phone…',
-                prefixIcon: const Icon(Icons.search, size: 18),
-                suffixIcon: _searching
-                    ? const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
-                      )
-                    : null,
-              ),
-            ),
-            AppSpacing.gapSm,
-            if (!_searching && _searchedAtLeastOnce && _results.isEmpty)
-              LifecycleNotice(
-                tone: LifecycleTone.info,
-                text: 'No matching member found. Switch to "New member" above '
-                    'to add them and link this referral in one step.',
-              ),
-            for (final m in _results) ...[
-              InkWell(
-                onTap: () => Navigator.pop(context, m.id),
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Text('${m.firstName} ${m.lastName}', style: const TextStyle(fontSize: 13.5)),
-                ),
-              ),
-              AppSpacing.gapXs,
-            ],
-          ] else ...[
-            // New member: the referral's own phone is pre-filled since that's
-            // almost certainly the number they'll actually sign up with.
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _newFirstNameController,
-                    autofillHints: const [],
-                    onChanged: (_) => setState(() {}),
-                    decoration: const InputDecoration(hintText: 'First name'),
-                  ),
-                ),
-                AppSpacing.gapMd,
-                Expanded(
-                  child: TextField(
-                    controller: _newLastNameController,
-                    autofillHints: const [],
-                    onChanged: (_) => setState(() {}),
-                    decoration: const InputDecoration(hintText: 'Last name'),
-                  ),
-                ),
-              ],
-            ),
-            AppSpacing.gapSm,
-            TextField(
-              controller: _newPhoneController,
-              autofillHints: const [],
-              keyboardType: TextInputType.phone,
-              onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(hintText: 'Phone number'),
-            ),
-            AppSpacing.gapSm,
-            LifecycleNotice(
-              tone: LifecycleTone.info,
-              text: 'Creates a plain member record — no plan assigned yet. '
-                  'Add one afterwards from their profile if needed.',
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
 
 class _ModeButton extends StatelessWidget {
   final String label;

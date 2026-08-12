@@ -6,7 +6,6 @@ import '../../models/class_models.dart';
 import '../../models/member.dart';
 import '../../services/api_response.dart';
 import '../../services/classes_service.dart';
-import '../../services/member_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_spacing.dart';
 import '../../widgets/empty_state.dart';
@@ -14,6 +13,7 @@ import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../../widgets/status_chip.dart';
 import '../lifecycle/lifecycle_shared.dart' show formatDate;
+import '../../widgets/member_picker.dart';
 
 /// Session detail: roster, capacity, and every action a trainer or front-desk
 /// member needs — book, cancel a booking (with waitlist promotion), mark
@@ -398,113 +398,12 @@ Future<Member?> _pickMember(
   BuildContext context, {
   required Set<int> excludeMemberIds,
 }) {
-  return showDialog<Member>(
-    context: context,
-    builder: (_) => _MemberPickerDialog(excludeMemberIds: excludeMemberIds),
+  return showMemberPicker(
+    context,
+    title: 'Add someone to this session',
+    subtitle: 'Search by name or phone',
+    emptyHint: 'No matching member, or they are already booked in.',
+    excludeIds: excludeMemberIds,
   );
 }
 
-class _MemberPickerDialog extends StatefulWidget {
-  final Set<int> excludeMemberIds;
-  const _MemberPickerDialog({required this.excludeMemberIds});
-
-  @override
-  State<_MemberPickerDialog> createState() => _MemberPickerDialogState();
-}
-
-class _MemberPickerDialogState extends State<_MemberPickerDialog> {
-  final _memberService = MemberService();
-  final _controller = TextEditingController();
-  Timer? _debounce;
-  List<Member> _results = [];
-  bool _searching = false;
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onChanged(String q) {
-    _debounce?.cancel();
-    if (q.trim().length < 2) {
-      setState(() => _results = []);
-      return;
-    }
-    _debounce = Timer(const Duration(milliseconds: 350), () => _search(q.trim()));
-  }
-
-  Future<void> _search(String q) async {
-    setState(() => _searching = true);
-    try {
-      final all = await _memberService.searchMembers(q);
-      if (!mounted) return;
-      setState(() {
-        _results = all.where((m) => !widget.excludeMemberIds.contains(m.id)).take(8).toList();
-        _searching = false;
-      });
-    } on ApiException {
-      if (!mounted) return;
-      setState(() => _searching = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420, maxHeight: 480),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Book a member', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              AppSpacing.gapMd,
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                onChanged: _onChanged,
-                decoration: InputDecoration(
-                  hintText: 'Search by name or phone…',
-                  prefixIcon: const Icon(Icons.search, size: 18),
-                  suffixIcon: _searching
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
-                        )
-                      : null,
-                ),
-              ),
-              AppSpacing.gapMd,
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [
-                    for (final m in _results)
-                      ListTile(
-                        title: Text('${m.firstName} ${m.lastName}'),
-                        subtitle: Text(m.status),
-                        onTap: () => Navigator.pop(context, m),
-                      ),
-                  ],
-                ),
-              ),
-              AppSpacing.gapMd,
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
