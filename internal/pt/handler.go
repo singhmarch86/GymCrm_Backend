@@ -261,6 +261,10 @@ func writeErr(w http.ResponseWriter, err error, op string) {
 	case errors.Is(err, ErrPackageNameRequired),
 		errors.Is(err, ErrTotalSessionsRequired),
 		errors.Is(err, ErrAmountNegative),
+		// Taking more than the package costs is somebody mistyping, not the
+		// server failing. It was returning a 500, which tells the desk to
+		// call support about their own typo.
+		errors.Is(err, ErrBadPaidAmount),
 		errors.Is(err, ErrScheduledAtRequired):
 		response.UnprocessableEntity(w, err.Error())
 	default:

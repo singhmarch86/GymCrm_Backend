@@ -30,7 +30,15 @@ func (s *Service) CreatePackage(ctx context.Context, req CreatePackageRequest) (
 		PackageName: strings.TrimSpace(req.PackageName), TotalSessions: req.TotalSessions,
 		AmountInPaise: req.AmountInPaise, ExpiryDate: expiry, Status: PackageActive,
 	}
-	if err := s.repo.CreatePackage(ctx, p); err != nil {
+	// The money is written with the sale, in one transaction. A package with
+	// no payment row is exactly the state this prevents, so a failure on the
+	// money side must take the sale with it rather than leave a half-written
+	// one nobody knows to retry.
+	money, err := resolvePayment(req)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.repo.CreatePackageWithPayment(ctx, p, money); err != nil {
 		return nil, fmt.Errorf("create package: %w", err)
 	}
 	return s.getPackage(ctx, p.ID)

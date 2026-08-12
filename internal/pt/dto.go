@@ -13,6 +13,33 @@ type CreatePackageRequest struct {
 	TotalSessions int    `json:"total_sessions"`  // required, > 0
 	AmountInPaise int64  `json:"amount_in_paise"` // required, >= 0
 	ExpiryDate    string `json:"expiry_date"`     // optional, YYYY-MM-DD
+
+	// ── The money (FR-21 §3) ────────────────────────────────────────────
+	//
+	// Selling a package now always produces a payment row: either paid, or a
+	// due that lands in the collections queue. Before this, PT could be sold
+	// and no money recorded anywhere — the gym's own data had two packages
+	// worth ₹10,000 with no payment against either, and nothing to chase,
+	// because no debt had ever been written down.
+	//
+	// The payment carries pt_package_id, which is what lets commission accrue
+	// on money actually received rather than on packages created.
+
+	// Empty means the money was NOT taken: a due is raised instead. Never
+	// defaulted to cash — assuming payment for an unpaid package is the exact
+	// leak this closes.
+	PaymentMode string `json:"payment_mode"` // "" | cash | upi | credit_card | debit_card | bank_transfer
+
+	// Defaults to the full package amount. Less than that is a part payment,
+	// and the remainder is raised as a due in the same transaction.
+	AmountPaidInPaise int64 `json:"amount_paid_in_paise"`
+
+	// Used for whatever is unpaid. Defaults to today, so an unpaid package
+	// appears in collections straight away rather than sitting dateless.
+	DueDate string `json:"due_date"` // optional, YYYY-MM-DD
+
+	ReferenceNumber string `json:"reference_number"` // optional
+	PaymentNotes    string `json:"payment_notes"`    // optional
 }
 
 // UpdatePackageStatusRequest changes a package's status directly — e.g. to
