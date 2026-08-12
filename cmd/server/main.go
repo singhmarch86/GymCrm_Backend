@@ -380,6 +380,11 @@ func main() {
 	mux.Handle("POST /api/v1/queues/expected/invoice",
 		jwt(http.HandlerFunc(queuesHandler.InvoiceDues)))
 
+	// Money leakage (FR-21). What the gym handed over and never billed —
+	// which is why none of it appears in the collections queue.
+	mux.Handle("GET /api/v1/queues/leakage",
+		jwt(http.HandlerFunc(queuesHandler.Leakage)))
+
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention
 	// endpoint above — there is deliberately no second resolve route.
