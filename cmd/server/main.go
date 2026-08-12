@@ -162,7 +162,7 @@ func main() {
 	posHandler := pos.NewHandler(posSvc)
 
 	queuesRepo := queues.NewRepository(db)
-	queuesSvc := queues.NewService(queuesRepo)
+	queuesSvc := queues.NewService(queuesRepo, invoicingSvc)
 	queuesHandler := queues.NewHandler(queuesSvc)
 
 	walletRepo := wallet.NewRepository(db)
@@ -374,6 +374,11 @@ func main() {
 	// question about a window. Takes the same date/from/to as staff work.
 	mux.Handle("GET /api/v1/queues/expected",
 		jwt(http.HandlerFunc(queuesHandler.Expected)))
+	// Draft invoices from raised dues (FR-19 §6). Only dues, never expiring
+	// memberships: an invoice for money nobody agreed to pay would put an
+	// invented supply into the gym's tax records.
+	mux.Handle("POST /api/v1/queues/expected/invoice",
+		jwt(http.HandlerFunc(queuesHandler.InvoiceDues)))
 
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention

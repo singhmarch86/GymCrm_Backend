@@ -4,14 +4,22 @@ import (
 	"context"
 	"math"
 	"time"
+
+	"gymcrm/internal/invoicing"
 )
 
 type Service struct {
 	repo *Repository
+
+	// Invoicing is borrowed, not reimplemented. Numbering, tax, discounts and
+	// the draft/issued/cancelled rules all live in that module and must have
+	// exactly one implementation — a queue writing its own invoices would be a
+	// second, quietly divergent copy of the same rules.
+	invoicing *invoicing.Service
 }
 
-func NewService(repo *Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo *Repository, inv *invoicing.Service) *Service {
+	return &Service{repo: repo, invoicing: inv}
 }
 
 // Stock builds the low-stock queue (FR-19 §5).
