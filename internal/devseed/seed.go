@@ -37,6 +37,7 @@ type seeder struct {
 
 	gymID       int64
 	ownerUserID int64
+	staffUserID int64
 
 	plans    []plans.MembershipPlan
 	members  []seedMember
@@ -124,6 +125,22 @@ func Run(ctx context.Context, db *gorm.DB) error {
 }
 
 // ─── Small shared helpers ──────────────────────────────────────────────────
+
+// deskUser spreads counter work across the two people who work the desk.
+//
+// A third to the owner, the rest to reception. Only payments route through
+// here — renewals, lifecycle changes and the rest stay with the owner — so the
+// gym-wide split lands nearer 70/30 than 33/67. That is a fair picture of a
+// small gym where the owner does most things and reception takes money at the
+// counter, and it is enough for the per-person views to have something to
+// show. Attributing everything to the owner made every staff screen a
+// single-row list.
+func (s *seeder) deskUser() int64 {
+	if s.staffUserID == 0 || s.rng.Intn(3) == 0 {
+		return s.ownerUserID
+	}
+	return s.staffUserID
+}
 
 func strPtr(s string) *string        { return &s }
 func timePtr(t time.Time) *time.Time { return &t }

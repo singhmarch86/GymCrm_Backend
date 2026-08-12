@@ -51,5 +51,27 @@ func (s *seeder) seedGymAndOwner() error {
 	}
 	s.ownerUserID = owner.ID
 
+	// A receptionist, because most of what staff work and its analytics are
+	// for only becomes visible with more than one person in the gym. With a
+	// lone owner every screen shows a single row, per-person trends have
+	// nothing to sit beside, and the anti-leaderboard rules the design turns
+	// on cannot be judged at all.
+	//
+	// Same password as the owner: this is a development seed, and a second
+	// credential to remember helps nobody.
+	staff := &users.User{
+		GymID:        s.gymID,
+		Name:         "Simran Kaur",
+		Phone:        "9876500002",
+		Email:        "reception@demofitnessgym.dev",
+		PasswordHash: string(hash),
+		Role:         users.RoleStaff,
+		Status:       users.UserStatusActive,
+	}
+	if err := s.tx.Create(staff).Error; err != nil {
+		return err
+	}
+	s.staffUserID = staff.ID
+
 	return nil
 }

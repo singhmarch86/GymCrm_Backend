@@ -337,6 +337,11 @@ func main() {
 	mux.Handle("GET /api/v1/staff-work", jwt(http.HandlerFunc(staffWorkHandler.Day)))
 	mux.Handle("GET /api/v1/staff-work/items", jwt(http.HandlerFunc(staffWorkHandler.Items)))
 	mux.Handle("GET /api/v1/staff-work/leads", jwt(http.HandlerFunc(staffWorkHandler.LeadWork)))
+	// Analytics (FR-22). Same range parameters as the day view. Not a
+	// ranking: people come back ordered by name and compared only to their
+	// own previous period.
+	mux.Handle("GET /api/v1/staff-work/analytics",
+		jwt(http.HandlerFunc(staffWorkHandler.Analytics)))
 
 	// Work queues (FR-19). What is still owed, as opposed to what happened.
 	// Plain jwt: low stock is a fact about the shelf, not about a person, and

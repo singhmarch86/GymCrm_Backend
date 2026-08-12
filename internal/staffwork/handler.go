@@ -158,3 +158,30 @@ func (h *Handler) LeadWork(w http.ResponseWriter, r *http.Request) {
 	}
 	response.OK(w, report)
 }
+
+// Analytics godoc
+// @Summary      How the desk's workload has moved over a span
+// @Description  The gym's rhythm, which ledgers carry the work, quiet days, and each person against their OWN previous period. Deliberately not a ranking — people come back ordered by name, with no score and no comparison between them (FR-13 §1).
+// @Tags         staff-work
+// @Produce      json
+// @Security     BearerAuth
+// @Param        date  query  string  false  "Single day, YYYY-MM-DD"
+// @Param        from  query  string  false  "Range start, YYYY-MM-DD"
+// @Param        to    query  string  false  "Range end, YYYY-MM-DD"
+// @Success      200  {object}  StaffAnalytics
+// @Router       /api/v1/staff-work/analytics [get]
+func (h *Handler) Analytics(w http.ResponseWriter, r *http.Request) {
+	rng, err := readRange(r.URL.Query())
+	if err != nil {
+		rangeError(w, err)
+		return
+	}
+
+	out, err := h.svc.Analytics(r.Context(), rng)
+	if err != nil {
+		log.Printf("staffwork: analytics %s: %v", rng.Label(), err)
+		response.InternalServerError(w)
+		return
+	}
+	response.OK(w, out)
+}

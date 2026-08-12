@@ -48,7 +48,7 @@ func (s *seeder) seedBilling() error {
 				Status:            payments.PaymentStatusPaid,
 				PaymentMode:       &mode,
 				PaidDate:          timePtr(cycleStart),
-				CollectedByUserID: int64Ptr(s.ownerUserID),
+				CollectedByUserID: int64Ptr(s.deskUser()),
 			}
 			if err := s.tx.Create(&payment).Error; err != nil {
 				return fmt.Errorf("member %d cycle %d payment: %w", m.ID, k, err)
