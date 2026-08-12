@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/collection_queue.dart';
+import '../models/date_span.dart';
+import '../models/expected_payments.dart';
 import '../models/renewal_queue.dart';
 import '../models/stock_queue.dart';
 import 'api_config.dart';
@@ -52,6 +54,27 @@ class QueueService {
     );
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return RenewalQueue.fromJson(unwrapJson(response)['data']);
+  }
+
+  /// What the gym has reason to expect over [span] (FR-19 §5).
+  ///
+  /// The one queue that takes a date range. Everything else in here is a list
+  /// of what is owed now, and "now" does not move when a date control does;
+  /// this asks about a window by definition.
+  Future<ExpectedPayments> getExpected({DateSpan? span}) async {
+    final headers = await _headers();
+    final uri = Uri.parse('$kBaseUrl/api/v1/queues/expected')
+        .replace(queryParameters: _spanParams(span));
+    final response = await guardRequest(() => http.get(uri, headers: headers));
+    return ExpectedPayments.fromJson(unwrapJson(response)['data']);
+  }
+
+  /// A single day still goes as `date`, matching StaffWorkService — the two
+  /// sit under one date control and must ask the same question of the server.
+  static Map<String, String> _spanParams(DateSpan? span) {
+    if (span == null) return const {};
+    if (span.isSingleDay) return {'date': span.fromParam};
+    return {'from': span.fromParam, 'to': span.toParam};
   }
 
   /// Records that a member owes money.

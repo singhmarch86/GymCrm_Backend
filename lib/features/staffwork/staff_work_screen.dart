@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/collection_queue.dart';
 import '../../models/date_span.dart';
+import '../../models/expected_payments.dart';
 import '../../models/lead_pipeline.dart';
 import '../../models/staff_work.dart';
 import '../../services/lead_service.dart';
@@ -17,6 +18,7 @@ import '../../widgets/loading_state.dart';
 import '../leads/lead_detail_screen.dart';
 import '../payments/collection_action_sheet.dart';
 import '../payments/collections_view.dart';
+import '../payments/expected_view.dart';
 import '../payments/raise_due_sheet.dart';
 import '../leads/lead_workflow_view.dart';
 import '../leads/next_step_sheet.dart';
@@ -67,18 +69,27 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   // Not date-scoped. A due is owed now whatever date the bar is showing, the
   // same reason the lead queue ignores it.
   CollectionQueue? _collections;
+
+  // What is coming, as opposed to what came in. The only date-scoped queue:
+  // "expected" is a question about a window by definition, so unlike the
+  // other two this one reloads when the date control moves.
+  ExpectedPayments? _expected;
+  bool _expectedLoading = false;
+  String? _expectedError;
+
   bool _isOwner = false;
 
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 4, vsync: this)
+    _tabs = TabController(length: 5, vsync: this)
       ..addListener(() {
         if (_tabs.indexIsChanging) return;
         // Rebuild on every settled tab change: the date bar and the button
         // below both depend on which tab is showing.
         setState(() {});
-        if (_tabs.index >= 2 && _leadWork == null) _loadLeadWork();
+        if (_tabs.index == 1 && _expected == null) _loadExpected();
+        if (_tabs.index >= 3 && _leadWork == null) _loadLeadWork();
       });
     StorageService.getRole().then((r) {
       if (mounted) setState(() => _isOwner = r == 'owner');
@@ -119,6 +130,27 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
     }
   }
 
+  Future<void> _loadExpected() async {
+    setState(() {
+      _expectedLoading = true;
+      _expectedError = null;
+    });
+    try {
+      final data = await QueueService().getExpected(span: _span);
+      if (!mounted) return;
+      setState(() {
+        _expected = data;
+        _expectedLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _expectedError = e.toString();
+        _expectedLoading = false;
+      });
+    }
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -155,9 +187,14 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       // heading for the split second before the reload lands is worse than
       // showing a spinner.
       _leadWork = null;
+      // Dropped for the same reason, and it matters more here: this is the one
+      // view whose every number is scoped to the range, so a stale copy under
+      // a new heading would be wrong rather than merely old.
+      _expected = null;
     });
     _load();
-    if (_tabs.index >= 2) _loadLeadWork();
+    if (_tabs.index == 1) _loadExpected();
+    if (_tabs.index >= 3) _loadLeadWork();
   }
 
   @override
@@ -173,7 +210,8 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
             icon: const Icon(Icons.refresh_rounded),
             onPressed: _loading ? null : () {
               _load();
-              if (_tabs.index >= 2) _loadLeadWork();
+              if (_tabs.index == 1) _loadExpected();
+              if (_tabs.index >= 3) _loadLeadWork();
             },
           ),
         ],
@@ -186,13 +224,16 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Money & work'),
+            // Next to the record of what came in, because it is the same
+            // question pointed the other way down the calendar.
+            Tab(icon: Icon(Icons.trending_up_rounded, size: 18), text: 'Expected'),
             Tab(icon: Icon(Icons.request_quote_rounded, size: 18), text: 'Collect'),
             Tab(icon: Icon(Icons.person_search_rounded, size: 18), text: 'Leads'),
             Tab(icon: Icon(Icons.checklist_rounded, size: 18), text: 'Follow up'),
           ],
         ),
       ),
-      floatingActionButton: _tabs.index == 1
+      floatingActionButton: _tabs.index == 2
           ? FloatingActionButton.extended(
               onPressed: _raiseDue,
               backgroundColor: AppColors.primary,
@@ -207,13 +248,14 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           // now, neither is date-scoped, and a date control sitting above a
           // list it does not filter invites the reader to trust a narrowing
           // that never happened.
-          if (_tabs.index != 1 && _tabs.index != 3)
+          if (_tabs.index != 2 && _tabs.index != 4)
             DateSpanBar(span: _span, onChanged: _setSpan),
           Expanded(
             child: TabBarView(
               controller: _tabs,
               children: [
                 _body(),
+                _expectedBody(),
                 _collectBody(),
                 _leadsBody(),
                 _followUpBody(),
@@ -222,6 +264,25 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           ),
         ],
       ),
+    );
+  }
+
+  /// What the gym has reason to expect over the chosen span.
+  ///
+  /// The mirror of Money & work: that answers "what came in", this answers
+  /// "what is coming". It is the one tab where the date control changes every
+  /// number on screen rather than just the record above a queue.
+  Widget _expectedBody() {
+    if (_expectedLoading) return const LoadingView();
+    if (_expectedError != null) {
+      return ErrorBanner(message: _expectedError!, onRetry: _loadExpected);
+    }
+    final data = _expected;
+    if (data == null) return const LoadingView();
+
+    return RefreshIndicator(
+      onRefresh: _loadExpected,
+      child: ExpectedView(data: data),
     );
   }
 
@@ -296,7 +357,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
                   '${_collections!.unchasedCount == 0 ? '' : ' · ${_collections!.unchasedCount} with nobody on them'}'
                   '. Not tied to the dates above.',
               alarming: _collections!.unchasedCount > 0,
-              onOpen: () => _tabs.animateTo(1),
+              onOpen: () => _tabs.animateTo(2),
             ),
           ],
         ],
@@ -331,7 +392,7 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
                     '${workflow.dueToday} due today. Counted as it stands '
                     'now, not for the dates above.',
                 alarming: workflow.unattended > 0,
-                onOpen: () => _tabs.animateTo(3),
+                onOpen: () => _tabs.animateTo(4),
               ),
       ),
     );
