@@ -16,6 +16,7 @@ import 'lead_followups_view.dart';
 import 'lead_kanban_board.dart';
 import 'lead_workflow_view.dart';
 import 'next_step_sheet.dart';
+import 'stage_note_sheet.dart';
 import 'leads_body.dart';
 
 /// Lead CRM. Four views over the same pipeline:
@@ -366,8 +367,20 @@ class _LeadsScreenState extends State<LeadsScreen>
   }
 
   Future<void> _advance(Lead lead, String newStatus) async {
+    // Ask why before moving. Dismissing the sheet cancels the move entirely,
+    // so a mis-drag is undone by swiping the sheet away rather than dragging
+    // the card back.
+    final result = await showStageNoteSheet(
+      context,
+      leadName: lead.name,
+      fromStatus: lead.status,
+      toStatus: newStatus,
+    );
+    if (result == null || !mounted) return;
+
     try {
-      await LeadService().advanceStatus(lead.id, newStatus);
+      await LeadService()
+          .advanceStatus(lead.id, newStatus, note: result.note);
       await _refreshAll();
     } catch (e) {
       if (!mounted) return;

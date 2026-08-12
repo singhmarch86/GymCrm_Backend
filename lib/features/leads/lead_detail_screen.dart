@@ -11,6 +11,7 @@ import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 
 import 'lead_pipeline_constants.dart';
+import 'stage_note_sheet.dart';
 
 /// Shows lead details as a full-page route.
 ///
@@ -153,8 +154,18 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
       Navigator.pop(context, 'lost');
       return;
     }
+    final lead = _lead;
+    final result = await showStageNoteSheet(
+      context,
+      leadName: lead?.name ?? 'This lead',
+      fromStatus: lead?.status ?? '',
+      toStatus: newStatus,
+    );
+    if (result == null || !mounted) return;
+
     try {
-      final updated = await LeadService().advanceStatus(widget.leadId, newStatus);
+      final updated = await LeadService()
+          .advanceStatus(widget.leadId, newStatus, note: result.note);
       if (!mounted) return;
       setState(() {
         _lead = updated;
