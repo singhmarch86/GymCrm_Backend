@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"gorm.io/gorm"
+
 	"gymcrm/internal/database"
 )
 
@@ -72,10 +74,35 @@ func (r *Repository) WorkflowLeads(ctx context.Context, assignedTo string) ([]Wo
 // to Unattended — a legitimate thing to do deliberately, and visible when it
 // happens by accident.
 func (r *Repository) SetNextStep(
-	ctx context.Context, leadID int64, step *string, due *time.Time,
+	ctx context.Context, leadID int64, step *string, due *time.Time, note *string,
 ) error {
-	return r.Update(ctx, leadID, map[string]interface{}{
-		"next_step":     step,
-		"next_step_due": due,
+	tc := database.MustGetTenant(ctx)
+	gymID := tc.GymID()
+	userID := tc.UserID()
+
+	// Columns and timeline entry in one transaction, the same guarantee
+	// UpdateStatusWithActivity gives: a lead whose next step moved with no
+	// record of who moved it or why is exactly the row the next person cannot
+	// interpret.
+	//
+	// Until now this wrote only the two columns. Setting a next step is the
+	// most-used action in the workflow and it left no trace at all — the
+	// follow_up_set type existed and had never once been written.
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Table("leads").
+			Where("id = ? AND gym_id = ? AND deleted_at IS NULL", leadID, gymID).
+			Updates(map[string]interface{}{
+				"next_step":     step,
+				"next_step_due": due,
+			}).Error; err != nil {
+			return err
+		}
+
+		return logActivityTx(tx, gymID, &LeadActivity{
+			LeadID: leadID,
+			UserID: &userID,
+			Type:   ActivityFollowUpSet,
+			Note:   note,
+		})
 	})
 }

@@ -3,6 +3,7 @@ package leads
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -132,7 +133,7 @@ func (s *Service) GetWorkflow(ctx context.Context, assignedTo string) (*Workflow
 // date is invisible to every queue, so accepting one would quietly create the
 // exact failure FR-18 exists to remove.
 func (s *Service) SetNextStep(
-	ctx context.Context, leadID int64, step string, dueStr string,
+	ctx context.Context, leadID int64, step string, dueStr string, note string,
 ) (*LeadResponse, error) {
 	lead, err := s.repo.FindByID(ctx, leadID)
 	if err != nil {
@@ -149,7 +150,7 @@ func (s *Service) SetNextStep(
 	}
 
 	if step == "" && dueStr == "" {
-		if err := s.repo.SetNextStep(ctx, leadID, nil, nil); err != nil {
+		if err := s.repo.SetNextStep(ctx, leadID, nil, nil, trimmedNote(note)); err != nil {
 			return nil, fmt.Errorf("set next step: %w", err)
 		}
 		return s.GetLead(ctx, leadID)
@@ -163,10 +164,20 @@ func (s *Service) SetNextStep(
 		return nil, ErrNextStepDueRequired
 	}
 
-	if err := s.repo.SetNextStep(ctx, leadID, &step, due); err != nil {
+	if err := s.repo.SetNextStep(ctx, leadID, &step, due, trimmedNote(note)); err != nil {
 		return nil, fmt.Errorf("set next step: %w", err)
 	}
 	return s.GetLead(ctx, leadID)
+}
+
+// trimmedNote turns a blank note into nil rather than an empty string, so the
+// timeline distinguishes "no note given" from "a note that says nothing".
+func trimmedNote(note string) *string {
+	n := strings.TrimSpace(note)
+	if n == "" {
+		return nil
+	}
+	return &n
 }
 
 // SuggestForOutcome returns the step that usually follows an outcome, so the

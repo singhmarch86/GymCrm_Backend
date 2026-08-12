@@ -183,8 +183,15 @@ func (s *Service) AdvanceStatus(ctx context.Context, id int64, req AdvanceStatus
 	// Record the transition alongside the update so the lead's timeline (and
 	// the time-in-stage analytics derived from it) stays consistent with its
 	// actual status even if the write fails partway.
+	// The note wins when given; lost_reason is the fallback so a lost lead
+	// with no note still carries its reason onto the timeline, as before.
+	activityNote := req.Note
+	if activityNote == nil || strings.TrimSpace(*activityNote) == "" {
+		activityNote = req.LostReason
+	}
+
 	if err := s.repo.UpdateStatusWithActivity(
-		ctx, id, string(existing.Status), req.Status, updates, req.LostReason,
+		ctx, id, string(existing.Status), req.Status, updates, activityNote,
 	); err != nil {
 		return nil, fmt.Errorf("advance status: save: %w", err)
 	}

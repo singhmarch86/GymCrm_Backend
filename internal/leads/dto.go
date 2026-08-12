@@ -40,6 +40,12 @@ type UpdateLeadRequest struct {
 type AdvanceStatusRequest struct {
 	Status     string  `json:"status"`      // required — target pipeline stage
 	LostReason *string `json:"lost_reason"` // required when status = "lost"
+
+	// Why the lead moved, in the staff member's words. Optional, and stored on
+	// the stage-change activity. Until this existed a move recorded *what*
+	// happened and never *why*, except for lost — which is the one case the
+	// gym had already decided it needed a reason for.
+	Note *string `json:"note"`
 }
 
 // ─── Response DTOs ────────────────────────────────────────────────────────────

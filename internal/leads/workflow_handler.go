@@ -15,6 +15,11 @@ import (
 type SetNextStepRequest struct {
 	Step string `json:"step"`
 	Due  string `json:"due"` // YYYY-MM-DD
+
+	// Why this step, in the staff member's words. Optional, and stored on the
+	// timeline rather than on the lead — a note is what somebody said at a
+	// moment, not a property of the lead that later notes overwrite.
+	Note string `json:"note"`
 }
 
 // Workflow godoc
@@ -66,6 +71,7 @@ func (h *Handler) SetNextStep(w http.ResponseWriter, r *http.Request) {
 		r.Context(), id,
 		strings.TrimSpace(req.Step),
 		strings.TrimSpace(req.Due),
+		req.Note,
 	)
 	if err != nil {
 		h.handleError(w, err)
