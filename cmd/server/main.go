@@ -326,6 +326,7 @@ func main() {
 	// parameter.
 	mux.Handle("GET /api/v1/staff-work", jwt(http.HandlerFunc(staffWorkHandler.Day)))
 	mux.Handle("GET /api/v1/staff-work/items", jwt(http.HandlerFunc(staffWorkHandler.Items)))
+	mux.Handle("GET /api/v1/staff-work/leads", jwt(http.HandlerFunc(staffWorkHandler.LeadWork)))
 
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention

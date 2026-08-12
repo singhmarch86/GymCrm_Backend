@@ -96,3 +96,28 @@ func (h *Handler) Items(w http.ResponseWriter, r *http.Request) {
 	}
 	response.OK(w, ItemsResponse{Items: items})
 }
+
+// LeadWork godoc
+// @Summary      Per-person lead workflow — what each staff member is carrying
+// @Description  Carrying counts are "now"; the funnel is scoped to the date.
+// @Tags         staff-work
+// @Produce      json
+// @Security     BearerAuth
+// @Param        date  query  string  false  "YYYY-MM-DD, defaults to today (IST)"
+// @Success      200  {object}  LeadWorkReport
+// @Router       /api/v1/staff-work/leads [get]
+func (h *Handler) LeadWork(w http.ResponseWriter, r *http.Request) {
+	day, err := ParseDay(strings.TrimSpace(r.URL.Query().Get("date")))
+	if err != nil {
+		response.BadRequest(w, "date must be in YYYY-MM-DD format")
+		return
+	}
+
+	report, err := h.svc.LeadWork(r.Context(), day)
+	if err != nil {
+		log.Printf("staffwork: lead work: %v", err)
+		response.InternalServerError(w)
+		return
+	}
+	response.OK(w, report)
+}
