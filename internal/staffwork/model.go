@@ -101,15 +101,30 @@ type StaffDay struct {
 
 	// Totals across every category, so the UI never has to re-add them and
 	// cannot disagree with this package about the answer.
-	TotalActions  int64      `json:"total_actions"`
-	TotalHandled  int64      `json:"total_handled_in_paise"`
+	TotalActions int64 `json:"total_actions"`
+	TotalHandled int64 `json:"total_handled_in_paise"`
+
+	// The earliest and latest thing recorded. Meaningful for one day ("worked
+	// 07:10 to 21:40"), meaningless across a month — the UI is told which case
+	// it is by DayReport.Days rather than having to guess from the dates.
 	FirstActionAt *time.Time `json:"first_action_at,omitempty"`
 	LastActionAt  *time.Time `json:"last_action_at,omitempty"`
 }
 
-// DayReport is the whole screen for one date.
+// DayReport is the whole screen for one range (FR-18 §9).
+//
+// Named DayReport still, because a day is the common case and renaming it
+// would churn every caller for nothing.
 type DayReport struct {
-	Date  string     `json:"date"` // YYYY-MM-DD, the gym's local day
+	// Date is the gym's local day, and is only set when the range is one day.
+	// Empty for a span: a month has no single date, and filling this with the
+	// first day would let a careless reader label a month's totals "the 1st".
+	Date string `json:"date,omitempty"`
+
+	From string `json:"from"` // YYYY-MM-DD, inclusive
+	To   string `json:"to"`   // YYYY-MM-DD, inclusive
+	Days int    `json:"days"` // 1 for a single day
+
 	Staff []StaffDay `json:"staff"`
 
 	TotalActions int64 `json:"total_actions"`

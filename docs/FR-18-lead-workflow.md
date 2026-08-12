@@ -145,6 +145,37 @@ name. A month of aggregates reads much more like a performance review than a
 day does, so the anti-leaderboard rules matter *more* here, not less. Both ends
 of the range use the IST local-day boundary.
 
+### What building it turned up
+
+Four things only became visible once a month could be on screen at all. All
+four are shipped:
+
+1. **Carrying is still "now".** Only the funnel moves with the range. Asking
+   for July does not un-neglect a lead still sitting untouched today, so the
+   card labels the block **Carrying now** — unlabelled counts under a date
+   range read as being scoped to it.
+2. **The drill-down cap is now honest.** It was `LIMIT 200`, silently. A day
+   rarely reached it; a month will. The API now fetches one row over the cap
+   and returns `truncated`, and the sheet says so *above* the list.
+3. **Drill-down rows carry a date.** Across a span, three rows at 18:30 could
+   be three days or three minutes apart.
+4. **A range is capped at a year** and both ends must be given together. A
+   lone `from` silently completed to today would answer a question nobody
+   asked, and a mistyped year would drag every row the gym has ever written
+   through the eight-ledger union.
+
+### Known gap, not fixed here
+
+The **Lead activity** tally on the Money & work tab counts every row in
+`lead_activities`; the Leads funnel counts only the five types a person logs by
+hand. Over August that is 16 against 5 — the other 11 are `stage_change` and
+`created`, written by the server. The two numbers have always disagreed; a
+single day just never showed enough of them to notice.
+
+The screen now says which it is counting rather than leaving the reader to
+reconcile them. Whether a stage move should count as lead work is a real
+question and belongs with the pilot gym, not with a guess here.
+
 ---
 
 ## What this deliberately does not do

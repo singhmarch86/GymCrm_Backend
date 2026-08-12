@@ -2,12 +2,17 @@ package staffwork
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
 
 	"gymcrm/internal/database"
 )
+
+// ItemLimit caps a drill-down list. Kept small deliberately: this is a list a
+// person reads, not an export.
+const ItemLimit = 200
 
 type Repository struct {
 	db *gorm.DB
@@ -81,17 +86,19 @@ const eventSources = `
 	  FROM wallet_transactions WHERE gym_id = @gym AND transaction_type = 'topup'
 `
 
-// DayTallies returns per-user, per-category counts for one local day.
+// RangeTallies returns per-user, per-category counts over an inclusive span of
+// gym-local days (FR-18 §9). One day is the one-day range.
 //
 // If userID is non-nil the result is restricted to that person — used to
 // enforce FR-13 §7 server-side, never by trusting a client-supplied id.
-func (r *Repository) DayTallies(ctx context.Context, day time.Time, userID *int64) ([]tallyRow, error) {
+func (r *Repository) RangeTallies(ctx context.Context, rng Range, userID *int64) ([]tallyRow, error) {
 	tc := database.MustGetTenant(ctx)
-	date := day.Format("2006-01-02")
 
 	// The day filter converts each timestamp into IST before taking its date,
 	// so an 11pm sale lands on the day the gym would call it (FR-13 §4).
 	// Comparing raw UTC timestamps puts every evening transaction on tomorrow.
+	// BETWEEN is inclusive at both ends — what an owner means by "the 1st to
+	// the 31st" includes the 31st.
 	sql := `
 		WITH events AS (` + eventSources + `)
 		SELECT e.user_id, u.name, u.role, e.category,
@@ -102,7 +109,7 @@ func (r *Repository) DayTallies(ctx context.Context, day time.Time, userID *int6
 		  FROM events e
 		  LEFT JOIN users u ON u.id = e.user_id
 		 WHERE e.at IS NOT NULL
-		   AND (e.at AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		   AND (e.at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		   AND (CAST(@filter_user AS bigint) IS NULL OR e.user_id = @filter_user)
 		 GROUP BY e.user_id, u.name, u.role, e.category`
 
@@ -110,7 +117,8 @@ func (r *Repository) DayTallies(ctx context.Context, day time.Time, userID *int6
 	err := r.db.WithContext(ctx).Raw(sql,
 		map[string]interface{}{
 			"gym":         tc.GymID(),
-			"date":        date,
+			"from":        rng.FromString(),
+			"to":          rng.ToString(),
 			"filter_user": userID,
 		}).Scan(&rows).Error
 
@@ -126,15 +134,14 @@ type itemRow struct {
 	Amount   *int64
 }
 
-// DayItems returns the individual rows behind one (user, category) number.
+// RangeItems returns the individual rows behind one (user, category) number.
 //
 // Written as one query per category rather than a union: each ledger names its
 // counterparty differently (a member, a lead, an invoice number), and forcing
 // them into one shape would mean either a lowest-common-denominator label or
 // eight CASE branches nobody can read.
-func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64, cat Category) ([]itemRow, error) {
+func (r *Repository) RangeItems(ctx context.Context, rng Range, userID *int64, cat Category) ([]itemRow, error) {
 	tc := database.MustGetTenant(ctx)
-	date := day.Format("2006-01-02")
 
 	memberName := `TRIM(m.first_name || ' ' || COALESCE(m.last_name, ''))`
 
@@ -146,7 +153,7 @@ func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64,
 		              'Payment · ' || p.payment_mode AS what, p.amount_in_paise AS amount
 		         FROM payments p JOIN members m ON m.id = p.member_id
 		        WHERE p.gym_id = @gym AND p.status = 'paid'
-		          AND (COALESCE(p.paid_date, p.created_at) AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		          AND (COALESCE(p.paid_date, p.created_at) AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		          AND p.collected_by_user_id IS NOT DISTINCT FROM @user`
 
 	case CatRenewals:
@@ -155,7 +162,7 @@ func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64,
 		              'Renewed to ' || r.new_expiry_date::text AS what, r.amount_paid_in_paise AS amount
 		         FROM renewals r JOIN members m ON m.id = r.member_id
 		        WHERE r.gym_id = @gym
-		          AND (COALESCE(r.renewal_date, r.created_at) AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		          AND (COALESCE(r.renewal_date, r.created_at) AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		          AND r.renewed_by_user_id IS NOT DISTINCT FROM @user`
 
 	case CatSales:
@@ -164,7 +171,7 @@ func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64,
 		              'Shop sale · ' || s.payment_mode AS what, s.total_in_paise AS amount
 		         FROM sales s LEFT JOIN members m ON m.id = s.member_id
 		        WHERE s.gym_id = @gym AND s.is_refund = false
-		          AND (s.created_at AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		          AND (s.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		          AND s.created_by_user_id IS NOT DISTINCT FROM @user`
 
 	case CatInvoices:
@@ -173,7 +180,7 @@ func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64,
 		              'Invoice ' || i.invoice_number AS what, i.total_in_paise AS amount
 		         FROM invoices i JOIN members m ON m.id = i.member_id
 		        WHERE i.gym_id = @gym AND i.status <> 'cancelled'
-		          AND (COALESCE(i.invoice_date, i.created_at) AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		          AND (COALESCE(i.invoice_date, i.created_at) AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		          AND i.created_by_user_id IS NOT DISTINCT FROM @user`
 
 	case CatRetention:
@@ -182,7 +189,7 @@ func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64,
 		              COALESCE(a.action_note, a.alert_type) AS what, NULL AS amount
 		         FROM retention_alerts a JOIN members m ON m.id = a.member_id
 		        WHERE a.gym_id = @gym AND a.is_resolved = true
-		          AND (a.resolved_at AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		          AND (a.resolved_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		          AND a.resolved_by IS NOT DISTINCT FROM @user`
 
 	case CatLeads:
@@ -190,7 +197,7 @@ func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64,
 		              la.type || COALESCE(' · ' || la.note, '') AS what, NULL AS amount
 		         FROM lead_activities la JOIN leads l ON l.id = la.lead_id
 		        WHERE la.gym_id = @gym
-		          AND (la.created_at AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		          AND (la.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		          AND la.user_id IS NOT DISTINCT FROM @user`
 
 	case CatLifecycle:
@@ -198,7 +205,7 @@ func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64,
 		              e.event_type || COALESCE(' · ' || e.reason, '') AS what, NULL AS amount
 		         FROM membership_events e JOIN members m ON m.id = e.member_id
 		        WHERE e.gym_id = @gym
-		          AND (e.created_at AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		          AND (e.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		          AND e.performed_by_user_id IS NOT DISTINCT FROM @user`
 
 	case CatWallet:
@@ -206,18 +213,24 @@ func (r *Repository) DayItems(ctx context.Context, day time.Time, userID *int64,
 		              COALESCE(w.reason, 'Wallet top-up') AS what, w.amount_in_paise AS amount
 		         FROM wallet_transactions w JOIN members m ON m.id = w.member_id
 		        WHERE w.gym_id = @gym AND w.transaction_type = 'topup'
-		          AND (w.created_at AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		          AND (w.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		          AND w.created_by_user_id IS NOT DISTINCT FROM @user`
 
 	default:
 		return nil, ErrUnknownCategory
 	}
 
+	// One row over the cap, so the caller can tell "exactly 200 things happened"
+	// apart from "there were more and you are not seeing them". A day rarely
+	// reached the cap; a month will, and a silently truncated list is a lie the
+	// reader has no way to detect.
 	var rows []itemRow
-	err := r.db.WithContext(ctx).Raw(sql+" ORDER BY 2 DESC LIMIT 200",
+	err := r.db.WithContext(ctx).Raw(
+		fmt.Sprintf("%s ORDER BY 2 DESC LIMIT %d", sql, ItemLimit+1),
 		map[string]interface{}{
 			"gym":  tc.GymID(),
-			"date": date,
+			"from": rng.FromString(),
+			"to":   rng.ToString(),
 			// IS NOT DISTINCT FROM, so a nil user matches the unattributed
 			// rows rather than matching nothing the way `= NULL` would.
 			"user": userID,

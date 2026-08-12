@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -21,26 +22,58 @@ func NewHandler(svc *Service) *Handler {
 // ItemsResponse wraps the drill-down rows.
 type ItemsResponse struct {
 	Items []Item `json:"items"`
+
+	// True when there were more rows than the cap. The client must say so
+	// rather than presenting a truncated list as the whole story.
+	Truncated bool `json:"truncated"`
+	Limit     int  `json:"limit"`
+}
+
+// readRange pulls the range out of a query string and turns a parse failure
+// into the specific message that names what was wrong.
+func readRange(q url.Values) (Range, error) {
+	return ParseRange(
+		strings.TrimSpace(q.Get("date")),
+		strings.TrimSpace(q.Get("from")),
+		strings.TrimSpace(q.Get("to")),
+	)
+}
+
+// rangeError maps a range parse failure to a message the caller can act on.
+// "invalid request" would leave somebody guessing which of three things broke.
+func rangeError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, ErrRangeBack):
+		response.BadRequest(w, "to must not be before from")
+	case errors.Is(err, ErrRangeHuge):
+		response.BadRequest(w, "range must not be longer than a year")
+	case errors.Is(err, ErrBadRange):
+		response.BadRequest(w, "from and to must both be given, in YYYY-MM-DD format")
+	default:
+		response.BadRequest(w, "date must be in YYYY-MM-DD format")
+	}
 }
 
 // Day godoc
-// @Summary      What each staff member did on one day
+// @Summary      What each staff member did, over a day or a range
 // @Tags         staff-work
 // @Produce      json
 // @Security     BearerAuth
-// @Param        date  query  string  false  "YYYY-MM-DD, defaults to today (IST)"
+// @Param        date  query  string  false  "YYYY-MM-DD single day, defaults to today (IST)"
+// @Param        from  query  string  false  "YYYY-MM-DD, inclusive; must be paired with to"
+// @Param        to    query  string  false  "YYYY-MM-DD, inclusive; must be paired with from"
 // @Success      200  {object}  DayReport
 // @Router       /api/v1/staff-work [get]
 func (h *Handler) Day(w http.ResponseWriter, r *http.Request) {
-	day, err := ParseDay(strings.TrimSpace(r.URL.Query().Get("date")))
+	rng, err := readRange(r.URL.Query())
 	if err != nil {
-		response.BadRequest(w, "date must be in YYYY-MM-DD format")
+		rangeError(w, err)
 		return
 	}
 
-	report, err := h.svc.Day(r.Context(), day)
+	report, err := h.svc.Day(r.Context(), rng)
 	if err != nil {
-		log.Printf("staffwork: day: %v", err)
+		log.Printf("staffwork: day %s: %v", rng.Label(), err)
 		response.InternalServerError(w)
 		return
 	}
@@ -52,7 +85,9 @@ func (h *Handler) Day(w http.ResponseWriter, r *http.Request) {
 // @Tags         staff-work
 // @Produce      json
 // @Security     BearerAuth
-// @Param        date      query  string  false  "YYYY-MM-DD, defaults to today (IST)"
+// @Param        date      query  string  false  "YYYY-MM-DD single day, defaults to today (IST)"
+// @Param        from      query  string  false  "YYYY-MM-DD, inclusive"
+// @Param        to        query  string  false  "YYYY-MM-DD, inclusive"
 // @Param        user_id   query  int     false  "omit for unattributed work"
 // @Param        category  query  string  true   "payments | renewals | sales | invoices | retention | leads | lifecycle | wallet"
 // @Success      200  {object}  ItemsResponse
@@ -60,9 +95,9 @@ func (h *Handler) Day(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Items(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
-	day, err := ParseDay(strings.TrimSpace(q.Get("date")))
+	rng, err := readRange(q)
 	if err != nil {
-		response.BadRequest(w, "date must be in YYYY-MM-DD format")
+		rangeError(w, err)
 		return
 	}
 
@@ -84,7 +119,7 @@ func (h *Handler) Items(w http.ResponseWriter, r *http.Request) {
 		userID = &id
 	}
 
-	items, err := h.svc.Items(r.Context(), day, userID, category)
+	items, truncated, err := h.svc.Items(r.Context(), rng, userID, category)
 	if err != nil {
 		if errors.Is(err, ErrUnknownCategory) {
 			response.BadRequest(w, "unknown category")
@@ -94,28 +129,30 @@ func (h *Handler) Items(w http.ResponseWriter, r *http.Request) {
 		response.InternalServerError(w)
 		return
 	}
-	response.OK(w, ItemsResponse{Items: items})
+	response.OK(w, ItemsResponse{Items: items, Truncated: truncated, Limit: ItemLimit})
 }
 
 // LeadWork godoc
 // @Summary      Per-person lead workflow — what each staff member is carrying
-// @Description  Carrying counts are "now"; the funnel is scoped to the date.
+// @Description  Carrying counts are always "now"; only the funnel is scoped to the range.
 // @Tags         staff-work
 // @Produce      json
 // @Security     BearerAuth
-// @Param        date  query  string  false  "YYYY-MM-DD, defaults to today (IST)"
+// @Param        date  query  string  false  "YYYY-MM-DD single day, defaults to today (IST)"
+// @Param        from  query  string  false  "YYYY-MM-DD, inclusive"
+// @Param        to    query  string  false  "YYYY-MM-DD, inclusive"
 // @Success      200  {object}  LeadWorkReport
 // @Router       /api/v1/staff-work/leads [get]
 func (h *Handler) LeadWork(w http.ResponseWriter, r *http.Request) {
-	day, err := ParseDay(strings.TrimSpace(r.URL.Query().Get("date")))
+	rng, err := readRange(r.URL.Query())
 	if err != nil {
-		response.BadRequest(w, "date must be in YYYY-MM-DD format")
+		rangeError(w, err)
 		return
 	}
 
-	report, err := h.svc.LeadWork(r.Context(), day)
+	report, err := h.svc.LeadWork(r.Context(), rng)
 	if err != nil {
-		log.Printf("staffwork: lead work: %v", err)
+		log.Printf("staffwork: lead work %s: %v", rng.Label(), err)
 		response.InternalServerError(w)
 		return
 	}

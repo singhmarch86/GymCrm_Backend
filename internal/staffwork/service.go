@@ -35,13 +35,15 @@ func ParseDay(s string) (time.Time, error) {
 	return d, nil
 }
 
-// Day builds the whole screen for one date.
+// Day builds the whole screen for one range (FR-18 §9 — a day is a range of
+// one).
 //
 // Visibility is decided here from the caller's own token: an owner sees
 // everyone, anybody else sees only themselves (FR-13 §7). Deliberately not a
 // client-supplied user_id — a staff member editing a query parameter must not
-// be able to read a colleague's day.
-func (s *Service) Day(ctx context.Context, day time.Time) (*DayReport, error) {
+// be able to read a colleague's day, and over a month that would be reading
+// their appraisal.
+func (s *Service) Day(ctx context.Context, rng Range) (*DayReport, error) {
 	tc := database.MustGetTenant(ctx)
 
 	var filter *int64
@@ -50,12 +52,20 @@ func (s *Service) Day(ctx context.Context, day time.Time) (*DayReport, error) {
 		filter = &uid
 	}
 
-	rows, err := s.repo.DayTallies(ctx, day, filter)
+	rows, err := s.repo.RangeTallies(ctx, rng, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	report := &DayReport{Date: day.Format("2006-01-02"), Staff: []StaffDay{}}
+	report := &DayReport{
+		From:  rng.FromString(),
+		To:    rng.ToString(),
+		Days:  rng.Days(),
+		Staff: []StaffDay{},
+	}
+	if rng.IsSingleDay() {
+		report.Date = rng.FromString()
+	}
 
 	// Group by user. A nil user id is its own bucket: unattributed work is
 	// shown rather than folded into whoever looks likeliest (FR-13 §2, §3).
@@ -125,7 +135,12 @@ func (s *Service) Day(ctx context.Context, day time.Time) (*DayReport, error) {
 }
 
 // Items returns the rows behind one number, after the same visibility check.
-func (s *Service) Items(ctx context.Context, day time.Time, userID *int64, cat Category) ([]Item, error) {
+//
+// The second return value reports that the list was cut short. It is returned
+// rather than inferred, because "exactly 200 rows" and "the first 200 of many"
+// look identical to a reader and mean very different things — a distinction
+// that barely mattered per-day and matters a lot per-month.
+func (s *Service) Items(ctx context.Context, rng Range, userID *int64, cat Category) ([]Item, bool, error) {
 	tc := database.MustGetTenant(ctx)
 
 	if !tc.IsOwner() {
@@ -138,12 +153,17 @@ func (s *Service) Items(ctx context.Context, day time.Time, userID *int64, cat C
 	}
 
 	if !IsValidCategory(string(cat)) {
-		return nil, ErrUnknownCategory
+		return nil, false, ErrUnknownCategory
 	}
 
-	rows, err := s.repo.DayItems(ctx, day, userID, cat)
+	rows, err := s.repo.RangeItems(ctx, rng, userID, cat)
 	if err != nil {
-		return nil, err
+		return nil, false, err
+	}
+
+	truncated := len(rows) > ItemLimit
+	if truncated {
+		rows = rows[:ItemLimit]
 	}
 
 	items := make([]Item, 0, len(rows))
@@ -156,7 +176,7 @@ func (s *Service) Items(ctx context.Context, day time.Time, userID *int64, cat C
 			AmountInPaise: r.Amount,
 		})
 	}
-	return items, nil
+	return items, truncated, nil
 }
 
 func categoryRank(c Category) int {

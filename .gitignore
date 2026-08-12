@@ -29,3 +29,6 @@ deploy/.env
 deploy/web/
 deploy/backups/
 deploy/demo/
+
+# Binary built via the docker toolchain and docker cp-ed into the container.
+gymcrm.new

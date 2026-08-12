@@ -66,7 +66,13 @@ type StaffLeadWork struct {
 
 // LeadWorkReport backs GET /api/v1/staff-work/leads.
 type LeadWorkReport struct {
-	Date  string          `json:"date"`
+	// Only set for a single day, for the same reason as DayReport.Date.
+	Date string `json:"date,omitempty"`
+
+	From string `json:"from"`
+	To   string `json:"to"`
+	Days int    `json:"days"`
+
 	Staff []StaffLeadWork `json:"staff"`
 
 	// Gym-wide, so the owner has the denominator for every card below.
@@ -151,9 +157,10 @@ type funnelRow struct {
 	Count   int
 }
 
-// LeadActivityFunnel returns what each person logged on one local day.
+// LeadActivityFunnel returns what each person logged over an inclusive span of
+// local days.
 func (r *Repository) LeadActivityFunnel(
-	ctx context.Context, day time.Time, userID *int64,
+	ctx context.Context, rng Range, userID *int64,
 ) ([]funnelRow, error) {
 	tc := database.MustGetTenant(ctx)
 
@@ -161,21 +168,27 @@ func (r *Repository) LeadActivityFunnel(
 		SELECT la.user_id, la.type, la.outcome, COUNT(*) AS count
 		  FROM lead_activities la
 		 WHERE la.gym_id = @gym
-		   AND (la.created_at AT TIME ZONE 'Asia/Kolkata')::date = CAST(@date AS date)
+		   AND (la.created_at AT TIME ZONE 'Asia/Kolkata')::date
+		       BETWEEN CAST(@from AS date) AND CAST(@to AS date)
 		   AND (CAST(@filter_user AS bigint) IS NULL OR la.user_id = @filter_user)
 		 GROUP BY la.user_id, la.type, la.outcome`
 
 	var rows []funnelRow
 	err := r.db.WithContext(ctx).Raw(sql, map[string]interface{}{
 		"gym":         tc.GymID(),
-		"date":        day.Format("2006-01-02"),
+		"from":        rng.FromString(),
+		"to":          rng.ToString(),
 		"filter_user": userID,
 	}).Scan(&rows).Error
 	return rows, err
 }
 
 // LeadWork builds the per-person view.
-func (s *Service) LeadWork(ctx context.Context, day time.Time) (*LeadWorkReport, error) {
+//
+// Only the funnel half moves with the range. What somebody is carrying stays
+// "now" whatever dates are on screen: asking for July does not un-neglect a
+// lead that is still sitting untouched today.
+func (s *Service) LeadWork(ctx context.Context, rng Range) (*LeadWorkReport, error) {
 	tc := database.MustGetTenant(ctx)
 
 	// Same visibility rule as the rest of Staff work (FR-13 §7): decided from
@@ -190,7 +203,7 @@ func (s *Service) LeadWork(ctx context.Context, day time.Time) (*LeadWorkReport,
 	if err != nil {
 		return nil, err
 	}
-	acts, err := s.repo.LeadActivityFunnel(ctx, day, filter)
+	acts, err := s.repo.LeadActivityFunnel(ctx, rng, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +233,15 @@ func (s *Service) LeadWork(ctx context.Context, day time.Time) (*LeadWorkReport,
 		return entry
 	}
 
-	report := &LeadWorkReport{Date: day.Format("2006-01-02"), Staff: []StaffLeadWork{}}
+	report := &LeadWorkReport{
+		From:  rng.FromString(),
+		To:    rng.ToString(),
+		Days:  rng.Days(),
+		Staff: []StaffLeadWork{},
+	}
+	if rng.IsSingleDay() {
+		report.Date = rng.FromString()
+	}
 
 	for _, row := range loads {
 		e := get(row.UserID, row.Name, row.Role)
