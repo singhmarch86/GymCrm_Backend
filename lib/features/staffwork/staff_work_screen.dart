@@ -22,6 +22,7 @@ import '../payments/expected_view.dart';
 import '../payments/raise_due_sheet.dart';
 import '../leads/lead_workflow_view.dart';
 import '../leads/next_step_sheet.dart';
+import 'staff_analytics_screen.dart';
 import 'staff_lead_work_view.dart';
 import 'staff_work_items_sheet.dart';
 
@@ -213,6 +214,20 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
         title: const Text("Staff work"),
         toolbarHeight: 48,
         actions: [
+          // Analytics rather than a sixth tab. It answers a different
+          // question — how the work moved over time, not what happened — and
+          // it carries the chosen window across so the reader does not land
+          // on a different period without noticing.
+          IconButton(
+            tooltip: 'How the work moved',
+            icon: const Icon(Icons.insights_rounded),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => StaffAnalyticsScreen(span: _span),
+              ),
+            ),
+          ),
           IconButton(
             tooltip: 'Refresh',
             icon: const Icon(Icons.refresh_rounded),

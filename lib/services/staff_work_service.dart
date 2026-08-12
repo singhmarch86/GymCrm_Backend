@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 
 import '../models/date_span.dart';
+import '../models/staff_analytics.dart';
 import '../models/staff_work.dart';
 import 'api_config.dart';
 import 'api_response.dart';
@@ -35,6 +36,19 @@ class StaffWorkService {
         .replace(queryParameters: _spanParams(span));
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return LeadWorkReport.fromJson(unwrapJson(response)['data']);
+  }
+
+  /// How the desk's workload has moved over [span] (FR-22).
+  ///
+  /// Not a ranking, and the response gives a client no way to build one: the
+  /// people come back ordered by name with no score, and the only comparison
+  /// present is each person against their own previous period.
+  Future<StaffAnalytics> getAnalytics({DateSpan? span}) async {
+    final headers = await _headers();
+    final uri = Uri.parse('$kBaseUrl/api/v1/staff-work/analytics')
+        .replace(queryParameters: _spanParams(span));
+    final response = await guardRequest(() => http.get(uri, headers: headers));
+    return StaffAnalytics.fromJson(unwrapJson(response)['data']);
   }
 
   /// The individual rows behind one number.
