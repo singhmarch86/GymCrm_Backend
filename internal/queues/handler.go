@@ -21,6 +21,11 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 
 	// The writes hang off the payment, not off the queue: they are facts about
 	// a due, and they stay true whichever screen recorded them.
+	// Raising a due is a collections concern, so it lives with settle and
+	// write-off rather than in the payments module, whose Collect only ever
+	// writes a paid row.
+	mux.HandleFunc("POST /api/v1/payments/due", h.RaiseDue)
+
 	mux.HandleFunc("POST /api/v1/payments/{id}/contact", h.RecordContact)
 	mux.HandleFunc("POST /api/v1/payments/{id}/promise", h.RecordPromise)
 	mux.HandleFunc("POST /api/v1/payments/{id}/settle", h.Settle)

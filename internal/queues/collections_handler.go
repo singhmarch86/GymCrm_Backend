@@ -242,3 +242,57 @@ func writeQueueErr(w http.ResponseWriter, err error, what string) {
 		response.InternalServerError(w)
 	}
 }
+
+type raiseDueRequest struct {
+	MemberID      int64  `json:"member_id"`
+	PlanID        *int64 `json:"plan_id"`
+	AmountInPaise int64  `json:"amount_in_paise"`
+	DueDate       string `json:"due_date"` // YYYY-MM-DD, required
+	Notes         string `json:"notes"`
+}
+
+// RaiseDue godoc
+// @Summary      Record that a member owes money
+// @Description  Creates a pending payment. Distinct from POST /api/v1/payments, which only ever writes a paid row.
+// @Tags         queues
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body  raiseDueRequest  true  "Due"
+// @Success      201
+// @Router       /api/v1/payments/due [post]
+func (h *Handler) RaiseDue(w http.ResponseWriter, r *http.Request) {
+	var req raiseDueRequest
+	if !decode(w, r, &req) {
+		return
+	}
+
+	if req.MemberID <= 0 {
+		response.BadRequest(w, "member_id is required")
+		return
+	}
+
+	// Required, never defaulted. Every group in the queue is computed from the
+	// due date, and inventing one would bury a real data problem.
+	due, err := time.ParseInLocation("2006-01-02", strings.TrimSpace(req.DueDate), IST)
+	if err != nil {
+		response.BadRequest(w, "due_date is required, in YYYY-MM-DD format")
+		return
+	}
+
+	id, err := h.svc.RaiseDue(
+		r.Context(), req.MemberID, req.PlanID, req.AmountInPaise, due, req.Notes)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrBadAmount):
+			response.BadRequest(w, "amount must be more than zero")
+		case errors.Is(err, ErrMemberNotFound):
+			response.NotFound(w, "member not found")
+		default:
+			log.Printf("queues: raise due: %v", err)
+			response.InternalServerError(w)
+		}
+		return
+	}
+	response.Created(w, map[string]int64{"id": id})
+}

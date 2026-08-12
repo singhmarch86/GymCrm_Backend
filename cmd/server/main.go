@@ -343,6 +343,10 @@ func main() {
 	// working the desk needs the whole list for it to be useful.
 	mux.Handle("GET /api/v1/queues/collections",
 		jwt(http.HandlerFunc(queuesHandler.Collections)))
+	// Records that a member owes money. POST /api/v1/payments only ever
+	// creates a *paid* row, so before this there was no way to enter a due.
+	mux.Handle("POST /api/v1/payments/due",
+		jwt(http.HandlerFunc(queuesHandler.RaiseDue)))
 	mux.Handle("POST /api/v1/payments/{id}/contact",
 		jwt(http.HandlerFunc(queuesHandler.RecordContact)))
 	mux.Handle("POST /api/v1/payments/{id}/promise",

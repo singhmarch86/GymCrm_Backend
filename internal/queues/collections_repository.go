@@ -249,3 +249,61 @@ func (r *Repository) WriteOff(ctx context.Context, paymentID int64, reason strin
 		}).Error
 	})
 }
+
+// RaiseDue records that a member owes money.
+//
+// Distinct from payments.CollectPayment, which only ever writes a *paid* row —
+// it requires a payment mode and stamps paid_date. Until this existed there was
+// no way to say "this member owes us" at all, so the collections queue could
+// only ever show dues that some other process happened to create. A gym that
+// does not raise the due cannot chase it.
+//
+// status is 'pending' with no paid_date and no payment_mode, which the
+// chk_payments_paid_consistency constraint requires of anything not paid.
+func (r *Repository) RaiseDue(
+	ctx context.Context, memberID int64, planID *int64,
+	amountInPaise int64, dueDate time.Time, notes string,
+) (int64, error) {
+	tc := database.MustGetTenant(ctx)
+
+	// collected_by_user_id is deliberately left null. Nobody has collected
+	// anything yet — filling it with whoever raised the due would credit them
+	// with money that has not arrived.
+	var id int64
+	err := r.db.WithContext(ctx).Raw(`
+		INSERT INTO payments (gym_id, member_id, plan_id, amount_in_paise,
+		                      status, due_date, notes, created_at, updated_at)
+		VALUES (@gym_id, @member_id, @plan_id, @amount_in_paise,
+		        'pending', CAST(@due_date AS date), @notes, NOW(), NOW())
+		RETURNING id`,
+		map[string]interface{}{
+			"gym_id":          tc.GymID(),
+			"member_id":       memberID,
+			"plan_id":         planID,
+			"amount_in_paise": amountInPaise,
+			"due_date":        dueDate.Format("2006-01-02"),
+			"notes":           nullIfEmpty(notes),
+		}).Scan(&id).Error
+	return id, err
+}
+
+// MemberBelongsToGym guards the write, for the same reason payments do: an id
+// from another gym would otherwise be accepted and the row would look
+// perfectly consistent.
+func (r *Repository) MemberBelongsToGym(ctx context.Context, memberID int64) (bool, error) {
+	tc := database.MustGetTenant(ctx)
+
+	var n int64
+	err := r.db.WithContext(ctx).
+		Table("members").
+		Where("id = ? AND gym_id = ? AND deleted_at IS NULL", memberID, tc.GymID()).
+		Count(&n).Error
+	return n > 0, err
+}
+
+func nullIfEmpty(s string) interface{} {
+	if s == "" {
+		return nil
+	}
+	return s
+}

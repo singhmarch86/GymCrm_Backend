@@ -16,6 +16,8 @@ var (
 	ErrPastPromise    = errors.New("queues: a promised date cannot be in the past")
 	ErrNotFound       = errors.New("queues: payment not found")
 	ErrBadMode        = errors.New("queues: unknown payment mode")
+	ErrBadAmount      = errors.New("queues: amount must be more than zero")
+	ErrMemberNotFound = errors.New("queues: member not found")
 )
 
 // Collections builds the queue (FR-19 §3).
@@ -267,4 +269,37 @@ func (s *Service) WriteOff(ctx context.Context, paymentID int64, reason string) 
 	}
 
 	return s.repo.WriteOff(ctx, paymentID, r)
+}
+
+// RaiseDue records that a member owes money.
+//
+// The gap this fills: CollectPayment only ever writes a paid row, so before
+// this there was no way to enter "they owe us" at all. The collections queue
+// could only show dues some other process happened to create — and a gym that
+// cannot raise a due cannot chase it.
+//
+// A due date is required, not defaulted to today. Every group in the queue is
+// computed from it, and a due with no date sorts last and reads as a data
+// problem — inventing one to avoid asking would bury that.
+func (s *Service) RaiseDue(
+	ctx context.Context, memberID int64, planID *int64,
+	amountInPaise int64, due time.Time, notes string,
+) (int64, error) {
+	if amountInPaise <= 0 {
+		return 0, ErrBadAmount
+	}
+
+	ok, err := s.repo.MemberBelongsToGym(ctx, memberID)
+	if err != nil {
+		return 0, err
+	}
+	if !ok {
+		return 0, ErrMemberNotFound
+	}
+
+	// Backdating is allowed on purpose. The common case for raising a due by
+	// hand is catching up on something that was already owed last month, and
+	// refusing it would push the desk to enter a date they do not mean.
+	return s.repo.RaiseDue(ctx, memberID, planID, amountInPaise, due,
+		strings.TrimSpace(notes))
 }
