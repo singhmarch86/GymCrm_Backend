@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 
 import '../../models/member.dart';
 import '../../models/product.dart';
+import '../../models/stock_queue.dart';
 import '../../models/wallet.dart';
 import '../../services/api_response.dart';
 import '../../services/member_service.dart';
 import '../../services/pos_service.dart';
+import '../../services/queue_service.dart';
 import '../../services/wallet_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_button.dart';
@@ -16,6 +18,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../lifecycle/lifecycle_shared.dart';
+import 'stock_queue_view.dart';
 
 /// Retail: the counter, the shelf, and what was sold.
 /// See docs/FR-07-pos-inventory.md.
@@ -38,14 +41,21 @@ class _PosScreenState extends State<PosScreen> {
         if (!didPop) Navigator.pop(context, _changed);
       },
       child: DefaultTabController(
-        length: 3,
+        length: 4,
         child: Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
             title: const Text('Shop'),
             bottom: const TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
               tabs: [
                 Tab(text: 'Sell'),
+                // Restock sits beside Stock, not inside it. Stock is the
+                // catalogue — everything, searchable, with a filter. Restock
+                // is the worklist (FR-19 §5), and burying a worklist behind a
+                // filter on a catalogue is how it stops being one.
+                Tab(text: 'Restock'),
                 Tab(text: 'Stock'),
                 Tab(text: 'Sales'),
               ],
@@ -54,12 +64,121 @@ class _PosScreenState extends State<PosScreen> {
           body: TabBarView(
             children: [
               _SellTab(onSold: _markChanged),
+              _RestockTab(onChanged: _markChanged),
               _StockTab(onChanged: _markChanged),
               _SalesTab(onChanged: _markChanged),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─── Restock (FR-19 §5) ──────────────────────────────────────────────────────
+
+/// The low-stock worklist.
+///
+/// Reads the queue endpoint rather than filtering the product list client-side:
+/// the grouping, the ordering and the "sold in 30 days" figure are decisions
+/// about what matters, and they belong in one place so every caller agrees.
+class _RestockTab extends StatefulWidget {
+  final VoidCallback onChanged;
+
+  const _RestockTab({required this.onChanged});
+
+  @override
+  State<_RestockTab> createState() => _RestockTabState();
+}
+
+class _RestockTabState extends State<_RestockTab> {
+  final _queues = QueueService();
+  final _pos = PosService();
+
+  StockQueue? _queue;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final queue = await _queues.getStock();
+      if (!mounted) return;
+      setState(() {
+        _queue = queue;
+        _loading = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message;
+        _loading = false;
+      });
+    }
+  }
+
+  /// Restocking goes through the same dialog and the same endpoint as the
+  /// Stock tab, so the movements ledger stays the only writer of stock levels
+  /// (FR-07 §1). A queue that corrected stock itself would be a second source
+  /// of truth for the same number.
+  Future<void> _restock(StockQueueItem item) async {
+    // The dialog only reads name and current quantity. Cost and tax are not
+    // on the queue row and are not needed to add stock, so they are zeroed
+    // rather than guessed — a wrong cost written into a movement would be
+    // worse than an absent one.
+    final product = Product(
+      id: item.productId,
+      name: item.name,
+      sku: item.sku,
+      category: item.category,
+      priceInPaise: item.priceInPaise,
+      costInPaise: 0,
+      taxRatePct: 0,
+      stockQty: item.stockQty,
+      reorderLevel: item.reorderLevel,
+      isActive: true,
+    );
+
+    final result = await showDialog<_Adjustment>(
+      context: context,
+      builder: (_) => _AdjustStockDialog(product: product),
+    );
+    if (result == null) return;
+
+    try {
+      await _pos.adjustStock(
+        item.productId,
+        quantity: result.quantity,
+        movementType: result.movementType,
+        reason: result.reason,
+      );
+      widget.onChanged();
+      await _load();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const LoadingView();
+    if (_error != null) return ErrorBanner(message: _error!, onRetry: _load);
+    if (_queue == null) return const LoadingView();
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: StockQueueView(queue: _queue!, onRestock: _restock),
     );
   }
 }
