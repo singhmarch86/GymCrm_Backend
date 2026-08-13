@@ -113,11 +113,18 @@ func (r *Repository) insertMember(ctx context.Context, m *memberRow) (int64, err
 	err := r.db.WithContext(ctx).Raw(`
 		INSERT INTO members (gym_id, first_name, last_name, phone, email, gender,
 			date_of_birth, address, membership_plan_id, start_date, expiry_date,
-			status, notes, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), now())
+			join_date, status, notes, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			COALESCE(?, ?, CURRENT_DATE), ?, ?, now(), now())
 		RETURNING id`,
 		tc.GymID(), m.FirstName, m.LastName, m.Phone, m.Email, m.Gender,
 		m.DateOfBirth, m.Address, m.PlanID, m.StartDate, m.ExpiryDate,
+		// An explicit join date if the file had one, else the term start —
+		// for a first import those are the same day. Falling through to
+		// CURRENT_DATE would date a ten-year member from the day the gym
+		// switched systems, and hide them from At Risk for their first 90
+		// days here (FR-10 §4).
+		m.JoinDate, m.StartDate,
 		m.Status, m.Notes,
 	).Scan(&id).Error
 	return id, err

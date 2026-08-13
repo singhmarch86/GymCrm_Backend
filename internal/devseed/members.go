@@ -167,9 +167,14 @@ func (s *seeder) seedMembers() error {
 			MembershipPlanID: int64Ptr(plan.ID),
 			StartDate:        timePtr(lastRenewalDate),
 			ExpiryDate:       timePtr(expiryDate),
-			Status:           status,
-			CreatedAt:        joinDate,
-			UpdatedAt:        joinDate,
+			// The first cycle's start, not the current one. Left unset, every
+			// seeded member looked like they joined the day the seed ran,
+			// which put all of them inside the 90-day activation window and
+			// left At Risk permanently empty of inactivity alerts.
+			JoinDate:  joinDate,
+			Status:    status,
+			CreatedAt: joinDate,
+			UpdatedAt: joinDate,
 		}
 		if err := s.tx.Create(&member).Error; err != nil {
 			return fmt.Errorf("create member %d: %w", i, err)

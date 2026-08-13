@@ -26,8 +26,13 @@ type memberRow struct {
 	PlanName    string     `json:"plan_name,omitempty"`
 	StartDate   *time.Time `json:"start_date,omitempty"`
 	ExpiryDate  *time.Time `json:"expiry_date,omitempty"`
-	Status      string     `json:"status"`
-	Notes       *string    `json:"notes,omitempty"`
+
+	// When they first joined, if the file distinguishes it from the current
+	// term's start. Most exports do not — one "joined" column means both —
+	// so this is usually nil and the insert falls back to StartDate.
+	JoinDate *time.Time `json:"join_date,omitempty"`
+	Status   string     `json:"status"`
+	Notes    *string    `json:"notes,omitempty"`
 
 	// Resolved during validation; nil when the named plan doesn't exist, which
 	// is a warning rather than a failure (FR-05 §6.2).
@@ -91,8 +96,17 @@ func parseMemberRow(row []string, h map[string]int) (*memberRow, error) {
 	if m.ExpiryDate, err = parseDate(cell(row, h, "expiry_date")); err != nil {
 		return nil, fmt.Errorf("expiry date: %w", err)
 	}
+	if m.JoinDate, err = parseDate(cell(row, h, "join_date")); err != nil {
+		return nil, fmt.Errorf("join date: %w", err)
+	}
 	if m.StartDate != nil && m.ExpiryDate != nil && m.ExpiryDate.Before(*m.StartDate) {
 		return nil, fmt.Errorf("expiry date is before the start date")
+	}
+	// A term cannot start before the person joined. Worth refusing rather
+	// than quietly keeping, because it usually means the two columns were
+	// mapped the wrong way round, and every tenure figure would inherit it.
+	if m.JoinDate != nil && m.StartDate != nil && m.StartDate.Before(*m.JoinDate) {
+		return nil, fmt.Errorf("start date is before the join date")
 	}
 
 	// Status defaults to active and is never inferred from dates — a gym's

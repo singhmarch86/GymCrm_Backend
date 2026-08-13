@@ -39,9 +39,13 @@ var fieldAliases = map[string][]string{
 	"address":       {"address", "addressline", "residence"},
 	"plan":          {"plan", "planname", "membership", "membershipplan", "package"},
 	"start_date":    {"startdate", "joindate", "joiningdate", "joined", "membershipstart"},
-	"expiry_date":   {"expirydate", "enddate", "validtill", "validupto", "expires", "expiry", "membershipend"},
-	"status":        {"status", "memberstatus"},
-	"notes":         {"notes", "note", "remarks", "comment", "comments"},
+	// Only for files that separate the two. The joindate/joined aliases stay
+	// on start_date above: for a first import they mean the same day, and
+	// moving them would change what every existing mapping does.
+	"join_date":   {"originaljoindate", "membersince", "firstjoined", "memberfrom"},
+	"expiry_date": {"expirydate", "enddate", "validtill", "validupto", "expires", "expiry", "membershipend"},
+	"status":      {"status", "memberstatus"},
+	"notes":       {"notes", "note", "remarks", "comment", "comments"},
 
 	// Plans
 	"price":         {"price", "amount", "fee", "cost", "planprice"},
