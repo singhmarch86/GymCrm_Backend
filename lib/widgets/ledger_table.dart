@@ -102,6 +102,14 @@ class LedgerTable<T> extends StatelessWidget {
 }
 
 /// One column: its heading, how much room it takes, and how it aligns.
+/// Breathing room between columns.
+///
+/// Without it cells sit flush, and a right-aligned number against the next
+/// column's left-aligned text renders as one word — "-24Sarabha Nagar". Only
+/// bites when the content is wide enough to reach the boundary, which is why
+/// it survived several tables before showing up.
+const _cellGutter = EdgeInsets.symmetric(horizontal: 6);
+
 class LedgerColumn {
   final String label;
 
@@ -134,14 +142,17 @@ class _HeaderRow extends StatelessWidget {
           for (final c in columns)
             Expanded(
               flex: c.flex,
-              child: Text(
-                c.label.toUpperCase(),
-                textAlign: c.numeric ? TextAlign.right : TextAlign.left,
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
-                  color: Colors.grey.shade600,
+              child: Padding(
+                padding: _cellGutter,
+                child: Text(
+                  c.label.toUpperCase(),
+                  textAlign: c.numeric ? TextAlign.right : TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ),
             ),
@@ -180,11 +191,14 @@ class _BodyRow extends StatelessWidget {
               for (var i = 0; i < columns.length; i++)
                 Expanded(
                   flex: columns[i].flex,
-                  child: Align(
-                    alignment: columns[i].numeric
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: i < cells.length ? cells[i] : const SizedBox(),
+                  child: Padding(
+                    padding: _cellGutter,
+                    child: Align(
+                      alignment: columns[i].numeric
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: i < cells.length ? cells[i] : const SizedBox(),
+                    ),
                   ),
                 ),
             ],

@@ -337,6 +337,18 @@ class _ChainStockScreenState extends State<ChainStockScreen>
   // ─── Sent: the ledger ───────────────────────────────────────────────────────
 
   Widget _sentTab() {
+    // Fetches when shown rather than when switched to. The tab listener
+    // handles the ordinary case, but it only fires on a *transition* — a tab
+    // that opens directly on this one (a restored index, a deep link) would
+    // sit on a spinner forever with no request ever made. Owning its own load
+    // means the tab works however the reader arrived at it.
+    if (_history == null && !_historyLoading && _historyError == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _history == null && !_historyLoading) _loadHistory();
+      });
+      return const LoadingView();
+    }
+
     if (_historyLoading) return const LoadingView();
     if (_historyError != null) {
       return ErrorBanner(message: _historyError!, onRetry: _loadHistory);
@@ -358,7 +370,7 @@ class _ChainStockScreenState extends State<ChainStockScreen>
         rows: rows,
         columns: const [
           LedgerColumn('Item', flex: 3),
-          LedgerColumn('Qty', flex: 1, numeric: true),
+          LedgerColumn('Qty', flex: 2, numeric: true),
           LedgerColumn('From', flex: 2),
           LedgerColumn('To', flex: 2),
           LedgerColumn('By', flex: 2),
