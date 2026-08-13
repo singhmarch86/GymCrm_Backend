@@ -144,12 +144,15 @@ class _NextStepSheetState extends State<_NextStepSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('What happens next?',
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              'What happens next?',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 2),
-            Text('${widget.leadName} · ${widget.stageLabel}',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+            Text(
+              '${widget.leadName} · ${widget.stageLabel}',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
 
             // The suggestion explains itself. An unexplained prefill gets
             // accepted without thought, which is the same as automating it.
@@ -162,17 +165,25 @@ class _NextStepSheetState extends State<_NextStepSheet> {
                   color: AppColors.primary.withValues(alpha: 0.07),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.25)),
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.lightbulb_outline_rounded,
-                        size: 15, color: AppColors.primary),
+                    const Icon(
+                      Icons.lightbulb_outline_rounded,
+                      size: 15,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(widget.suggestionReason!,
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.textPrimary)),
+                      child: Text(
+                        widget.suggestionReason!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -186,8 +197,7 @@ class _NextStepSheetState extends State<_NextStepSheet> {
               children: [
                 for (final o in NextStepOption.fallback)
                   ChoiceChip(
-                    label: Text(o.label,
-                        style: const TextStyle(fontSize: 12)),
+                    label: Text(o.label, style: const TextStyle(fontSize: 12)),
                     selected: _step == o.step,
                     onSelected: (sel) =>
                         setState(() => _step = sel ? o.step : null),
@@ -201,8 +211,10 @@ class _NextStepSheetState extends State<_NextStepSheet> {
               onTap: _pickDate,
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -210,15 +222,25 @@ class _NextStepSheetState extends State<_NextStepSheet> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.event_rounded,
-                        size: 17, color: AppColors.primary),
+                    const Icon(
+                      Icons.event_rounded,
+                      size: 17,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 10),
-                    Text(_formatDue(_due),
-                        style: const TextStyle(
-                            fontSize: 13.5, fontWeight: FontWeight.w600)),
+                    Text(
+                      _formatDue(_due),
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const Spacer(),
-                    Icon(Icons.edit_calendar_rounded,
-                        size: 16, color: Colors.grey.shade500),
+                    Icon(
+                      Icons.edit_calendar_rounded,
+                      size: 16,
+                      color: Colors.grey.shade500,
+                    ),
                   ],
                 ),
               ),
@@ -233,8 +255,10 @@ class _NextStepSheetState extends State<_NextStepSheet> {
               decoration: InputDecoration(
                 labelText: 'Why? (optional)',
                 hintText: 'e.g. wants evening slots, works till 8',
-                hintStyle:
-                    TextStyle(fontSize: 12.5, color: Colors.grey.shade400),
+                hintStyle: TextStyle(
+                  fontSize: 12.5,
+                  color: Colors.grey.shade400,
+                ),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -256,9 +280,10 @@ class _NextStepSheetState extends State<_NextStepSheet> {
 
             if (_error != null) ...[
               const SizedBox(height: 10),
-              Text(_error!,
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.danger)),
+              Text(
+                _error!,
+                style: const TextStyle(fontSize: 12, color: AppColors.danger),
+              ),
             ],
 
             const SizedBox(height: 18),
@@ -272,13 +297,16 @@ class _NextStepSheetState extends State<_NextStepSheet> {
                             await widget.onClear!();
                             if (context.mounted) Navigator.pop(context, true);
                           },
-                    style:
-                        TextButton.styleFrom(foregroundColor: Colors.grey.shade600),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey.shade600,
+                    ),
                     child: const Text('Clear'),
                   ),
                 const Spacer(),
                 TextButton(
-                  onPressed: _saving ? null : () => Navigator.pop(context, false),
+                  onPressed: _saving
+                      ? null
+                      : () => Navigator.pop(context, false),
                   child: const Text('Cancel'),
                 ),
                 const SizedBox(width: 6),
@@ -287,13 +315,16 @@ class _NextStepSheetState extends State<_NextStepSheet> {
                   // half-set workflow, which is the whole point of it.
                   onPressed: (_step == null || _saving) ? null : _save,
                   style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary),
+                    backgroundColor: AppColors.primary,
+                  ),
                   child: _saving
                       ? const SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Text('Save'),
                 ),
@@ -307,8 +338,18 @@ class _NextStepSheetState extends State<_NextStepSheet> {
 
   static String _formatDue(DateTime d) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final now = DateTime.now();
     final due = DateTime(d.year, d.month, d.day);

@@ -36,20 +36,20 @@ class InvoiceItem {
   });
 
   factory InvoiceItem.fromJson(Map<String, dynamic> j) => InvoiceItem(
-        id: j['id'] ?? 0,
-        description: j['description'] ?? '',
-        itemType: j['item_type'] ?? 'custom',
-        referenceId: j['reference_id'],
-        quantity: j['quantity'] ?? 1,
-        unitPriceInPaise: j['unit_price_in_paise'] ?? 0,
-        unitPriceInRupees: (j['unit_price_in_rupees'] as num?)?.toDouble() ?? 0,
-        discountInPaise: j['discount_in_paise'] ?? 0,
-        taxRatePct: (j['tax_rate_pct'] as num?)?.toDouble() ?? 0,
-        sacCode: j['sac_code'],
-        taxInPaise: j['tax_in_paise'] ?? 0,
-        lineTotalInPaise: j['line_total_in_paise'] ?? 0,
-        lineTotalInRupees: (j['line_total_in_rupees'] as num?)?.toDouble() ?? 0,
-      );
+    id: j['id'] ?? 0,
+    description: j['description'] ?? '',
+    itemType: j['item_type'] ?? 'custom',
+    referenceId: j['reference_id'],
+    quantity: j['quantity'] ?? 1,
+    unitPriceInPaise: j['unit_price_in_paise'] ?? 0,
+    unitPriceInRupees: (j['unit_price_in_rupees'] as num?)?.toDouble() ?? 0,
+    discountInPaise: j['discount_in_paise'] ?? 0,
+    taxRatePct: (j['tax_rate_pct'] as num?)?.toDouble() ?? 0,
+    sacCode: j['sac_code'],
+    taxInPaise: j['tax_in_paise'] ?? 0,
+    lineTotalInPaise: j['line_total_in_paise'] ?? 0,
+    lineTotalInRupees: (j['line_total_in_rupees'] as num?)?.toDouble() ?? 0,
+  );
 }
 
 class Invoice {
@@ -126,41 +126,42 @@ class Invoice {
 
   /// What staff should see as the headline state: a cancelled document is
   /// cancelled, not "unpaid".
-  String get displayState => isCancelled ? 'cancelled' : (isDraft ? 'draft' : paymentState);
+  String get displayState =>
+      isCancelled ? 'cancelled' : (isDraft ? 'draft' : paymentState);
 
   factory Invoice.fromJson(Map<String, dynamic> j) => Invoice(
-        id: j['id'] ?? 0,
-        memberId: j['member_id'] ?? 0,
-        memberName: j['member_name'] ?? '',
-        memberPhone: j['member_phone'] ?? '',
-        invoiceNumber: j['invoice_number'],
-        financialYear: j['financial_year'],
-        status: j['status'] ?? 'draft',
-        paymentState: j['payment_state'] ?? 'unpaid',
-        paidInPaise: j['paid_in_paise'] ?? 0,
-        dueInPaise: j['due_in_paise'] ?? 0,
-        invoiceDate: j['invoice_date'],
-        dueDate: j['due_date'],
-        placeOfSupply: j['place_of_supply'],
-        gstin: j['gstin'],
-        pricesIncludeTax: j['prices_include_tax'] ?? false,
-        discountCode: j['discount_code'],
-        discountLabel: j['discount_label'],
-        discountReason: j['discount_reason'],
-        discountInPaise: j['discount_in_paise'] ?? 0,
-        subtotalInPaise: j['subtotal_in_paise'] ?? 0,
-        taxInPaise: j['tax_in_paise'] ?? 0,
-        totalInPaise: j['total_in_paise'] ?? 0,
-        totalInRupees: (j['total_in_rupees'] as num?)?.toDouble() ?? 0,
-        cgstInPaise: j['cgst_in_paise'] ?? 0,
-        sgstInPaise: j['sgst_in_paise'] ?? 0,
-        notes: j['notes'],
-        cancelledReason: j['cancelled_reason'],
-        createdAt: j['created_at'] ?? '',
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => InvoiceItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    id: j['id'] ?? 0,
+    memberId: j['member_id'] ?? 0,
+    memberName: j['member_name'] ?? '',
+    memberPhone: j['member_phone'] ?? '',
+    invoiceNumber: j['invoice_number'],
+    financialYear: j['financial_year'],
+    status: j['status'] ?? 'draft',
+    paymentState: j['payment_state'] ?? 'unpaid',
+    paidInPaise: j['paid_in_paise'] ?? 0,
+    dueInPaise: j['due_in_paise'] ?? 0,
+    invoiceDate: j['invoice_date'],
+    dueDate: j['due_date'],
+    placeOfSupply: j['place_of_supply'],
+    gstin: j['gstin'],
+    pricesIncludeTax: j['prices_include_tax'] ?? false,
+    discountCode: j['discount_code'],
+    discountLabel: j['discount_label'],
+    discountReason: j['discount_reason'],
+    discountInPaise: j['discount_in_paise'] ?? 0,
+    subtotalInPaise: j['subtotal_in_paise'] ?? 0,
+    taxInPaise: j['tax_in_paise'] ?? 0,
+    totalInPaise: j['total_in_paise'] ?? 0,
+    totalInRupees: (j['total_in_rupees'] as num?)?.toDouble() ?? 0,
+    cgstInPaise: j['cgst_in_paise'] ?? 0,
+    sgstInPaise: j['sgst_in_paise'] ?? 0,
+    notes: j['notes'],
+    cancelledReason: j['cancelled_reason'],
+    createdAt: j['created_at'] ?? '',
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => InvoiceItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 /// List-view shape — no line items.
@@ -195,24 +196,25 @@ class InvoiceSummary {
     required this.createdAt,
   });
 
-  String get displayState =>
-      status == 'cancelled' ? 'cancelled' : (status == 'draft' ? 'draft' : paymentState);
+  String get displayState => status == 'cancelled'
+      ? 'cancelled'
+      : (status == 'draft' ? 'draft' : paymentState);
 
   factory InvoiceSummary.fromJson(Map<String, dynamic> j) => InvoiceSummary(
-        id: j['id'] ?? 0,
-        memberId: j['member_id'] ?? 0,
-        memberName: j['member_name'] ?? '',
-        invoiceNumber: j['invoice_number'],
-        status: j['status'] ?? 'draft',
-        paymentState: j['payment_state'] ?? 'unpaid',
-        invoiceDate: j['invoice_date'],
-        dueDate: j['due_date'],
-        totalInPaise: j['total_in_paise'] ?? 0,
-        totalInRupees: (j['total_in_rupees'] as num?)?.toDouble() ?? 0,
-        paidInPaise: j['paid_in_paise'] ?? 0,
-        dueInPaise: j['due_in_paise'] ?? 0,
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    memberId: j['member_id'] ?? 0,
+    memberName: j['member_name'] ?? '',
+    invoiceNumber: j['invoice_number'],
+    status: j['status'] ?? 'draft',
+    paymentState: j['payment_state'] ?? 'unpaid',
+    invoiceDate: j['invoice_date'],
+    dueDate: j['due_date'],
+    totalInPaise: j['total_in_paise'] ?? 0,
+    totalInRupees: (j['total_in_rupees'] as num?)?.toDouble() ?? 0,
+    paidInPaise: j['paid_in_paise'] ?? 0,
+    dueInPaise: j['due_in_paise'] ?? 0,
+    createdAt: j['created_at'] ?? '',
+  );
 }
 
 class Discount {
@@ -250,18 +252,18 @@ class Discount {
       : '₹${(value / 100).toStringAsFixed(0)} off';
 
   factory Discount.fromJson(Map<String, dynamic> j) => Discount(
-        id: j['id'] ?? 0,
-        code: j['code'] ?? '',
-        name: j['name'] ?? '',
-        discountType: j['discount_type'] ?? 'percent',
-        value: (j['value'] as num?)?.toDouble() ?? 0,
-        validFrom: j['valid_from'],
-        validUntil: j['valid_until'],
-        maxUses: j['max_uses'],
-        timesUsed: j['times_used'] ?? 0,
-        isActive: j['is_active'] ?? true,
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    code: j['code'] ?? '',
+    name: j['name'] ?? '',
+    discountType: j['discount_type'] ?? 'percent',
+    value: (j['value'] as num?)?.toDouble() ?? 0,
+    validFrom: j['valid_from'],
+    validUntil: j['valid_until'],
+    maxUses: j['max_uses'],
+    timesUsed: j['times_used'] ?? 0,
+    isActive: j['is_active'] ?? true,
+    createdAt: j['created_at'] ?? '',
+  );
 }
 
 class BillingSettings {
@@ -286,13 +288,13 @@ class BillingSettings {
   });
 
   factory BillingSettings.fromJson(Map<String, dynamic> j) => BillingSettings(
-        invoicePrefix: j['invoice_prefix'] ?? 'INV',
-        gstin: j['gstin'],
-        defaultTaxRate: (j['default_tax_rate'] as num?)?.toDouble() ?? 18,
-        defaultSacCode: j['default_sac_code'],
-        pricesIncludeTax: j['prices_include_tax'] ?? false,
-        legalName: j['legal_name'],
-        addressLine: j['address_line'],
-        stateName: j['state_name'],
-      );
+    invoicePrefix: j['invoice_prefix'] ?? 'INV',
+    gstin: j['gstin'],
+    defaultTaxRate: (j['default_tax_rate'] as num?)?.toDouble() ?? 18,
+    defaultSacCode: j['default_sac_code'],
+    pricesIncludeTax: j['prices_include_tax'] ?? false,
+    legalName: j['legal_name'],
+    addressLine: j['address_line'],
+    stateName: j['state_name'],
+  );
 }

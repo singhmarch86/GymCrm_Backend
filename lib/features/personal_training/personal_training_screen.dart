@@ -99,7 +99,9 @@ class _PackagesTabState extends State<_PackagesTab> {
       if (!mounted) return;
       setState(() {
         _packages = results[0] as List<PtPackage>;
-        _trainers = (results[1] as List<Trainer>).where((t) => t.status == 'active').toList();
+        _trainers = (results[1] as List<Trainer>)
+            .where((t) => t.status == 'active')
+            .toList();
         _loading = false;
       });
     } on ApiException catch (e) {
@@ -132,7 +134,9 @@ class _PackagesTabState extends State<_PackagesTab> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -143,7 +147,8 @@ class _PackagesTabState extends State<_PackagesTab> {
     final created = await QuickInvoice.createAndOpen(
       context,
       memberId: p.memberId,
-      description: '${p.packageName} — ${p.totalSessions} PT sessions with ${p.trainerName}',
+      description:
+          '${p.packageName} — ${p.totalSessions} PT sessions with ${p.trainerName}',
       amountInPaise: p.amountInPaise,
       itemType: 'pt_package',
       referenceId: p.id,
@@ -166,28 +171,28 @@ class _PackagesTabState extends State<_PackagesTab> {
       body: _loading
           ? const LoadingView()
           : _error != null
-              ? ErrorBanner(message: _error!, onRetry: _load)
-              : _packages.isEmpty
-                  ? const EmptyStateView(
-                      icon: Icons.fitness_center_rounded,
-                      title: 'No PT packages yet',
-                      body: 'Sell a session package to a member to get started.',
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                        itemCount: _packages.length,
-                        separatorBuilder: (_, __) => AppSpacing.gapSm,
-                        itemBuilder: (_, i) => _PackageCard(
-                          package: _packages[i],
-                          onInvoice: () => _invoice(_packages[i]),
-                          onCancel: _packages[i].status == 'active'
-                              ? () => _cancelPackage(_packages[i])
-                              : null,
-                        ),
-                      ),
-                    ),
+          ? ErrorBanner(message: _error!, onRetry: _load)
+          : _packages.isEmpty
+          ? const EmptyStateView(
+              icon: Icons.fitness_center_rounded,
+              title: 'No PT packages yet',
+              body: 'Sell a session package to a member to get started.',
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                itemCount: _packages.length,
+                separatorBuilder: (_, __) => AppSpacing.gapSm,
+                itemBuilder: (_, i) => _PackageCard(
+                  package: _packages[i],
+                  onInvoice: () => _invoice(_packages[i]),
+                  onCancel: _packages[i].status == 'active'
+                      ? () => _cancelPackage(_packages[i])
+                      : null,
+                ),
+              ),
+            ),
     );
   }
 }
@@ -196,7 +201,11 @@ class _PackageCard extends StatelessWidget {
   final PtPackage package;
   final VoidCallback onInvoice;
   final VoidCallback? onCancel;
-  const _PackageCard({required this.package, required this.onInvoice, this.onCancel});
+  const _PackageCard({
+    required this.package,
+    required this.onInvoice,
+    this.onCancel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -213,8 +222,13 @@ class _PackageCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text('${package.memberName} · ${package.packageName}',
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                child: Text(
+                  '${package.memberName} · ${package.packageName}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
               ),
               StatusChip(status: package.status),
             ],
@@ -224,14 +238,20 @@ class _PackageCard extends StatelessWidget {
             'with ${package.trainerName} · ${package.sessionsUsed}/${package.totalSessions} used · '
             '${formatRupees(package.amountInRupees)}'
             '${package.expiryDate != null ? ' · expires ${package.expiryDate!.substring(0, 10)}' : ''}',
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
           AppSpacing.gapSm,
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               if (onCancel != null)
-                TextButton(onPressed: onCancel, child: const Text('Cancel package')),
+                TextButton(
+                  onPressed: onCancel,
+                  child: const Text('Cancel package'),
+                ),
               TextButton.icon(
                 onPressed: onInvoice,
                 icon: const Icon(Icons.receipt_long_rounded, size: 16),
@@ -277,14 +297,18 @@ class _AppointmentsTabState extends State<_AppointmentsTab> {
       final today = DateTime.now();
       final from = DateTime(today.year, today.month, today.day);
       final results = await Future.wait([
-        _service.getAppointments(from: from, to: from.add(const Duration(days: 14))),
+        _service.getAppointments(
+          from: from,
+          to: from.add(const Duration(days: 14)),
+        ),
         _service.getPackages(),
       ]);
       if (!mounted) return;
       setState(() {
         _appointments = results[0] as List<PtAppointment>;
-        _activePackages =
-            (results[1] as List<PtPackage>).where((p) => p.status == 'active').toList();
+        _activePackages = (results[1] as List<PtPackage>)
+            .where((p) => p.status == 'active')
+            .toList();
         _loading = false;
       });
     } on ApiException catch (e) {
@@ -303,7 +327,10 @@ class _AppointmentsTabState extends State<_AppointmentsTab> {
       );
       return;
     }
-    final booked = await showBookAppointmentDialog(context, activePackages: _activePackages);
+    final booked = await showBookAppointmentDialog(
+      context,
+      activePackages: _activePackages,
+    );
     if (booked != null) {
       widget.onChanged();
       _load();
@@ -317,7 +344,9 @@ class _AppointmentsTabState extends State<_AppointmentsTab> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -330,13 +359,19 @@ class _AppointmentsTabState extends State<_AppointmentsTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.check_circle_outline, color: AppColors.success),
+              leading: const Icon(
+                Icons.check_circle_outline,
+                color: AppColors.success,
+              ),
               title: const Text('Completed'),
               subtitle: const Text('Consumes one session credit'),
               onTap: () => Navigator.pop(context, 'completed'),
             ),
             ListTile(
-              leading: const Icon(Icons.person_off_outlined, color: AppColors.danger),
+              leading: const Icon(
+                Icons.person_off_outlined,
+                color: AppColors.danger,
+              ),
               title: const Text('No-show'),
               onTap: () => Navigator.pop(context, 'no_show'),
             ),
@@ -364,25 +399,25 @@ class _AppointmentsTabState extends State<_AppointmentsTab> {
       body: _loading
           ? const LoadingView()
           : _error != null
-              ? ErrorBanner(message: _error!, onRetry: _load)
-              : _appointments.isEmpty
-                  ? const EmptyStateView(
-                      icon: Icons.event_available,
-                      title: 'Nothing booked',
-                      body: 'Book a 1:1 session against an active PT package.',
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                        itemCount: _appointments.length,
-                        separatorBuilder: (_, __) => AppSpacing.gapSm,
-                        itemBuilder: (_, i) => _AppointmentCard(
-                          appointment: _appointments[i],
-                          onTap: () => _openOutcomeSheet(_appointments[i]),
-                        ),
-                      ),
-                    ),
+          ? ErrorBanner(message: _error!, onRetry: _load)
+          : _appointments.isEmpty
+          ? const EmptyStateView(
+              icon: Icons.event_available,
+              title: 'Nothing booked',
+              body: 'Book a 1:1 session against an active PT package.',
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                itemCount: _appointments.length,
+                separatorBuilder: (_, __) => AppSpacing.gapSm,
+                itemBuilder: (_, i) => _AppointmentCard(
+                  appointment: _appointments[i],
+                  onTap: () => _openOutcomeSheet(_appointments[i]),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -411,13 +446,21 @@ class _AppointmentCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(appointment.memberName,
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
+                  Text(
+                    appointment.memberName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     '${formatDate(dt)} · ${TimeOfDay.fromDateTime(dt).format(context)} · '
                     '${appointment.durationMinutes} min · ${appointment.trainerName}',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),

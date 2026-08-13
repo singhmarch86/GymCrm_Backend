@@ -21,13 +21,17 @@ class PlanDistributionChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (report.plans.isEmpty) {
       return Center(
-        child: Text('No plan data yet',
-            style: TextStyle(color: Colors.grey.shade400)),
+        child: Text(
+          'No plan data yet',
+          style: TextStyle(color: Colors.grey.shade400),
+        ),
       );
     }
 
-    final totalRevenue =
-        report.plans.fold(0.0, (s, p) => s + p.revenueInRupees);
+    final totalRevenue = report.plans.fold(
+      0.0,
+      (s, p) => s + p.revenueInRupees,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,9 +80,10 @@ class PlanDistributionChart extends StatelessWidget {
             radius: 40,
             title: pct > 8 ? '${pct.toStringAsFixed(0)}%' : '',
             titleStyle: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: Colors.white),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           );
         }).toList(),
       ),
@@ -98,15 +103,17 @@ class PlanDistributionChart extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                  width: 10,
-                  height: 10,
-                  decoration:
-                      BoxDecoration(color: color, shape: BoxShape.circle)),
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(p.planName,
-                    style: const TextStyle(fontSize: 12),
-                    overflow: TextOverflow.ellipsis),
+                child: Text(
+                  p.planName,
+                  style: const TextStyle(fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -131,30 +138,42 @@ class PlanDistributionChart extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           children: ['Plan', 'Members', 'Revenue', 'Sold']
-              .map((h) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 8),
-                    child: Text(h,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 12)),
-                  ))
+              .map(
+                (h) => Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    h,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              )
               .toList(),
         ),
         // Rows
-        ...report.plans.map((p) => TableRow(
-              decoration: BoxDecoration(
-                border: Border(
-                    bottom:
-                        BorderSide(color: Colors.grey.shade200, width: 1)),
+        ...report.plans.map(
+          (p) => TableRow(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade200, width: 1),
               ),
-              children: [
-                _cell(p.planName, bold: true),
-                _cell('${p.activeMembers}'),
-                _cell('₹${p.revenueInRupees.toStringAsFixed(0)}',
-                    color: AppColors.success),
-                _cell('${p.countSold}'),
-              ],
-            )),
+            ),
+            children: [
+              _cell(p.planName, bold: true),
+              _cell('${p.activeMembers}'),
+              _cell(
+                '₹${p.revenueInRupees.toStringAsFixed(0)}',
+                color: AppColors.success,
+              ),
+              _cell('${p.countSold}'),
+            ],
+          ),
+        ),
       ],
     );
   }

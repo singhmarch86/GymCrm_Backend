@@ -38,15 +38,15 @@ class Branch {
   bool get isOwner => role == 'owner';
 
   factory Branch.fromJson(Map<String, dynamic> j) => Branch(
-        id: j['id'] ?? 0,
-        name: j['name'] ?? '',
-        branchName: j['branch_name'],
-        city: j['city'],
-        state: j['state'],
-        status: j['status'] ?? 'active',
-        organizationId: j['organization_id'],
-        role: j['role'] ?? 'staff',
-      );
+    id: j['id'] ?? 0,
+    name: j['name'] ?? '',
+    branchName: j['branch_name'],
+    city: j['city'],
+    state: j['state'],
+    status: j['status'] ?? 'active',
+    organizationId: j['organization_id'],
+    role: j['role'] ?? 'staff',
+  );
 }
 
 /// One branch's headline numbers in the consolidated chain view.
@@ -95,19 +95,20 @@ class BranchSummary {
   bool get hasTarget => revenueTargetInPaise > 0;
 
   factory BranchSummary.fromJson(Map<String, dynamic> j) => BranchSummary(
-        gymId: j['gym_id'] ?? 0,
-        name: j['name'] ?? '',
-        branchName: j['branch_name'],
-        activeMembers: j['active_members'] ?? 0,
-        totalMembers: j['total_members'] ?? 0,
-        expiringSoon: j['expiring_soon'] ?? 0,
-        revenueInPaise: j['revenue_this_month_in_paise'] ?? 0,
-        newMembersThisMonth: j['new_members_this_month'] ?? 0,
-        lapsedThisMonth: j['lapsed_this_month'] ?? 0,
-        revenueTargetInPaise: j['monthly_revenue_target_in_paise'] ?? 0,
-        memberTarget: j['monthly_member_target'] ?? 0,
-        revenuePerMemberInPaise: j['revenue_per_member_in_paise'] ?? 0,
-        revenueAttainmentPct: (j['revenue_attainment_pct'] as num?)?.toDouble() ?? 0,
-        memberAttainmentPct: (j['member_attainment_pct'] as num?)?.toDouble() ?? 0,
-      );
+    gymId: j['gym_id'] ?? 0,
+    name: j['name'] ?? '',
+    branchName: j['branch_name'],
+    activeMembers: j['active_members'] ?? 0,
+    totalMembers: j['total_members'] ?? 0,
+    expiringSoon: j['expiring_soon'] ?? 0,
+    revenueInPaise: j['revenue_this_month_in_paise'] ?? 0,
+    newMembersThisMonth: j['new_members_this_month'] ?? 0,
+    lapsedThisMonth: j['lapsed_this_month'] ?? 0,
+    revenueTargetInPaise: j['monthly_revenue_target_in_paise'] ?? 0,
+    memberTarget: j['monthly_member_target'] ?? 0,
+    revenuePerMemberInPaise: j['revenue_per_member_in_paise'] ?? 0,
+    revenueAttainmentPct:
+        (j['revenue_attainment_pct'] as num?)?.toDouble() ?? 0,
+    memberAttainmentPct: (j['member_attainment_pct'] as num?)?.toDouble() ?? 0,
+  );
 }

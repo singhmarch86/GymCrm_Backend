@@ -94,9 +94,12 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
       setState(() => _scanning = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${result.summaryLine}\n${rhythmResult.summaryLine}'
-              '\n${activationResult.summaryLine}'),
-          backgroundColor: result.raised > 0 ||
+          content: Text(
+            '${result.summaryLine}\n${rhythmResult.summaryLine}'
+            '\n${activationResult.summaryLine}',
+          ),
+          backgroundColor:
+              result.raised > 0 ||
                   rhythmResult.alertsRaised > 0 ||
                   activationResult.alertsRaised > 0
               ? AppColors.warning
@@ -109,7 +112,9 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
       setState(() => _scanning = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e is ApiException ? e.message : "Couldn't run the scan."),
+          content: Text(
+            e is ApiException ? e.message : "Couldn't run the scan.",
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -154,7 +159,9 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e is ApiException ? e.message : "Couldn't resolve that alert."),
+          content: Text(
+            e is ApiException ? e.message : "Couldn't resolve that alert.",
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -184,7 +191,8 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              e is ApiException ? e.message : "Couldn't resolve that alert."),
+            e is ApiException ? e.message : "Couldn't resolve that alert.",
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -205,7 +213,10 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
   /// Returns the note to record, or null if the staff member backed out.
   /// An empty string means "just mark done" — still a real resolution, just
   /// without detail.
-  Future<String?> _askActionNote(String memberName, {required String hint}) async {
+  Future<String?> _askActionNote(
+    String memberName, {
+    required String hint,
+  }) async {
     final controller = TextEditingController();
 
     final choice = await showDialog<String>(
@@ -273,7 +284,8 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              e is ApiException ? e.message : "Couldn't resolve that alert."),
+            e is ApiException ? e.message : "Couldn't resolve that alert.",
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -337,7 +349,10 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : const Icon(Icons.radar_rounded),
           label: Text(_scanning ? 'Scanning...' : 'Run scan'),
@@ -350,7 +365,9 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
   }
 
   Widget _body() {
-    if (_loading) return const LoadingView(label: 'Checking who needs attention...');
+    if (_loading) {
+      return const LoadingView(label: 'Checking who needs attention...');
+    }
     if (_error != null) return ErrorBanner(message: _error!, onRetry: _load);
 
     if (_alerts.isEmpty && _breaks.isEmpty && _activation.isEmpty) {
@@ -360,10 +377,16 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.verified_user_rounded, size: 72, color: AppColors.success),
+              const Icon(
+                Icons.verified_user_rounded,
+                size: 72,
+                color: AppColors.success,
+              ),
               const SizedBox(height: 18),
-              const Text('Nobody at risk',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                'Nobody at risk',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Text(
                 _summary?.lastScanAt == null
@@ -381,9 +404,11 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
     // Rhythm breaks have their own section with the numbers behind them, so
     // they are excluded here — otherwise the same member appears twice.
     final counted = _alerts
-        .where((a) =>
-            a.alertType != 'rhythm_break' &&
-            !a.alertType.startsWith('activation_'))
+        .where(
+          (a) =>
+              a.alertType != 'rhythm_break' &&
+              !a.alertType.startsWith('activation_'),
+        )
         .toList();
     final high = counted.where((a) => a.severity == 'high').toList();
     final medium = counted.where((a) => a.severity == 'medium').toList();
@@ -406,12 +431,24 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
             onResolve: _resolveBreak,
             onCopy: _copyBreak,
           ),
-          _section('Needs attention now', high, AppColors.danger,
-              'Lapsed or lapsing today, and long absences'),
-          _section('Worth a nudge', medium, AppColors.warning,
-              'Drifting — a reminder now usually works'),
-          _section('Keep an eye on', low, AppColors.info,
-              'Early signals, no action strictly required yet'),
+          _section(
+            'Needs attention now',
+            high,
+            AppColors.danger,
+            'Lapsed or lapsing today, and long absences',
+          ),
+          _section(
+            'Worth a nudge',
+            medium,
+            AppColors.warning,
+            'Drifting — a reminder now usually works',
+          ),
+          _section(
+            'Keep an eye on',
+            low,
+            AppColors.info,
+            'Early signals, no action strictly required yet',
+          ),
         ],
       ),
     );
@@ -446,12 +483,15 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
   Widget _staffActivityPanel() {
     if (_staffActivity.isEmpty) return const SizedBox.shrink();
 
-    final total =
-        _staffActivity.fold<int>(0, (sum, s) => sum + s.resolvedCount);
+    final total = _staffActivity.fold<int>(
+      0,
+      (sum, s) => sum + s.resolvedCount,
+    );
     if (total == 0) return const SizedBox.shrink();
 
     // People first, the automatic bucket last — it is context, not a competitor.
-    final sorted = [..._staffActivity]..sort((a, b) {
+    final sorted = [..._staffActivity]
+      ..sort((a, b) {
         if (a.isSystem != b.isSystem) return a.isSystem ? 1 : -1;
         return b.resolvedCount.compareTo(a.resolvedCount);
       });
@@ -464,14 +504,21 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.how_to_reg_rounded,
-                    size: 17, color: AppColors.success),
+                const Icon(
+                  Icons.how_to_reg_rounded,
+                  size: 17,
+                  color: AppColors.success,
+                ),
                 const SizedBox(width: 8),
-                const Text('Handled this week',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text(
+                  'Handled this week',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
                 const Spacer(),
-                Text('$total total',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                Text(
+                  '$total total',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -496,18 +543,23 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
               SizedBox(
                 width: 22,
                 child: s.isSystem
-                    ? Icon(Icons.settings_suggest_rounded,
-                        size: 16, color: Colors.grey.shade400)
+                    ? Icon(
+                        Icons.settings_suggest_rounded,
+                        size: 16,
+                        color: Colors.grey.shade400,
+                      )
                     : CircleAvatar(
                         radius: 11,
-                        backgroundColor:
-                            AppColors.success.withValues(alpha: 0.15),
+                        backgroundColor: AppColors.success.withValues(
+                          alpha: 0.15,
+                        ),
                         child: Text(
                           s.label[0].toUpperCase(),
                           style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.success),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.success,
+                          ),
                         ),
                       ),
               ),
@@ -521,7 +573,9 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
                     fontSize: 12.5,
                     fontStyle: s.isSystem ? FontStyle.italic : FontStyle.normal,
                     color: s.isSystem ? Colors.grey.shade600 : null,
-                    fontWeight: s.isSystem ? FontWeight.normal : FontWeight.w600,
+                    fontWeight: s.isSystem
+                        ? FontWeight.normal
+                        : FontWeight.w600,
                   ),
                 ),
               ),
@@ -539,12 +593,15 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
               const SizedBox(width: 10),
               SizedBox(
                 width: 26,
-                child: Text('${s.resolvedCount}',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                        color: color)),
+                child: Text(
+                  '${s.resolvedCount}',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
               ),
             ],
           ),
@@ -566,7 +623,9 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
                       child: Text(
                         '+${s.resolvedCount - s.recent.length} more',
                         style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade500),
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ),
                 ],
@@ -587,8 +646,11 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 4, right: 6),
-            child: Icon(Icons.check_rounded,
-                size: 11, color: AppColors.success.withValues(alpha: 0.7)),
+            child: Icon(
+              Icons.check_rounded,
+              size: 11,
+              color: AppColors.success.withValues(alpha: 0.7),
+            ),
           ),
           Expanded(
             child: RichText(
@@ -603,48 +665,66 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
                   ),
                   TextSpan(
                     text: '  ${h.typeLabel}',
-                    style: TextStyle(color: Colors.grey.shade500, fontSize: 10.5),
+                    style: TextStyle(
+                      color: Colors.grey.shade500,
+                      fontSize: 10.5,
+                    ),
                   ),
                   if (note.isNotEmpty)
                     TextSpan(
                       text: '  · "$note"',
                       style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey.shade600),
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                 ],
               ),
             ),
           ),
           const SizedBox(width: 6),
-          Text(h.relativeTime,
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade400)),
+          Text(
+            h.relativeTime,
+            style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
+          ),
         ],
       ),
     );
   }
 
   Widget _stat(String value, String label, Color color) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-            const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w600)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _divider() =>
       Container(width: 1, height: 34, color: Colors.grey.shade200);
 
   Widget _section(
-      String title, List<RetentionAlert> items, Color color, String hint) {
+    String title,
+    List<RetentionAlert> items,
+    Color color,
+    String hint,
+  ) {
     if (items.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -660,22 +740,32 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
                 decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
               const SizedBox(width: 8),
-              Text(title,
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15, color: color)),
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: color,
+                ),
+              ),
               const SizedBox(width: 8),
-              Text('${items.length}',
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade500)),
+              Text(
+                '${items.length}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade500,
+                ),
+              ),
             ],
           ),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 20, bottom: 10),
-          child: Text(hint,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+          child: Text(
+            hint,
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+          ),
         ),
         CollapsibleGroup(
           noun: 'more to call',
@@ -711,13 +801,21 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(a.memberName,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(
+                        a.memberName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text('${a.phone} · ${a.typeLabel}',
-                          style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade600)),
+                      Text(
+                        '${a.phone} · ${a.typeLabel}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -729,7 +827,10 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
                 ),
                 IconButton(
                   tooltip: 'Mark as handled',
-                  icon: const Icon(Icons.check_circle_outline_rounded, size: 20),
+                  icon: const Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 20,
+                  ),
                   color: AppColors.success,
                   onPressed: () => _resolve(a),
                 ),
@@ -749,7 +850,10 @@ class _AtRiskScreenState extends State<AtRiskScreen> {
               child: Text(
                 a.message,
                 style: TextStyle(
-                    fontSize: 12, height: 1.45, color: Colors.grey.shade800),
+                  fontSize: 12,
+                  height: 1.45,
+                  color: Colors.grey.shade800,
+                ),
               ),
             ),
           ],

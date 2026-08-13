@@ -20,19 +20,13 @@ class DashboardSectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
 
         const Spacer(),
 
         if (actionText != null)
-          TextButton(
-            onPressed: onTap,
-            child: Text(actionText!),
-          ),
+          TextButton(onPressed: onTap, child: Text(actionText!)),
       ],
     );
   }

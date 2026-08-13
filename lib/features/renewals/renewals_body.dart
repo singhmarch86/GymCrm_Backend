@@ -17,7 +17,8 @@ class RenewalsBody extends StatefulWidget {
   final void Function({
     required RenewalFilterOption filter,
     required String search,
-  }) onQueryChanged;
+  })
+  onQueryChanged;
 
   final Future<void> Function() onRefresh;
   final void Function(RenewalDue) onRenew;
@@ -51,7 +52,6 @@ class _RenewalsBodyState extends State<RenewalsBody> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-
         RenewalSearchBar(
           controller: searchController,
           onChanged: (_) {

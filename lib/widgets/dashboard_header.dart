@@ -32,15 +32,12 @@ class DashboardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-
         CircleAvatar(
           radius: 28,
           backgroundColor: AppColors.primary,
 
           child: Text(
-            userName.isNotEmpty
-                ? userName[0].toUpperCase()
-                : "G",
+            userName.isNotEmpty ? userName[0].toUpperCase() : "G",
             style: const TextStyle(
               color: Colors.white,
               fontSize: 22,
@@ -53,16 +50,11 @@ class DashboardHeader extends StatelessWidget {
 
         Expanded(
           child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               Text(
                 "👋 ${_greeting()}",
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
 
               const SizedBox(height: 4),
@@ -77,12 +69,7 @@ class DashboardHeader extends StatelessWidget {
 
               const SizedBox(height: 2),
 
-              Text(
-                role,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                ),
-              ),
+              Text(role, style: TextStyle(color: Colors.grey.shade600)),
             ],
           ),
         ),
@@ -90,9 +77,7 @@ class DashboardHeader extends StatelessWidget {
         IconButton(
           tooltip: "Logout",
           onPressed: onLogout,
-          icon: const Icon(
-            Icons.logout_rounded,
-          ),
+          icon: const Icon(Icons.logout_rounded),
         ),
       ],
     );

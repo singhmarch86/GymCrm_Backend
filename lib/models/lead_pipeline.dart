@@ -31,17 +31,17 @@ class LeadActivity {
   });
 
   factory LeadActivity.fromJson(Map<String, dynamic> j) => LeadActivity(
-        id: j['id'] ?? 0,
-        leadId: j['lead_id'] ?? 0,
-        userId: j['user_id'],
-        userName: j['user_name'],
-        type: j['type'] ?? 'note',
-        note: j['note'],
-        outcome: j['outcome'],
-        fromStatus: j['from_status'],
-        toStatus: j['to_status'],
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    leadId: j['lead_id'] ?? 0,
+    userId: j['user_id'],
+    userName: j['user_name'],
+    type: j['type'] ?? 'note',
+    note: j['note'],
+    outcome: j['outcome'],
+    fromStatus: j['from_status'],
+    toStatus: j['to_status'],
+    createdAt: j['created_at'] ?? '',
+  );
 
   /// Relative age, e.g. "just now", "3h ago", "2d ago".
   String get relativeTime {
@@ -80,19 +80,20 @@ class FollowUpQueue {
     this.outcomeDays = 7,
   });
 
-  static List<Lead> _leads(dynamic raw) =>
-      (raw as List? ?? []).map((e) => Lead.fromJson(e as Map<String, dynamic>)).toList();
+  static List<Lead> _leads(dynamic raw) => (raw as List? ?? [])
+      .map((e) => Lead.fromJson(e as Map<String, dynamic>))
+      .toList();
 
   factory FollowUpQueue.fromJson(Map<String, dynamic> j) => FollowUpQueue(
-        overdue: _leads(j['overdue']),
-        today: _leads(j['today']),
-        upcoming: _leads(j['upcoming']),
-        trials: _leads(j['trials']),
-        outcomeCounts: ((j['outcome_counts'] as List?) ?? [])
-            .map((e) => OutcomeCount.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        outcomeDays: j['outcome_days'] ?? 7,
-      );
+    overdue: _leads(j['overdue']),
+    today: _leads(j['today']),
+    upcoming: _leads(j['upcoming']),
+    trials: _leads(j['trials']),
+    outcomeCounts: ((j['outcome_counts'] as List?) ?? [])
+        .map((e) => OutcomeCount.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    outcomeDays: j['outcome_days'] ?? 7,
+  );
 
   /// True when nothing at all needs attention — used to pick between the
   /// "all clear" empty state and the bucketed list.
@@ -103,8 +104,7 @@ class FollowUpQueue {
 
   /// True when nothing has been logged in the window — the counts row is
   /// suppressed rather than showing six zeros, which reads as broken.
-  bool get hasLoggedOutcomes =>
-      outcomeCounts.any((c) => c.count > 0);
+  bool get hasLoggedOutcomes => outcomeCounts.any((c) => c.count > 0);
 }
 
 /// One step of the conversion funnel. Maps backend FunnelStageResponse.
@@ -130,13 +130,13 @@ class FunnelStage {
   });
 
   factory FunnelStage.fromJson(Map<String, dynamic> j) => FunnelStage(
-        status: j['status'] ?? '',
-        label: j['label'] ?? '',
-        count: j['count'] ?? 0,
-        stepConversion: (j['step_conversion'] ?? 0).toDouble(),
-        overallConversion: (j['overall_conversion'] ?? 0).toDouble(),
-        avgDays: (j['avg_days'] ?? 0).toDouble(),
-      );
+    status: j['status'] ?? '',
+    label: j['label'] ?? '',
+    count: j['count'] ?? 0,
+    stepConversion: (j['step_conversion'] ?? 0).toDouble(),
+    overallConversion: (j['overall_conversion'] ?? 0).toDouble(),
+    avgDays: (j['avg_days'] ?? 0).toDouble(),
+  );
 }
 
 class SourcePerformance {
@@ -156,7 +156,8 @@ class SourcePerformance {
     required this.conversionRate,
   });
 
-  factory SourcePerformance.fromJson(Map<String, dynamic> j) => SourcePerformance(
+  factory SourcePerformance.fromJson(Map<String, dynamic> j) =>
+      SourcePerformance(
         source: j['source'] ?? '',
         label: j['label'] ?? '',
         total: j['total'] ?? 0,
@@ -172,10 +173,8 @@ class LostReason {
 
   LostReason({required this.reason, required this.count});
 
-  factory LostReason.fromJson(Map<String, dynamic> j) => LostReason(
-        reason: j['reason'] ?? '',
-        count: j['count'] ?? 0,
-      );
+  factory LostReason.fromJson(Map<String, dynamic> j) =>
+      LostReason(reason: j['reason'] ?? '', count: j['count'] ?? 0);
 }
 
 /// Maps backend AnalyticsResponse.
@@ -193,17 +192,17 @@ class LeadAnalytics {
   });
 
   factory LeadAnalytics.fromJson(Map<String, dynamic> j) => LeadAnalytics(
-        funnel: (j['funnel'] as List? ?? [])
-            .map((e) => FunnelStage.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        lostCount: j['lost_count'] ?? 0,
-        bySource: (j['by_source'] as List? ?? [])
-            .map((e) => SourcePerformance.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        lostReasons: (j['lost_reasons'] as List? ?? [])
-            .map((e) => LostReason.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    funnel: (j['funnel'] as List? ?? [])
+        .map((e) => FunnelStage.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    lostCount: j['lost_count'] ?? 0,
+    bySource: (j['by_source'] as List? ?? [])
+        .map((e) => SourcePerformance.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    lostReasons: (j['lost_reasons'] as List? ?? [])
+        .map((e) => LostReason.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 
   /// True when no stage transitions have been recorded yet, so the
   /// time-in-stage figures are all zero and should be hidden rather than
@@ -226,11 +225,11 @@ class Assignee {
   });
 
   factory Assignee.fromJson(Map<String, dynamic> j) => Assignee(
-        id: j['id'] ?? 0,
-        name: j['name'] ?? '',
-        role: j['role'] ?? 'staff',
-        leadCount: j['lead_count'] ?? 0,
-      );
+    id: j['id'] ?? 0,
+    name: j['name'] ?? '',
+    role: j['role'] ?? 'staff',
+    leadCount: j['lead_count'] ?? 0,
+  );
 }
 
 /// The six follow-up outcomes (FR-16 §2).
@@ -247,11 +246,19 @@ class FollowUpOutcome {
   static const noAnswer = FollowUpOutcome('no_answer', 'No answer');
   static const callBack = FollowUpOutcome('call_back', 'Call back later');
   static const interested = FollowUpOutcome('interested', 'Interested');
-  static const notInterested = FollowUpOutcome('not_interested', 'Not interested');
+  static const notInterested = FollowUpOutcome(
+    'not_interested',
+    'Not interested',
+  );
   static const wrongNumber = FollowUpOutcome('wrong_number', 'Wrong number');
 
   static const all = [
-    answered, noAnswer, callBack, interested, notInterested, wrongNumber,
+    answered,
+    noAnswer,
+    callBack,
+    interested,
+    notInterested,
+    wrongNumber,
   ];
 
   static String labelFor(String? value) {
@@ -276,10 +283,10 @@ class OutcomeCount {
   });
 
   factory OutcomeCount.fromJson(Map<String, dynamic> j) => OutcomeCount(
-        outcome: j['outcome'] ?? '',
-        label: j['label'] ?? '',
-        count: j['count'] ?? 0,
-      );
+    outcome: j['outcome'] ?? '',
+    label: j['label'] ?? '',
+    count: j['count'] ?? 0,
+  );
 }
 
 /// The lead workflow (FR-18).
@@ -327,22 +334,22 @@ class WorkflowItem {
   });
 
   factory WorkflowItem.fromJson(Map<String, dynamic> j) => WorkflowItem(
-        leadId: j['lead_id'] ?? 0,
-        name: j['name'] ?? '',
-        phone: j['phone'] ?? '',
-        status: j['status'] ?? '',
-        stageLabel: j['stage_label'] ?? '',
-        stageDays: j['stage_days'] ?? 0,
-        nextStep: j['next_step'],
-        nextStepLabel: j['next_step_label'],
-        nextStepDue: j['next_step_due'] == null
-            ? null
-            : DateTime.tryParse(j['next_step_due'])?.toLocal(),
-        ownerId: j['owner_id'],
-        ownerName: j['owner_name'],
-        state: j['state'] ?? '',
-        daysOverdue: j['days_overdue'] ?? 0,
-      );
+    leadId: j['lead_id'] ?? 0,
+    name: j['name'] ?? '',
+    phone: j['phone'] ?? '',
+    status: j['status'] ?? '',
+    stageLabel: j['stage_label'] ?? '',
+    stageDays: j['stage_days'] ?? 0,
+    nextStep: j['next_step'],
+    nextStepLabel: j['next_step_label'],
+    nextStepDue: j['next_step_due'] == null
+        ? null
+        : DateTime.tryParse(j['next_step_due'])?.toLocal(),
+    ownerId: j['owner_id'],
+    ownerName: j['owner_name'],
+    state: j['state'] ?? '',
+    daysOverdue: j['days_overdue'] ?? 0,
+  );
 
   bool get isUnattended => state == 'unattended';
 
@@ -365,13 +372,13 @@ class WorkflowGroup {
   });
 
   factory WorkflowGroup.fromJson(Map<String, dynamic> j) => WorkflowGroup(
-        state: j['state'] ?? '',
-        label: j['label'] ?? '',
-        count: j['count'] ?? 0,
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => WorkflowItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    state: j['state'] ?? '',
+    label: j['label'] ?? '',
+    count: j['count'] ?? 0,
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => WorkflowItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class LeadWorkflow {
@@ -398,16 +405,16 @@ class LeadWorkflow {
   });
 
   factory LeadWorkflow.fromJson(Map<String, dynamic> j) => LeadWorkflow(
-        groups: ((j['groups'] as List?) ?? [])
-            .map((e) => WorkflowGroup.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalOpen: j['total_open'] ?? 0,
-        unattended: j['unattended'] ?? 0,
-        overdue: j['overdue'] ?? 0,
-        dueToday: j['due_today'] ?? 0,
-        groupBy: j['group_by'] ?? 'timing',
-        groupByLabel: j['group_by_label'] ?? 'What is late',
-      );
+    groups: ((j['groups'] as List?) ?? [])
+        .map((e) => WorkflowGroup.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalOpen: j['total_open'] ?? 0,
+    unattended: j['unattended'] ?? 0,
+    overdue: j['overdue'] ?? 0,
+    dueToday: j['due_today'] ?? 0,
+    groupBy: j['group_by'] ?? 'timing',
+    groupByLabel: j['group_by_label'] ?? 'What is late',
+  );
 
   bool get isEmpty => totalOpen == 0;
 }

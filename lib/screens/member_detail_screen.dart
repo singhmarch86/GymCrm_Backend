@@ -91,7 +91,8 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
   bool get _isFrozen => _status == 'frozen';
   bool get _isTerminated => _status == 'terminated';
 
-  String get _memberName => '${widget.member.firstName} ${widget.member.lastName}';
+  String get _memberName =>
+      '${widget.member.firstName} ${widget.member.lastName}';
 
   Future<void> _freeze() async {
     final result = await showFreezeDialog(
@@ -164,7 +165,11 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
                           const Expanded(
                             child: Text(
                               'Membership',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ),
                           StatusChip(status: _status),
@@ -182,7 +187,9 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
                         _expiryDate != null ? formatDate(_expiryDate!) : '-',
                         last: !_isFrozen,
                       ),
-                      if (_isFrozen && _frozenFrom != null && _frozenUntil != null)
+                      if (_isFrozen &&
+                          _frozenFrom != null &&
+                          _frozenUntil != null)
                         _DetailRow(
                           'Frozen',
                           '${formatDate(_frozenFrom!)} – ${formatDate(_frozenUntil!)}',
@@ -245,7 +252,8 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
                       context,
                       kind: TransferKind.member,
                       entityId: widget.member.id,
-                      entityName: '${widget.member.firstName} ${widget.member.lastName}',
+                      entityName:
+                          '${widget.member.firstName} ${widget.member.lastName}',
                     );
                     // The member no longer belongs to this branch, so the panel
                     // is showing something that is no longer here — close it and
@@ -263,16 +271,26 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
 
               AppSpacing.gapXxl,
 
-              MemberInvoicesSection(memberId: widget.member.id, refreshToken: _timelineToken),
+              MemberInvoicesSection(
+                memberId: widget.member.id,
+                refreshToken: _timelineToken,
+              ),
 
               AppSpacing.gapXxl,
 
               const Text(
                 'Membership history',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
               AppSpacing.gapMd,
-              LifecycleTimeline(memberId: widget.member.id, refreshToken: _timelineToken),
+              LifecycleTimeline(
+                memberId: widget.member.id,
+                refreshToken: _timelineToken,
+              ),
             ],
           ),
         ),
@@ -308,7 +326,11 @@ class _LifecycleActions extends StatelessWidget {
       children: [
         const Text(
           'Membership actions',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary,
+          ),
         ),
         AppSpacing.gapSm,
         Wrap(
@@ -342,7 +364,9 @@ class _LifecycleActions extends StatelessWidget {
             OutlinedButton.icon(
               icon: const Icon(Icons.cancel_outlined, size: 18),
               label: const Text('Terminate'),
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.danger,
+              ),
               onPressed: onTerminate,
             ),
           ],
@@ -371,7 +395,11 @@ class _TerminatedNotice extends StatelessWidget {
           Expanded(
             child: Text(
               'This membership is terminated. Restoring it requires selling a new membership.',
-              style: TextStyle(fontSize: 12.5, color: AppColors.danger, height: 1.35),
+              style: TextStyle(
+                fontSize: 12.5,
+                color: AppColors.danger,
+                height: 1.35,
+              ),
             ),
           ),
         ],
@@ -395,7 +423,13 @@ class _DetailRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
           ),
           Expanded(child: Text(value, style: const TextStyle(fontSize: 14))),
         ],

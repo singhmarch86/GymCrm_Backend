@@ -14,12 +14,12 @@ class PlanStat {
   });
 
   factory PlanStat.fromJson(Map<String, dynamic> j) => PlanStat(
-        planId: j['plan_id'] ?? 0,
-        planName: j['plan_name'] ?? '',
-        activeMembers: j['active_members'] ?? 0,
-        revenueInRupees: (j['revenue_in_rupees'] ?? 0).toDouble(),
-        countSold: j['count_sold'] ?? 0,
-      );
+    planId: j['plan_id'] ?? 0,
+    planName: j['plan_name'] ?? '',
+    activeMembers: j['active_members'] ?? 0,
+    revenueInRupees: (j['revenue_in_rupees'] ?? 0).toDouble(),
+    countSold: j['count_sold'] ?? 0,
+  );
 }
 
 class PlanReport {
@@ -28,8 +28,8 @@ class PlanReport {
   PlanReport({required this.plans});
 
   factory PlanReport.fromJson(Map<String, dynamic> j) => PlanReport(
-        plans: (j['plans'] as List? ?? [])
-            .map((e) => PlanStat.fromJson(e))
-            .toList(),
-      );
+    plans: (j['plans'] as List? ?? [])
+        .map((e) => PlanStat.fromJson(e))
+        .toList(),
+  );
 }

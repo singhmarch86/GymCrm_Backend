@@ -108,7 +108,10 @@ class _TransferDialogState extends State<TransferDialog> {
       setState(() => _results = []);
       return;
     }
-    _debounce = Timer(const Duration(milliseconds: 350), () => _search(q.trim()));
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _search(q.trim()),
+    );
   }
 
   Future<void> _search(String q) async {
@@ -140,7 +143,9 @@ class _TransferDialogState extends State<TransferDialog> {
 
   bool get _canSubmit {
     if (_saving) return false;
-    final targetOk = _mode == _TargetMode.existing ? _target != null : _newMemberValid;
+    final targetOk = _mode == _TargetMode.existing
+        ? _target != null
+        : _newMemberValid;
     return targetOk && _feePaise != null;
   }
 
@@ -193,10 +198,13 @@ class _TransferDialogState extends State<TransferDialog> {
   @override
   Widget build(BuildContext context) {
     final target = _target;
-    final showOutcome = _mode == _TargetMode.existing ? target != null : _newMemberValid;
+    final showOutcome = _mode == _TargetMode.existing
+        ? target != null
+        : _newMemberValid;
     final receivingName = _mode == _TargetMode.existing
         ? (target != null ? '${target.firstName} ${target.lastName}' : '')
-        : '${_newFirstNameController.text.trim()} ${_newLastNameController.text.trim()}'.trim();
+        : '${_newFirstNameController.text.trim()} ${_newLastNameController.text.trim()}'
+              .trim();
 
     return LifecycleDialogShell(
       title: 'Transfer membership',
@@ -220,7 +228,8 @@ class _TransferDialogState extends State<TransferDialog> {
         children: [
           const LifecycleNotice(
             tone: LifecycleTone.warning,
-            text: 'The remaining validity moves to the receiving member. This membership is terminated.',
+            text:
+                'The remaining validity moves to the receiving member. This membership is terminated.',
           ),
           AppSpacing.gapLg,
 
@@ -303,7 +312,8 @@ class _TransferDialogState extends State<TransferDialog> {
               onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
                 prefixText: '₹ ',
-                helperText: 'Charged by the gym for processing — optional, defaults to 0',
+                helperText:
+                    'Charged by the gym for processing — optional, defaults to 0',
               ),
             ),
             AppSpacing.gapMd,
@@ -311,9 +321,12 @@ class _TransferDialogState extends State<TransferDialog> {
               emphasisColor: AppColors.warning,
               rows: [
                 ('Receiving member', receivingName),
-                if (_mode == _TargetMode.newMember) ('Status', 'New member — created on transfer'),
-                if (widget.expiryDate != null) ('Validity moving', 'until ${widget.expiryDate}'),
-                if ((_feePaise ?? 0) > 0) ('Transfer fee', formatRupees((_feePaise ?? 0) / 100)),
+                if (_mode == _TargetMode.newMember)
+                  ('Status', 'New member — created on transfer'),
+                if (widget.expiryDate != null)
+                  ('Validity moving', 'until ${widget.expiryDate}'),
+                if ((_feePaise ?? 0) > 0)
+                  ('Transfer fee', formatRupees((_feePaise ?? 0) / 100)),
                 ('${widget.memberName} becomes', 'Terminated'),
               ],
             ),
@@ -375,7 +388,11 @@ class _ModeButton extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _ModeButton({required this.label, required this.selected, required this.onTap});
+  const _ModeButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -429,12 +446,18 @@ class _MemberOption extends StatelessWidget {
             Expanded(
               child: Text(
                 '${member.firstName} ${member.lastName}',
-                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             Text(
               member.status,
-              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

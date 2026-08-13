@@ -22,8 +22,9 @@ class StaffWorkService {
   /// deliberately no user filter to pass here.
   Future<StaffWorkDay> getDay({DateSpan? span}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/staff-work')
-        .replace(queryParameters: _spanParams(span));
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/staff-work',
+    ).replace(queryParameters: _spanParams(span));
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return StaffWorkDay.fromJson(unwrapJson(response)['data']);
   }
@@ -32,8 +33,9 @@ class StaffWorkService {
   /// only the funnel is scoped to [span].
   Future<LeadWorkReport> getLeadWork({DateSpan? span}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/staff-work/leads')
-        .replace(queryParameters: _spanParams(span));
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/staff-work/leads',
+    ).replace(queryParameters: _spanParams(span));
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return LeadWorkReport.fromJson(unwrapJson(response)['data']);
   }
@@ -45,8 +47,9 @@ class StaffWorkService {
   /// present is each person against their own previous period.
   Future<StaffAnalytics> getAnalytics({DateSpan? span}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/staff-work/analytics')
-        .replace(queryParameters: _spanParams(span));
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/staff-work/analytics',
+    ).replace(queryParameters: _spanParams(span));
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return StaffAnalytics.fromJson(unwrapJson(response)['data']);
   }

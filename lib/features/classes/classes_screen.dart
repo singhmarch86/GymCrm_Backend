@@ -94,7 +94,10 @@ class _SessionsTabState extends State<_SessionsTab> {
     try {
       final today = DateTime.now();
       final from = DateTime(today.year, today.month, today.day);
-      final sessions = await _service.getSessions(from: from, to: from.add(const Duration(days: 7)));
+      final sessions = await _service.getSessions(
+        from: from,
+        to: from.add(const Duration(days: 7)),
+      );
       if (!mounted) return;
       setState(() {
         _sessions = sessions;
@@ -128,7 +131,8 @@ class _SessionsTabState extends State<_SessionsTab> {
       return const EmptyStateView(
         icon: Icons.event_busy,
         title: 'Nothing scheduled this week',
-        body: 'Create a schedule from the Schedules tab — sessions generate automatically.',
+        body:
+            'Create a schedule from the Schedules tab — sessions generate automatically.',
       );
     }
 
@@ -180,13 +184,21 @@ class _SessionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(session.classTypeName,
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
+                  Text(
+                    session.classTypeName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     '${formatDate(session.sessionDate)} · ${session.startTime.substring(0, 5)}'
                     '${session.trainerName != null ? ' · ${session.trainerName}' : ''}',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -199,7 +211,10 @@ class _SessionCard extends StatelessWidget {
                 Text(
                   '${session.bookedCount}/${session.capacity}'
                   '${session.waitlistCount > 0 ? ' · +${session.waitlistCount}' : ''}',
-                  style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -265,7 +280,10 @@ class _SchedulesTabState extends State<_SchedulesTab> {
       );
       return;
     }
-    final created = await showCreateScheduleDialog(context, classTypes: _classTypes);
+    final created = await showCreateScheduleDialog(
+      context,
+      classTypes: _classTypes,
+    );
     if (created != null) {
       widget.onChanged();
       _load();
@@ -284,22 +302,23 @@ class _SchedulesTabState extends State<_SchedulesTab> {
       body: _loading
           ? const LoadingView()
           : _error != null
-              ? ErrorBanner(message: _error!, onRetry: _load)
-              : _schedules.isEmpty
-                  ? const EmptyStateView(
-                      icon: Icons.repeat,
-                      title: 'No schedules yet',
-                      body: 'Create a recurring schedule — sessions are generated automatically.',
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                        itemCount: _schedules.length,
-                        separatorBuilder: (_, __) => AppSpacing.gapSm,
-                        itemBuilder: (_, i) => _ScheduleCard(schedule: _schedules[i]),
-                      ),
-                    ),
+          ? ErrorBanner(message: _error!, onRetry: _load)
+          : _schedules.isEmpty
+          ? const EmptyStateView(
+              icon: Icons.repeat,
+              title: 'No schedules yet',
+              body:
+                  'Create a recurring schedule — sessions are generated automatically.',
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                itemCount: _schedules.length,
+                separatorBuilder: (_, __) => AppSpacing.gapSm,
+                itemBuilder: (_, i) => _ScheduleCard(schedule: _schedules[i]),
+              ),
+            ),
     );
   }
 }
@@ -323,14 +342,22 @@ class _ScheduleCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(schedule.classTypeName,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
+                Text(
+                  schedule.classTypeName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14.5,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   '${schedule.dayName} · ${schedule.startTime.substring(0, 5)} · '
                   'cap ${schedule.capacity}'
                   '${schedule.trainerName != null ? ' · ${schedule.trainerName}' : ''}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -414,25 +441,25 @@ class _ClassTypesTabState extends State<_ClassTypesTab> {
       body: _loading
           ? const LoadingView()
           : _error != null
-              ? ErrorBanner(message: _error!, onRetry: _load)
-              : _classTypes.isEmpty
-                  ? const EmptyStateView(
-                      icon: Icons.self_improvement,
-                      title: 'No class types yet',
-                      body: 'Add Yoga, Zumba, HIIT — whatever your gym offers.',
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                        itemCount: _classTypes.length,
-                        separatorBuilder: (_, __) => AppSpacing.gapSm,
-                        itemBuilder: (_, i) => _ClassTypeCard(
-                          classType: _classTypes[i],
-                          onTap: () => _edit(_classTypes[i]),
-                        ),
-                      ),
-                    ),
+          ? ErrorBanner(message: _error!, onRetry: _load)
+          : _classTypes.isEmpty
+          ? const EmptyStateView(
+              icon: Icons.self_improvement,
+              title: 'No class types yet',
+              body: 'Add Yoga, Zumba, HIIT — whatever your gym offers.',
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                itemCount: _classTypes.length,
+                separatorBuilder: (_, __) => AppSpacing.gapSm,
+                itemBuilder: (_, i) => _ClassTypeCard(
+                  classType: _classTypes[i],
+                  onTap: () => _edit(_classTypes[i]),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -448,39 +475,58 @@ class _ClassTypeCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(classType.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
-                const SizedBox(height: 2),
-                Text(
-                  '${classType.durationMinutes} min · capacity ${classType.defaultCapacity}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                ),
-                if (classType.description != null && classType.description!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(classType.description!,
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    classType.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${classType.durationMinutes} min · capacity ${classType.defaultCapacity}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (classType.description != null &&
+                      classType.description!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      classType.description!,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          if (!classType.isActive) ...[
-            const StatusChip(status: 'cancelled', label: 'Inactive'),
-            const SizedBox(width: 8),
+            if (!classType.isActive) ...[
+              const StatusChip(status: 'cancelled', label: 'Inactive'),
+              const SizedBox(width: 8),
+            ],
+            const Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: AppColors.textSecondary,
+            ),
           ],
-          const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
-        ],
-      ),
+        ),
       ),
     );
   }

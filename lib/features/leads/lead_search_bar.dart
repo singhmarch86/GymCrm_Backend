@@ -4,11 +4,7 @@ class LeadSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
 
-  const LeadSearchBar({
-    super.key,
-    required this.controller,
-    this.onChanged,
-  });
+  const LeadSearchBar({super.key, required this.controller, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +26,10 @@ class LeadSearchBar extends StatelessWidget {
             : null,
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,

@@ -73,11 +73,16 @@ class _ReportsBodyState extends State<ReportsBody> {
     // Reset to loading
     if (mounted) {
       setState(() {
-        _revLoading = true;  _revError = null;
-        _memLoading = true;  _memError = null;
-        _payLoading = true;  _payError = null;
-        _renLoading = true;  _renError = null;
-        _planLoading = true; _planError = null;
+        _revLoading = true;
+        _revError = null;
+        _memLoading = true;
+        _memError = null;
+        _payLoading = true;
+        _payError = null;
+        _renLoading = true;
+        _renError = null;
+        _planLoading = true;
+        _planError = null;
       });
     }
 
@@ -95,7 +100,10 @@ class _ReportsBodyState extends State<ReportsBody> {
     try {
       final data = await _svc.getRevenueReport();
       if (!mounted) return;
-      setState(() { _revData = data; _revLoading = false; });
+      setState(() {
+        _revData = data;
+        _revLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -109,7 +117,10 @@ class _ReportsBodyState extends State<ReportsBody> {
     try {
       final data = await _svc.getMemberReport();
       if (!mounted) return;
-      setState(() { _memData = data; _memLoading = false; });
+      setState(() {
+        _memData = data;
+        _memLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -123,7 +134,10 @@ class _ReportsBodyState extends State<ReportsBody> {
     try {
       final data = await _svc.getPaymentReport();
       if (!mounted) return;
-      setState(() { _payData = data; _payLoading = false; });
+      setState(() {
+        _payData = data;
+        _payLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -137,7 +151,10 @@ class _ReportsBodyState extends State<ReportsBody> {
     try {
       final data = await _svc.getRenewalReport();
       if (!mounted) return;
-      setState(() { _renData = data; _renLoading = false; });
+      setState(() {
+        _renData = data;
+        _renLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -151,7 +168,10 @@ class _ReportsBodyState extends State<ReportsBody> {
     try {
       final data = await _svc.getPlanReport();
       if (!mounted) return;
-      setState(() { _planData = data; _planLoading = false; });
+      setState(() {
+        _planData = data;
+        _planLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -169,7 +189,6 @@ class _ReportsBodyState extends State<ReportsBody> {
         padding: AppSpacing.screenPadding,
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-
           // ── Revenue ─────────────────────────────────────────────────────
           ReportSection<RevenueReport>(
             title: 'Revenue',

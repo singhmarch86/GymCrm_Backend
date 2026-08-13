@@ -20,17 +20,13 @@ class AppButton extends StatelessWidget {
       width: double.infinity,
       height: 52,
       child: ElevatedButton.icon(
-        onPressed:
-        loading ? null : onPressed,
+        onPressed: loading ? null : onPressed,
         icon: loading
             ? const SizedBox(
-          width: 18,
-          height: 18,
-          child:
-          CircularProgressIndicator(
-            strokeWidth: 2,
-          ),
-        )
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : Icon(icon),
         label: Text(text),
       ),

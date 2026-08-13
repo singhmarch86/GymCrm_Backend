@@ -9,6 +9,5 @@ class MarketingService {
   Future<Campaign> createCampaign(Map<String, dynamic> data) async =>
       throw UnimplementedError();
 
-  Future<void> sendCampaign(int id) async =>
-      throw UnimplementedError();
+  Future<void> sendCampaign(int id) async => throw UnimplementedError();
 }

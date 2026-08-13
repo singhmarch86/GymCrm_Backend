@@ -57,7 +57,11 @@ class _AppShellState extends State<AppShell> {
     (Icons.dashboard_rounded, Icons.dashboard_outlined, 'Today'),
     (Icons.groups_rounded, Icons.groups_outlined, 'Members'),
     (Icons.person_add_rounded, Icons.person_add_alt_outlined, 'Leads'),
-    (Icons.health_and_safety_rounded, Icons.health_and_safety_outlined, 'At Risk'),
+    (
+      Icons.health_and_safety_rounded,
+      Icons.health_and_safety_outlined,
+      'At Risk',
+    ),
     (Icons.insights_rounded, Icons.insights_outlined, 'Analytics'),
     (Icons.apps_rounded, Icons.apps_outlined, 'More'),
   ];
@@ -89,11 +93,14 @@ class _AppShellState extends State<AppShell> {
               indicatorColor: AppColors.primary.withValues(alpha: 0.12),
               selectedIconTheme: const IconThemeData(color: AppColors.primary),
               selectedLabelTextStyle: const TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary),
-              unselectedLabelTextStyle:
-                  TextStyle(fontSize: 11.5, color: Colors.grey.shade600),
+                fontSize: 11.5,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+              unselectedLabelTextStyle: TextStyle(
+                fontSize: 11.5,
+                color: Colors.grey.shade600,
+              ),
               destinations: [
                 for (final d in _destinations)
                   NavigationRailDestination(

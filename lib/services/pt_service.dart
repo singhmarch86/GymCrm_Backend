@@ -28,7 +28,10 @@ class PtService {
   Future<List<PtPackage>> getMemberPackages(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/members/$memberId/pt-packages'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/members/$memberId/pt-packages'),
+        headers: headers,
+      ),
     );
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => PtPackage.fromJson(e)).toList();
@@ -55,22 +58,24 @@ class PtService {
     String referenceNumber = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/pt-packages'),
-          headers: headers,
-          body: jsonEncode({
-            'member_id': memberId,
-            'trainer_id': trainerId,
-            'package_name': packageName,
-            'total_sessions': totalSessions,
-            'amount_in_paise': amountInPaise,
-            if (expiryDate != null) 'expiry_date': _ymd(expiryDate),
-            'payment_mode': paymentMode,
-            'amount_paid_in_paise': amountPaidInPaise,
-            if (dueDate != null) 'due_date': _ymd(dueDate),
-            'reference_number': referenceNumber,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/pt-packages'),
+        headers: headers,
+        body: jsonEncode({
+          'member_id': memberId,
+          'trainer_id': trainerId,
+          'package_name': packageName,
+          'total_sessions': totalSessions,
+          'amount_in_paise': amountInPaise,
+          if (expiryDate != null) 'expiry_date': _ymd(expiryDate),
+          'payment_mode': paymentMode,
+          'amount_paid_in_paise': amountPaidInPaise,
+          if (dueDate != null) 'due_date': _ymd(dueDate),
+          'reference_number': referenceNumber,
+        }),
+      ),
+    );
     return PtPackage.fromJson(unwrapJson(response)['data']);
   }
 
@@ -78,11 +83,13 @@ class PtService {
   /// packages automatically.
   Future<PtPackage> updatePackageStatus(int id, String status) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.patch(
-          Uri.parse('$kBaseUrl/api/v1/pt-packages/$id/status'),
-          headers: headers,
-          body: jsonEncode({'status': status}),
-        ));
+    final response = await guardRequest(
+      () => http.patch(
+        Uri.parse('$kBaseUrl/api/v1/pt-packages/$id/status'),
+        headers: headers,
+        body: jsonEncode({'status': status}),
+      ),
+    );
     return PtPackage.fromJson(unwrapJson(response)['data']);
   }
 
@@ -97,16 +104,18 @@ class PtService {
     String notes = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/pt-appointments'),
-          headers: headers,
-          body: jsonEncode({
-            'pt_package_id': ptPackageId,
-            'scheduled_at': scheduledAt.toUtc().toIso8601String(),
-            'duration_minutes': durationMinutes,
-            'notes': notes,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/pt-appointments'),
+        headers: headers,
+        body: jsonEncode({
+          'pt_package_id': ptPackageId,
+          'scheduled_at': scheduledAt.toUtc().toIso8601String(),
+          'duration_minutes': durationMinutes,
+          'notes': notes,
+        }),
+      ),
+    );
     return PtAppointment.fromJson(unwrapJson(response)['data']);
   }
 
@@ -132,11 +141,13 @@ class PtService {
   /// credit from the linked package — cancelled/no_show consume nothing.
   Future<PtAppointment> setOutcome(int id, String status) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/pt-appointments/$id/outcome'),
-          headers: headers,
-          body: jsonEncode({'status': status}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/pt-appointments/$id/outcome'),
+        headers: headers,
+        body: jsonEncode({'status': status}),
+      ),
+    );
     return PtAppointment.fromJson(unwrapJson(response)['data']);
   }
 

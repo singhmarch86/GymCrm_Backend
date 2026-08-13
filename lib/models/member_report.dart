@@ -9,7 +9,8 @@ class MemberGrowthPoint {
     required this.expired,
   });
 
-  factory MemberGrowthPoint.fromJson(Map<String, dynamic> j) => MemberGrowthPoint(
+  factory MemberGrowthPoint.fromJson(Map<String, dynamic> j) =>
+      MemberGrowthPoint(
         month: j['month'] ?? '',
         joined: j['joined'] ?? 0,
         expired: j['expired'] ?? 0,
@@ -34,13 +35,13 @@ class MemberReport {
   });
 
   factory MemberReport.fromJson(Map<String, dynamic> j) => MemberReport(
-        total: j['total'] ?? 0,
-        active: j['active'] ?? 0,
-        expired: j['expired'] ?? 0,
-        newThisMonth: j['new_this_month'] ?? 0,
-        growthPct: (j['growth_pct'] ?? 0).toDouble(),
-        growth: (j['growth'] as List? ?? [])
-            .map((e) => MemberGrowthPoint.fromJson(e))
-            .toList(),
-      );
+    total: j['total'] ?? 0,
+    active: j['active'] ?? 0,
+    expired: j['expired'] ?? 0,
+    newThisMonth: j['new_this_month'] ?? 0,
+    growthPct: (j['growth_pct'] ?? 0).toDouble(),
+    growth: (j['growth'] as List? ?? [])
+        .map((e) => MemberGrowthPoint.fromJson(e))
+        .toList(),
+  );
 }

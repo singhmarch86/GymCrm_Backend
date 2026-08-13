@@ -36,17 +36,19 @@ class PlanService {
   }) async {
     final headers = await _authHeaders();
 
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$baseUrl/api/v1/plans'),
-          headers: headers,
-          body: jsonEncode({
-            'name': name,
-            'description': description,
-            'duration_days': durationDays,
-            // Backend expects paise
-            'price_in_paise': (priceInRupees * 100).round(),
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$baseUrl/api/v1/plans'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'description': description,
+          'duration_days': durationDays,
+          // Backend expects paise
+          'price_in_paise': (priceInRupees * 100).round(),
+        }),
+      ),
+    );
 
     unwrapJson(response);
   }
@@ -61,18 +63,20 @@ class PlanService {
   }) async {
     final headers = await _authHeaders();
 
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$baseUrl/api/v1/plans/$planId'),
-          headers: headers,
-          body: jsonEncode({
-            'name': name,
-            'description': description,
-            'duration_days': durationDays,
-            // Backend expects paise
-            'price_in_paise': (priceInRupees * 100).round(),
-            'is_active': isActive,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$baseUrl/api/v1/plans/$planId'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'description': description,
+          'duration_days': durationDays,
+          // Backend expects paise
+          'price_in_paise': (priceInRupees * 100).round(),
+          'is_active': isActive,
+        }),
+      ),
+    );
 
     unwrapJson(response);
   }
@@ -81,7 +85,10 @@ class PlanService {
     final headers = await _authHeaders();
 
     final response = await guardRequest(
-      () => http.delete(Uri.parse('$baseUrl/api/v1/plans/$planId'), headers: headers),
+      () => http.delete(
+        Uri.parse('$baseUrl/api/v1/plans/$planId'),
+        headers: headers,
+      ),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {

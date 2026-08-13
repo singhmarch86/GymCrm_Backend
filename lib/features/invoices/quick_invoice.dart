@@ -42,7 +42,9 @@ class QuickInvoice {
       );
 
       await navigator.push(
-        MaterialPageRoute(builder: (_) => InvoiceDetailScreen(invoiceId: draft.id)),
+        MaterialPageRoute(
+          builder: (_) => InvoiceDetailScreen(invoiceId: draft.id),
+        ),
       );
       return true;
     } on ApiException catch (e) {
@@ -69,7 +71,9 @@ class QuickInvoice {
       final draft = await service.createDraft(memberId: memberId);
       await service.addPlanItem(draft.id, planId: planId);
       await navigator.push(
-        MaterialPageRoute(builder: (_) => InvoiceDetailScreen(invoiceId: draft.id)),
+        MaterialPageRoute(
+          builder: (_) => InvoiceDetailScreen(invoiceId: draft.id),
+        ),
       );
       return true;
     } on ApiException catch (e) {

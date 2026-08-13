@@ -21,13 +21,14 @@ class InvoicedMember {
   });
 
   factory InvoicedMember.fromJson(Map<String, dynamic> j) => InvoicedMember(
-        invoiceId: j['invoice_id'] ?? 0,
-        memberId: j['member_id'] ?? 0,
-        member: j['member'] ?? '',
-        paymentIds:
-            ((j['payment_ids'] as List?) ?? []).map((e) => e as int).toList(),
-        totalInPaise: j['total_in_paise'] ?? 0,
-      );
+    invoiceId: j['invoice_id'] ?? 0,
+    memberId: j['member_id'] ?? 0,
+    member: j['member'] ?? '',
+    paymentIds: ((j['payment_ids'] as List?) ?? [])
+        .map((e) => e as int)
+        .toList(),
+    totalInPaise: j['total_in_paise'] ?? 0,
+  );
 }
 
 class SkippedDue {
@@ -36,10 +37,8 @@ class SkippedDue {
 
   const SkippedDue({required this.paymentId, required this.reason});
 
-  factory SkippedDue.fromJson(Map<String, dynamic> j) => SkippedDue(
-        paymentId: j['payment_id'] ?? 0,
-        reason: j['reason'] ?? '',
-      );
+  factory SkippedDue.fromJson(Map<String, dynamic> j) =>
+      SkippedDue(paymentId: j['payment_id'] ?? 0, reason: j['reason'] ?? '');
 }
 
 class InvoiceBatch {
@@ -56,13 +55,13 @@ class InvoiceBatch {
   });
 
   factory InvoiceBatch.fromJson(Map<String, dynamic> j) => InvoiceBatch(
-        created: ((j['created'] as List?) ?? [])
-            .map((e) => InvoicedMember.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        skipped: ((j['skipped'] as List?) ?? [])
-            .map((e) => SkippedDue.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        invoiceCount: j['invoice_count'] ?? 0,
-        totalInPaise: j['total_in_paise'] ?? 0,
-      );
+    created: ((j['created'] as List?) ?? [])
+        .map((e) => InvoicedMember.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    skipped: ((j['skipped'] as List?) ?? [])
+        .map((e) => SkippedDue.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    invoiceCount: j['invoice_count'] ?? 0,
+    totalInPaise: j['total_in_paise'] ?? 0,
+  );
 }

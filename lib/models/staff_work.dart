@@ -24,11 +24,11 @@ class StaffTally {
   });
 
   factory StaffTally.fromJson(Map<String, dynamic> j) => StaffTally(
-        category: j['category'] as String? ?? '',
-        label: j['label'] as String? ?? '',
-        count: j['count'] as int? ?? 0,
-        amountInPaise: j['amount_in_paise'] as int?,
-      );
+    category: j['category'] as String? ?? '',
+    label: j['label'] as String? ?? '',
+    count: j['count'] as int? ?? 0,
+    amountInPaise: j['amount_in_paise'] as int?,
+  );
 
   bool get hasMoney => amountInPaise != null;
 }
@@ -57,17 +57,17 @@ class StaffDay {
   });
 
   factory StaffDay.fromJson(Map<String, dynamic> j) => StaffDay(
-        userId: j['user_id'] as int?,
-        name: j['name'] as String? ?? 'Unattributed',
-        role: j['role'] as String?,
-        tallies: ((j['tallies'] as List?) ?? [])
-            .map((e) => StaffTally.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalActions: j['total_actions'] as int? ?? 0,
-        totalHandledInPaise: j['total_handled_in_paise'] as int? ?? 0,
-        firstActionAt: _parse(j['first_action_at']),
-        lastActionAt: _parse(j['last_action_at']),
-      );
+    userId: j['user_id'] as int?,
+    name: j['name'] as String? ?? 'Unattributed',
+    role: j['role'] as String?,
+    tallies: ((j['tallies'] as List?) ?? [])
+        .map((e) => StaffTally.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalActions: j['total_actions'] as int? ?? 0,
+    totalHandledInPaise: j['total_handled_in_paise'] as int? ?? 0,
+    firstActionAt: _parse(j['first_action_at']),
+    lastActionAt: _parse(j['last_action_at']),
+  );
 
   bool get isUnattributed => userId == null;
 
@@ -118,16 +118,16 @@ class StaffWorkDay {
   });
 
   factory StaffWorkDay.fromJson(Map<String, dynamic> j) => StaffWorkDay(
-        date: j['date'] as String? ?? '',
-        from: j['from'] as String? ?? '',
-        to: j['to'] as String? ?? '',
-        days: j['days'] as int? ?? 1,
-        staff: ((j['staff'] as List?) ?? [])
-            .map((e) => StaffDay.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalActions: j['total_actions'] as int? ?? 0,
-        totalHandledInPaise: j['total_handled_in_paise'] as int? ?? 0,
-      );
+    date: j['date'] as String? ?? '',
+    from: j['from'] as String? ?? '',
+    to: j['to'] as String? ?? '',
+    days: j['days'] as int? ?? 1,
+    staff: ((j['staff'] as List?) ?? [])
+        .map((e) => StaffDay.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalActions: j['total_actions'] as int? ?? 0,
+    totalHandledInPaise: j['total_handled_in_paise'] as int? ?? 0,
+  );
 
   bool get isEmpty => staff.isEmpty;
   bool get isSingleDay => days <= 1;
@@ -150,13 +150,14 @@ class StaffWorkItem {
   });
 
   factory StaffWorkItem.fromJson(Map<String, dynamic> j) => StaffWorkItem(
-        category: j['category'] as String? ?? '',
-        at: DateTime.tryParse(j['at'] as String? ?? '')?.toLocal() ??
-            DateTime.now(),
-        who: j['who'] as String? ?? '',
-        what: j['what'] as String? ?? '',
-        amountInPaise: j['amount_in_paise'] as int?,
-      );
+    category: j['category'] as String? ?? '',
+    at:
+        DateTime.tryParse(j['at'] as String? ?? '')?.toLocal() ??
+        DateTime.now(),
+    who: j['who'] as String? ?? '',
+    what: j['what'] as String? ?? '',
+    amountInPaise: j['amount_in_paise'] as int?,
+  );
 }
 
 /// A drill-down list, plus whether it is the whole list.
@@ -177,12 +178,12 @@ class StaffWorkItems {
   });
 
   factory StaffWorkItems.fromJson(Map<String, dynamic> j) => StaffWorkItems(
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => StaffWorkItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        truncated: j['truncated'] as bool? ?? false,
-        limit: j['limit'] as int? ?? 0,
-      );
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => StaffWorkItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    truncated: j['truncated'] as bool? ?? false,
+    limit: j['limit'] as int? ?? 0,
+  );
 }
 
 /// What one person is carrying right now (FR-18 §7).
@@ -209,16 +210,16 @@ class LeadWorkload {
   });
 
   factory LeadWorkload.fromJson(Map<String, dynamic> j) => LeadWorkload(
-        openLeads: j['open_leads'] ?? 0,
-        unattended: j['unattended'] ?? 0,
-        overdue: j['overdue'] ?? 0,
-        dueToday: j['due_today'] ?? 0,
-        nextLeadId: j['next_lead_id'],
-        nextLeadName: j['next_lead_name'],
-        nextDue: j['next_due'] == null
-            ? null
-            : DateTime.tryParse(j['next_due'])?.toLocal(),
-      );
+    openLeads: j['open_leads'] ?? 0,
+    unattended: j['unattended'] ?? 0,
+    overdue: j['overdue'] ?? 0,
+    dueToday: j['due_today'] ?? 0,
+    nextLeadId: j['next_lead_id'],
+    nextLeadName: j['next_lead_name'],
+    nextDue: j['next_due'] == null
+        ? null
+        : DateTime.tryParse(j['next_due'])?.toLocal(),
+  );
 }
 
 /// What one person did on the chosen day. Counts, never rates — a rate over
@@ -241,17 +242,20 @@ class LeadFunnel {
   });
 
   factory LeadFunnel.fromJson(Map<String, dynamic> j) => LeadFunnel(
-        calls: j['calls'] ?? 0,
-        reached: j['reached'] ?? 0,
-        counselling: j['counselling'] ?? 0,
-        trialsBooked: j['trials_booked'] ?? 0,
-        joined: j['joined'] ?? 0,
-        notesLogged: j['notes_logged'] ?? 0,
-      );
+    calls: j['calls'] ?? 0,
+    reached: j['reached'] ?? 0,
+    counselling: j['counselling'] ?? 0,
+    trialsBooked: j['trials_booked'] ?? 0,
+    joined: j['joined'] ?? 0,
+    notesLogged: j['notes_logged'] ?? 0,
+  );
 
   bool get isEmpty =>
-      calls == 0 && counselling == 0 && trialsBooked == 0 &&
-      joined == 0 && notesLogged == 0;
+      calls == 0 &&
+      counselling == 0 &&
+      trialsBooked == 0 &&
+      joined == 0 &&
+      notesLogged == 0;
 }
 
 class StaffLeadWork {
@@ -270,14 +274,14 @@ class StaffLeadWork {
   });
 
   factory StaffLeadWork.fromJson(Map<String, dynamic> j) => StaffLeadWork(
-        userId: j['user_id'],
-        name: j['name'] ?? '',
-        role: j['role'],
-        carrying: LeadWorkload.fromJson(
-            (j['carrying'] as Map<String, dynamic>?) ?? {}),
-        worked:
-            LeadFunnel.fromJson((j['worked'] as Map<String, dynamic>?) ?? {}),
-      );
+    userId: j['user_id'],
+    name: j['name'] ?? '',
+    role: j['role'],
+    carrying: LeadWorkload.fromJson(
+      (j['carrying'] as Map<String, dynamic>?) ?? {},
+    ),
+    worked: LeadFunnel.fromJson((j['worked'] as Map<String, dynamic>?) ?? {}),
+  );
 
   bool get isUnassignedBucket => userId == null;
 }
@@ -305,17 +309,17 @@ class LeadWorkReport {
   });
 
   factory LeadWorkReport.fromJson(Map<String, dynamic> j) => LeadWorkReport(
-        date: j['date'] ?? '',
-        from: j['from'] ?? '',
-        to: j['to'] ?? '',
-        days: j['days'] ?? 1,
-        staff: ((j['staff'] as List?) ?? [])
-            .map((e) => StaffLeadWork.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalOpen: j['total_open'] ?? 0,
-        totalUnattended: j['total_unattended'] ?? 0,
-        totalOverdue: j['total_overdue'] ?? 0,
-      );
+    date: j['date'] ?? '',
+    from: j['from'] ?? '',
+    to: j['to'] ?? '',
+    days: j['days'] ?? 1,
+    staff: ((j['staff'] as List?) ?? [])
+        .map((e) => StaffLeadWork.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalOpen: j['total_open'] ?? 0,
+    totalUnattended: j['total_unattended'] ?? 0,
+    totalOverdue: j['total_overdue'] ?? 0,
+  );
 
   bool get isEmpty => staff.isEmpty;
 }

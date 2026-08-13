@@ -4,11 +4,7 @@ class PaymentSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
 
-  const PaymentSearchBar({
-    super.key,
-    required this.controller,
-    this.onChanged,
-  });
+  const PaymentSearchBar({super.key, required this.controller, this.onChanged});
 
   @override
   Widget build(BuildContext context) {

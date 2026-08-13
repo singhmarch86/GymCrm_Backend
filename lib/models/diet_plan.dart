@@ -26,15 +26,15 @@ class DietPlan {
   });
 
   factory DietPlan.fromJson(Map<String, dynamic> j) => DietPlan(
-        id: j['id'] ?? 0,
-        gymId: j['gym_id'] ?? 0,
-        name: j['name'] ?? '',
-        description: j['description'],
-        caloriesPerDay: j['calories_per_day'],
-        proteinGrams: j['protein_grams'],
-        carbsGrams: j['carbs_grams'],
-        fatGrams: j['fat_grams'],
-        goal: j['goal'] ?? '',
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    gymId: j['gym_id'] ?? 0,
+    name: j['name'] ?? '',
+    description: j['description'],
+    caloriesPerDay: j['calories_per_day'],
+    proteinGrams: j['protein_grams'],
+    carbsGrams: j['carbs_grams'],
+    fatGrams: j['fat_grams'],
+    goal: j['goal'] ?? '',
+    createdAt: j['created_at'] ?? '',
+  );
 }

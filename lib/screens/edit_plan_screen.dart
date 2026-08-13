@@ -44,9 +44,15 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
     super.initState();
 
     nameController = TextEditingController(text: widget.plan.name);
-    descriptionController = TextEditingController(text: widget.plan.description ?? '');
-    durationController = TextEditingController(text: widget.plan.durationDays.toString());
-    priceController = TextEditingController(text: widget.plan.priceInRupees.toString());
+    descriptionController = TextEditingController(
+      text: widget.plan.description ?? '',
+    );
+    durationController = TextEditingController(
+      text: widget.plan.durationDays.toString(),
+    );
+    priceController = TextEditingController(
+      text: widget.plan.priceInRupees.toString(),
+    );
 
     isActive = widget.plan.isActive;
   }
@@ -72,7 +78,9 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : "Couldn't update this plan. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't update this plan. Please try again.";
       });
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -107,7 +115,13 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                     children: [
                       Icon(Icons.edit_rounded, color: AppColors.primary),
                       SizedBox(width: 8),
-                      Text('Edit Membership Plan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      Text(
+                        'Edit Membership Plan',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
 
@@ -124,7 +138,9 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                   TextFormField(
                     controller: descriptionController,
                     maxLines: 3,
-                    decoration: const InputDecoration(labelText: 'Description (optional)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Description (optional)',
+                    ),
                   ),
                   AppSpacing.gapMd,
 
@@ -132,14 +148,18 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                     controller: durationController,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Duration (Days)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Duration (Days)',
+                    ),
                     validator: (v) => Validators.positiveInteger(v, 'Duration'),
                   ),
                   AppSpacing.gapMd,
 
                   TextFormField(
                     controller: priceController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     textInputAction: TextInputAction.done,
                     decoration: const InputDecoration(labelText: 'Price (₹)'),
                     validator: (v) => Validators.positiveNumber(v, 'Price'),
@@ -165,7 +185,9 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: isLoading ? null : () => Navigator.pop(context),
+                        onPressed: isLoading
+                            ? null
+                            : () => Navigator.pop(context),
                         child: const Text('Cancel'),
                       ),
                       AppSpacing.hGapSm,
@@ -176,7 +198,10 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               )
                             : const Text('Update Plan'),
                       ),

@@ -21,7 +21,9 @@ class InvoiceService {
   Future<List<InvoiceSummary>> getInvoices({String? status}) async {
     final headers = await _headers();
     final uri = Uri.parse('$kBaseUrl/api/v1/invoices').replace(
-      queryParameters: (status != null && status.isNotEmpty) ? {'status': status} : null,
+      queryParameters: (status != null && status.isNotEmpty)
+          ? {'status': status}
+          : null,
     );
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final List list = unwrapJson(response)['data'] as List? ?? [];
@@ -31,7 +33,10 @@ class InvoiceService {
   Future<List<InvoiceSummary>> getMemberInvoices(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/members/$memberId/invoices'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/members/$memberId/invoices'),
+        headers: headers,
+      ),
     );
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => InvoiceSummary.fromJson(e)).toList();
@@ -40,7 +45,10 @@ class InvoiceService {
   Future<Invoice> getInvoice(int id) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/invoices/$id'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/invoices/$id'),
+        headers: headers,
+      ),
     );
     return Invoice.fromJson(unwrapJson(response)['data']);
   }
@@ -53,15 +61,17 @@ class InvoiceService {
     String notes = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/invoices'),
-          headers: headers,
-          body: jsonEncode({
-            'member_id': memberId,
-            if (dueDate != null) 'due_date': _ymd(dueDate),
-            'notes': notes,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/invoices'),
+        headers: headers,
+        body: jsonEncode({
+          'member_id': memberId,
+          if (dueDate != null) 'due_date': _ymd(dueDate),
+          'notes': notes,
+        }),
+      ),
+    );
     return Invoice.fromJson(unwrapJson(response)['data']);
   }
 
@@ -75,38 +85,49 @@ class InvoiceService {
     String itemType = 'custom',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/items'),
-          headers: headers,
-          body: jsonEncode({
-            'description': description,
-            'unit_price_in_paise': unitPriceInPaise,
-            'quantity': quantity,
-            'discount_in_paise': discountInPaise,
-            if (taxRatePct != null) 'tax_rate_pct': taxRatePct,
-            'item_type': itemType,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/items'),
+        headers: headers,
+        body: jsonEncode({
+          'description': description,
+          'unit_price_in_paise': unitPriceInPaise,
+          'quantity': quantity,
+          'discount_in_paise': discountInPaise,
+          if (taxRatePct != null) 'tax_rate_pct': taxRatePct,
+          'item_type': itemType,
+        }),
+      ),
+    );
     return Invoice.fromJson(unwrapJson(response)['data']);
   }
 
   /// Adds a line from the plan catalogue. The price is taken server-side from
   /// the plan, never sent by the app — so a stale cached price can't end up on
   /// a document.
-  Future<Invoice> addPlanItem(int invoiceId, {required int planId, int quantity = 1}) async {
+  Future<Invoice> addPlanItem(
+    int invoiceId, {
+    required int planId,
+    int quantity = 1,
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/plan-items'),
-          headers: headers,
-          body: jsonEncode({'plan_id': planId, 'quantity': quantity}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/plan-items'),
+        headers: headers,
+        body: jsonEncode({'plan_id': planId, 'quantity': quantity}),
+      ),
+    );
     return Invoice.fromJson(unwrapJson(response)['data']);
   }
 
   Future<Invoice> removeItem(int invoiceId, int itemId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.delete(Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/items/$itemId'), headers: headers),
+      () => http.delete(
+        Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/items/$itemId'),
+        headers: headers,
+      ),
     );
     return Invoice.fromJson(unwrapJson(response)['data']);
   }
@@ -120,26 +141,33 @@ class InvoiceService {
     String reason = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/discount'),
-          headers: headers,
-          body: jsonEncode({
-            if (code != null && code.isNotEmpty) 'code': code,
-            if (adHocInPaise != null && adHocInPaise > 0) 'ad_hoc_in_paise': adHocInPaise,
-            'reason': reason,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/discount'),
+        headers: headers,
+        body: jsonEncode({
+          if (code != null && code.isNotEmpty) 'code': code,
+          if (adHocInPaise != null && adHocInPaise > 0)
+            'ad_hoc_in_paise': adHocInPaise,
+          'reason': reason,
+        }),
+      ),
+    );
     return Invoice.fromJson(unwrapJson(response)['data']);
   }
 
   /// Issues the draft: assigns its permanent number and freezes it.
   Future<Invoice> issue(int invoiceId, {DateTime? invoiceDate}) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/issue'),
-          headers: headers,
-          body: jsonEncode({if (invoiceDate != null) 'invoice_date': _ymd(invoiceDate)}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/issue'),
+        headers: headers,
+        body: jsonEncode({
+          if (invoiceDate != null) 'invoice_date': _ymd(invoiceDate),
+        }),
+      ),
+    );
     return Invoice.fromJson(unwrapJson(response)['data']);
   }
 
@@ -147,18 +175,23 @@ class InvoiceService {
   /// cancelled document, not a missing one.
   Future<Invoice> cancel(int invoiceId, {required String reason}) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/cancel'),
-          headers: headers,
-          body: jsonEncode({'reason': reason}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId/cancel'),
+        headers: headers,
+        body: jsonEncode({'reason': reason}),
+      ),
+    );
     return Invoice.fromJson(unwrapJson(response)['data']);
   }
 
   Future<void> deleteDraft(int invoiceId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.delete(Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId'), headers: headers),
+      () => http.delete(
+        Uri.parse('$kBaseUrl/api/v1/invoices/$invoiceId'),
+        headers: headers,
+      ),
     );
     unwrapJson(response);
   }
@@ -167,9 +200,9 @@ class InvoiceService {
 
   Future<List<Discount>> getDiscounts({bool activeOnly = false}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/discounts').replace(
-      queryParameters: activeOnly ? {'active_only': 'true'} : null,
-    );
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/discounts',
+    ).replace(queryParameters: activeOnly ? {'active_only': 'true'} : null);
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => Discount.fromJson(e)).toList();
@@ -185,34 +218,44 @@ class InvoiceService {
     int? maxUses,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/discounts'),
-          headers: headers,
-          body: jsonEncode({
-            'code': code,
-            'name': name,
-            'discount_type': discountType,
-            'value': value,
-            if (validFrom != null) 'valid_from': _ymd(validFrom),
-            if (validUntil != null) 'valid_until': _ymd(validUntil),
-            if (maxUses != null) 'max_uses': maxUses,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/discounts'),
+        headers: headers,
+        body: jsonEncode({
+          'code': code,
+          'name': name,
+          'discount_type': discountType,
+          'value': value,
+          if (validFrom != null) 'valid_from': _ymd(validFrom),
+          if (validUntil != null) 'valid_until': _ymd(validUntil),
+          if (maxUses != null) 'max_uses': maxUses,
+        }),
+      ),
+    );
     return Discount.fromJson(unwrapJson(response)['data']);
   }
 
-  Future<Discount> updateDiscount(int id, {String? name, double? value, bool? isActive, int? maxUses}) async {
+  Future<Discount> updateDiscount(
+    int id, {
+    String? name,
+    double? value,
+    bool? isActive,
+    int? maxUses,
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$kBaseUrl/api/v1/discounts/$id'),
-          headers: headers,
-          body: jsonEncode({
-            if (name != null) 'name': name,
-            if (value != null) 'value': value,
-            if (isActive != null) 'is_active': isActive,
-            if (maxUses != null) 'max_uses': maxUses,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$kBaseUrl/api/v1/discounts/$id'),
+        headers: headers,
+        body: jsonEncode({
+          if (name != null) 'name': name,
+          if (value != null) 'value': value,
+          if (isActive != null) 'is_active': isActive,
+          if (maxUses != null) 'max_uses': maxUses,
+        }),
+      ),
+    );
     return Discount.fromJson(unwrapJson(response)['data']);
   }
 
@@ -221,7 +264,10 @@ class InvoiceService {
   Future<BillingSettings> getSettings() async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/billing-settings'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/billing-settings'),
+        headers: headers,
+      ),
     );
     return BillingSettings.fromJson(unwrapJson(response)['data']);
   }
@@ -236,19 +282,21 @@ class InvoiceService {
     String? stateName,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$kBaseUrl/api/v1/billing-settings'),
-          headers: headers,
-          body: jsonEncode({
-            if (invoicePrefix != null) 'invoice_prefix': invoicePrefix,
-            if (gstin != null) 'gstin': gstin,
-            if (defaultTaxRate != null) 'default_tax_rate': defaultTaxRate,
-            if (pricesIncludeTax != null) 'prices_include_tax': pricesIncludeTax,
-            if (legalName != null) 'legal_name': legalName,
-            if (addressLine != null) 'address_line': addressLine,
-            if (stateName != null) 'state_name': stateName,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$kBaseUrl/api/v1/billing-settings'),
+        headers: headers,
+        body: jsonEncode({
+          if (invoicePrefix != null) 'invoice_prefix': invoicePrefix,
+          if (gstin != null) 'gstin': gstin,
+          if (defaultTaxRate != null) 'default_tax_rate': defaultTaxRate,
+          if (pricesIncludeTax != null) 'prices_include_tax': pricesIncludeTax,
+          if (legalName != null) 'legal_name': legalName,
+          if (addressLine != null) 'address_line': addressLine,
+          if (stateName != null) 'state_name': stateName,
+        }),
+      ),
+    );
     return BillingSettings.fromJson(unwrapJson(response)['data']);
   }
 

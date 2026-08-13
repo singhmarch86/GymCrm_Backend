@@ -36,10 +36,7 @@ class LeadsBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        LeadSearchBar(
-          controller: searchController,
-          onChanged: onSearchChanged,
-        ),
+        LeadSearchBar(controller: searchController, onChanged: onSearchChanged),
         const SizedBox(height: 16),
         LeadFilterBar(
           selectedStatus: selectedStatus,

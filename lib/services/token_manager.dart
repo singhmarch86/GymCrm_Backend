@@ -125,9 +125,11 @@ class TokenManager {
       if (parts.length != 3) return null;
 
       // JWT uses base64url without padding; normalize() restores it.
-      final payload = jsonDecode(
-        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
-      ) as Map<String, dynamic>;
+      final payload =
+          jsonDecode(
+                utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+              )
+              as Map<String, dynamic>;
 
       final exp = payload['exp'];
       if (exp is! int) return null;

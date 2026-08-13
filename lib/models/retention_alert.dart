@@ -7,7 +7,7 @@ class RetentionAlert {
   final String phone;
   final String alertType;
   final String severity; // low | medium | high
-  final String message;  // pre-rendered, ready to send
+  final String message; // pre-rendered, ready to send
   final bool isResolved;
   final String createdAt;
 
@@ -31,29 +31,29 @@ class RetentionAlert {
   });
 
   factory RetentionAlert.fromJson(Map<String, dynamic> j) => RetentionAlert(
-        id: j['id'] ?? 0,
-        memberId: j['member_id'] ?? 0,
-        memberName: j['member_name'] ?? '',
-        phone: j['phone'] ?? '',
-        alertType: j['alert_type'] ?? '',
-        severity: j['severity'] ?? 'low',
-        message: j['message'] ?? '',
-        isResolved: j['is_resolved'] ?? false,
-        createdAt: j['created_at'] ?? '',
-        resolvedByName: j['resolved_by_name'],
-        actionNote: j['action_note'],
-      );
+    id: j['id'] ?? 0,
+    memberId: j['member_id'] ?? 0,
+    memberName: j['member_name'] ?? '',
+    phone: j['phone'] ?? '',
+    alertType: j['alert_type'] ?? '',
+    severity: j['severity'] ?? 'low',
+    message: j['message'] ?? '',
+    isResolved: j['is_resolved'] ?? false,
+    createdAt: j['created_at'] ?? '',
+    resolvedByName: j['resolved_by_name'],
+    actionNote: j['action_note'],
+  );
 
   /// Human label for the reason this alert exists.
   String get typeLabel => switch (alertType) {
-        'expiring_in_3_days' => 'Expiring in 3 days',
-        'expiring_today' => 'Expires today',
-        'expired_no_renewal' => 'Expired, not renewed',
-        'inactive_1_week' => 'Inactive 1 week',
-        'inactive_2_weeks' => 'Inactive 2+ weeks',
-        'rhythm_break' => 'Routine broken',
-        _ => alertType.replaceAll('_', ' '),
-      };
+    'expiring_in_3_days' => 'Expiring in 3 days',
+    'expiring_today' => 'Expires today',
+    'expired_no_renewal' => 'Expired, not renewed',
+    'inactive_1_week' => 'Inactive 1 week',
+    'inactive_2_weeks' => 'Inactive 2+ weeks',
+    'rhythm_break' => 'Routine broken',
+    _ => alertType.replaceAll('_', ' '),
+  };
 
   /// True for the lapse/renewal family, false for the attendance family —
   /// used to pick an icon that matches the kind of problem.
@@ -66,13 +66,17 @@ class ScanResult {
   final int resolved;
   final int skipped;
 
-  ScanResult({required this.raised, required this.resolved, required this.skipped});
+  ScanResult({
+    required this.raised,
+    required this.resolved,
+    required this.skipped,
+  });
 
   factory ScanResult.fromJson(Map<String, dynamic> j) => ScanResult(
-        raised: j['raised'] ?? 0,
-        resolved: j['resolved'] ?? 0,
-        skipped: j['skipped'] ?? 0,
-      );
+    raised: j['raised'] ?? 0,
+    resolved: j['resolved'] ?? 0,
+    skipped: j['skipped'] ?? 0,
+  );
 
   /// Phrased so a scan that changes nothing still reads as a useful outcome
   /// ("nothing new") rather than an apparent failure.
@@ -136,24 +140,24 @@ class HandledItem {
   });
 
   factory HandledItem.fromJson(Map<String, dynamic> j) => HandledItem(
-        alertId: j['alert_id'] ?? 0,
-        memberId: j['member_id'] ?? 0,
-        memberName: j['member_name'] ?? '',
-        alertType: j['alert_type'] ?? '',
-        actionNote: j['action_note'],
-        resolvedAt: j['resolved_at'] ?? '',
-      );
+    alertId: j['alert_id'] ?? 0,
+    memberId: j['member_id'] ?? 0,
+    memberName: j['member_name'] ?? '',
+    alertType: j['alert_type'] ?? '',
+    actionNote: j['action_note'],
+    resolvedAt: j['resolved_at'] ?? '',
+  );
 
   /// Short reason label, matching RetentionAlert.typeLabel.
   String get typeLabel => switch (alertType) {
-        'expiring_in_3_days' => 'Expiring soon',
-        'expiring_today' => 'Expires today',
-        'expired_no_renewal' => 'Lapsed',
-        'inactive_1_week' => 'Inactive 1wk',
-        'inactive_2_weeks' => 'Inactive 2wk+',
-        'rhythm_break' => 'Routine broken',
-        _ => alertType.replaceAll('_', ' '),
-      };
+    'expiring_in_3_days' => 'Expiring soon',
+    'expiring_today' => 'Expires today',
+    'expired_no_renewal' => 'Lapsed',
+    'inactive_1_week' => 'Inactive 1wk',
+    'inactive_2_weeks' => 'Inactive 2wk+',
+    'rhythm_break' => 'Routine broken',
+    _ => alertType.replaceAll('_', ' '),
+  };
 
   String get relativeTime {
     try {
@@ -190,13 +194,13 @@ class StaffActivity {
   });
 
   factory StaffActivity.fromJson(Map<String, dynamic> j) => StaffActivity(
-        userId: j['user_id'],
-        name: j['name'],
-        resolvedCount: j['resolved_count'] ?? 0,
-        recent: (j['recent'] as List? ?? [])
-            .map((e) => HandledItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    userId: j['user_id'],
+    name: j['name'],
+    resolvedCount: j['resolved_count'] ?? 0,
+    recent: (j['recent'] as List? ?? [])
+        .map((e) => HandledItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 
   /// True when no human did this — the system closed it because the member
   /// renewed or came back. Shown separately so it never reads as someone's work.

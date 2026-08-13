@@ -19,7 +19,10 @@ class RetentionService {
   Future<ScanResult> scan() async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.post(Uri.parse('$kBaseUrl/api/v1/retention/scan'), headers: headers),
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/retention/scan'),
+        headers: headers,
+      ),
     );
     final json = unwrapJson(response);
     return ScanResult.fromJson(json['data']);
@@ -39,7 +42,10 @@ class RetentionService {
   Future<RetentionSummary> getSummary() async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/retention/summary'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/retention/summary'),
+        headers: headers,
+      ),
     );
     final json = unwrapJson(response);
     return RetentionSummary.fromJson(json['data']);
@@ -48,8 +54,9 @@ class RetentionService {
   /// Who has been clearing the at-risk list, over the last [days] days.
   Future<List<StaffActivity>> getStaffActivity({int days = 7}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/retention/staff-activity')
-        .replace(queryParameters: {'days': '$days'});
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/retention/staff-activity',
+    ).replace(queryParameters: {'days': '$days'});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final json = unwrapJson(response);
     final List list = json['data']['staff'] as List? ?? [];
@@ -60,13 +67,15 @@ class RetentionService {
   /// empty note still resolves, it just records the actor without detail.
   Future<void> resolve(int alertId, {String actionNote = ''}) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.patch(
-          Uri.parse('$kBaseUrl/api/v1/retention/alerts/$alertId/resolve'),
-          headers: headers,
-          body: jsonEncode({
-            if (actionNote.trim().isNotEmpty) 'action_note': actionNote.trim(),
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.patch(
+        Uri.parse('$kBaseUrl/api/v1/retention/alerts/$alertId/resolve'),
+        headers: headers,
+        body: jsonEncode({
+          if (actionNote.trim().isNotEmpty) 'action_note': actionNote.trim(),
+        }),
+      ),
+    );
     // 204 No Content on success.
     if (response.statusCode < 200 || response.statusCode >= 300) {
       unwrapJson(response);

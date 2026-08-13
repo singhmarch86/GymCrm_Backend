@@ -38,18 +38,14 @@ class DashboardActionCard extends StatelessWidget {
               color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              icon,
-              color: color,
-            ),
+            child: Icon(icon, color: color),
           ),
 
           const SizedBox(width: 16),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
@@ -63,10 +59,7 @@ class DashboardActionCard extends StatelessWidget {
 
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                 ),
               ],
             ),

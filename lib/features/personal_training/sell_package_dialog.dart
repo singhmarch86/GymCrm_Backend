@@ -84,7 +84,10 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
       setState(() => _results = []);
       return;
     }
-    _debounce = Timer(const Duration(milliseconds: 350), () => _search(q.trim()));
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _search(q.trim()),
+    );
   }
 
   Future<void> _search(String q) async {
@@ -142,8 +145,11 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
         : ((double.tryParse(paidText) ?? -1) * 100).round();
 
     if (_paymentMode.isNotEmpty && paidInPaise <= 0) {
-      setState(() => _error = 'Enter how much was taken, or leave it blank '
-          'for the full amount');
+      setState(
+        () => _error =
+            'Enter how much was taken, or leave it blank '
+            'for the full amount',
+      );
       return;
     }
     if (paidInPaise > priceInPaise) {
@@ -190,7 +196,11 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        AppButton(text: 'Sell', loading: _saving, onPressed: _saving ? null : _submit),
+        AppButton(
+          text: 'Sell',
+          loading: _saving,
+          onPressed: _saving ? null : _submit,
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +217,11 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
               suffixIcon: _searching
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                      child: SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
                     )
                   : null,
             ),
@@ -223,13 +237,19 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
                 }),
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.card,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: AppColors.border),
                   ),
-                  child: Text('${m.firstName} ${m.lastName}', style: const TextStyle(fontSize: 13.5)),
+                  child: Text(
+                    '${m.firstName} ${m.lastName}',
+                    style: const TextStyle(fontSize: 13.5),
+                  ),
                 ),
               ),
               AppSpacing.gapXs,
@@ -243,7 +263,9 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
             initialValue: _trainerId,
             isExpanded: true,
             items: widget.trainers
-                .map((t) => DropdownMenuItem(value: t.id, child: Text(t.fullName)))
+                .map(
+                  (t) => DropdownMenuItem(value: t.id, child: Text(t.fullName)),
+                )
                 .toList(),
             onChanged: (v) => setState(() => _trainerId = v),
           ),
@@ -251,7 +273,10 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
 
           const LifecycleFieldLabel('Package name'),
           AppSpacing.gapXs,
-          TextField(controller: _packageNameController, autofillHints: const []),
+          TextField(
+            controller: _packageNameController,
+            autofillHints: const [],
+          ),
           AppSpacing.gapLg,
 
           Row(
@@ -279,7 +304,9 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
                     AppSpacing.gapXs,
                     TextField(
                       controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       autofillHints: const [],
                     ),
                   ],
@@ -303,8 +330,12 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
             },
             borderRadius: BorderRadius.circular(8),
             child: InputDecorator(
-              decoration: const InputDecoration(suffixIcon: Icon(Icons.calendar_today, size: 16)),
-              child: Text(_expiryDate != null ? formatDate(_expiryDate!) : 'No expiry'),
+              decoration: const InputDecoration(
+                suffixIcon: Icon(Icons.calendar_today, size: 16),
+              ),
+              child: Text(
+                _expiryDate != null ? formatDate(_expiryDate!) : 'No expiry',
+              ),
             ),
           ),
           AppSpacing.gapLg,
@@ -321,12 +352,21 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
               // First, and the default, because it is the honest answer when
               // nobody has handed anything over. The server raises a due and
               // the sale appears in Collect.
-              DropdownMenuItem(value: '', child: Text('Nothing yet — raise a due')),
+              DropdownMenuItem(
+                value: '',
+                child: Text('Nothing yet — raise a due'),
+              ),
               DropdownMenuItem(value: 'cash', child: Text('Cash')),
               DropdownMenuItem(value: 'upi', child: Text('UPI')),
-              DropdownMenuItem(value: 'credit_card', child: Text('Credit card')),
+              DropdownMenuItem(
+                value: 'credit_card',
+                child: Text('Credit card'),
+              ),
               DropdownMenuItem(value: 'debit_card', child: Text('Debit card')),
-              DropdownMenuItem(value: 'bank_transfer', child: Text('Bank transfer')),
+              DropdownMenuItem(
+                value: 'bank_transfer',
+                child: Text('Bank transfer'),
+              ),
             ],
             onChanged: _saving
                 ? null
@@ -339,7 +379,9 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
             AppSpacing.gapXs,
             TextField(
               controller: _paidController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               autofillHints: const [],
               decoration: const InputDecoration(
                 hintText: 'Leave blank for the full price',
@@ -349,14 +391,22 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
             Text(
               'Less than the price is a part payment. The balance is raised as '
               'a due automatically, so it gets chased instead of forgotten.',
-              style: TextStyle(fontSize: 11, height: 1.35, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 11,
+                height: 1.35,
+                color: Colors.grey.shade600,
+              ),
             ),
           ] else ...[
             AppSpacing.gapXs,
             Text(
               'The full amount is raised as a due, dated today, and appears in '
               'Staff work → Collect.',
-              style: TextStyle(fontSize: 11, height: 1.35, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 11,
+                height: 1.35,
+                color: Colors.grey.shade600,
+              ),
             ),
           ],
 
@@ -364,7 +414,8 @@ class _SellPackageDialogState extends State<SellPackageDialog> {
 
           const LifecycleNotice(
             tone: LifecycleTone.info,
-            text: 'Booking an appointment never checks sessions remaining — '
+            text:
+                'Booking an appointment never checks sessions remaining — '
                 'only completing one does. Exhausted packages block further completions.',
           ),
         ],

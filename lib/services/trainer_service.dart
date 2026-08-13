@@ -31,19 +31,21 @@ class TrainerService {
     double? commissionPct,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/trainers'),
-          headers: headers,
-          body: jsonEncode({
-            'first_name': firstName,
-            'last_name': lastName,
-            'phone': phone,
-            'email': email,
-            'specialization': specialization,
-            if (salaryInPaise != null) 'salary_in_paise': salaryInPaise,
-            if (commissionPct != null) 'commission_pct': commissionPct,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/trainers'),
+        headers: headers,
+        body: jsonEncode({
+          'first_name': firstName,
+          'last_name': lastName,
+          'phone': phone,
+          'email': email,
+          'specialization': specialization,
+          if (salaryInPaise != null) 'salary_in_paise': salaryInPaise,
+          if (commissionPct != null) 'commission_pct': commissionPct,
+        }),
+      ),
+    );
     return Trainer.fromJson(unwrapJson(response)['data']);
   }
 
@@ -61,20 +63,22 @@ class TrainerService {
     double? commissionPct,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$kBaseUrl/api/v1/trainers/$id'),
-          headers: headers,
-          body: jsonEncode({
-            if (firstName != null) 'first_name': firstName,
-            if (lastName != null) 'last_name': lastName,
-            if (phone != null) 'phone': phone,
-            if (email != null) 'email': email,
-            if (specialization != null) 'specialization': specialization,
-            if (status != null) 'status': status,
-            if (salaryInPaise != null) 'salary_in_paise': salaryInPaise,
-            if (commissionPct != null) 'commission_pct': commissionPct,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$kBaseUrl/api/v1/trainers/$id'),
+        headers: headers,
+        body: jsonEncode({
+          if (firstName != null) 'first_name': firstName,
+          if (lastName != null) 'last_name': lastName,
+          if (phone != null) 'phone': phone,
+          if (email != null) 'email': email,
+          if (specialization != null) 'specialization': specialization,
+          if (status != null) 'status': status,
+          if (salaryInPaise != null) 'salary_in_paise': salaryInPaise,
+          if (commissionPct != null) 'commission_pct': commissionPct,
+        }),
+      ),
+    );
     return Trainer.fromJson(unwrapJson(response)['data']);
   }
 }

@@ -12,7 +12,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -20,9 +19,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> checkLogin() async {
-
-//    final token = await StorageService.getAccessToken();
-   // debugPrint('SPLASH TOKEN = $token');
+    //    final token = await StorageService.getAccessToken();
+    // debugPrint('SPLASH TOKEN = $token');
 
     await Future.delayed(const Duration(seconds: 1));
 
@@ -34,27 +32,18 @@ class _SplashScreenState extends State<SplashScreen> {
     if (token != null && token.isNotEmpty) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => const AppShell(),
-        ),
+        MaterialPageRoute(builder: (_) => const AppShell()),
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => const LoginScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

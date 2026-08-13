@@ -63,7 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : 'Something went wrong. Please try again.';
+        _error = e is ApiException
+            ? e.message
+            : 'Something went wrong. Please try again.';
       });
     }
     if (!mounted) return;
@@ -100,10 +102,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 24),
 
-                    const Text('Phone Number',
-                        semanticsLabel: 'Phone number',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    const Text(
+                      'Phone Number',
+                      semanticsLabel: 'Phone number',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     _inputField(
                       controller: _phoneController,
@@ -117,10 +124,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 20),
 
-                    const Text('Password',
-                        semanticsLabel: 'Password',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    const Text(
+                      'Password',
+                      semanticsLabel: 'Password',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     _inputField(
                       controller: _passwordController,
@@ -133,15 +145,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       validator: (v) => Validators.required(v, 'Password'),
                       suffixIcon: Semantics(
                         button: true,
-                        label: _obscurePassword ? 'Show password' : 'Hide password',
+                        label: _obscurePassword
+                            ? 'Show password'
+                            : 'Hide password',
                         child: IconButton(
-                          tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                          tooltip: _obscurePassword
+                              ? 'Show password'
+                              : 'Hide password',
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                            _obscurePassword
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
                             color: AppColors.textSecondary,
                             size: 20,
                           ),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                       ),
                     ),
@@ -161,7 +181,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
+                          disabledBackgroundColor: AppColors.primary.withValues(
+                            alpha: 0.6,
+                          ),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -171,13 +193,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? const SizedBox(
                                 width: 22,
                                 height: 22,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
                               )
                             : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('Login',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                   SizedBox(width: 8),
                                   Icon(Icons.arrow_forward_rounded, size: 18),
                                 ],
@@ -201,29 +231,45 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                              ),
                             ),
-                            child: const Icon(Icons.person_add_rounded, color: AppColors.primary, size: 20),
+                            child: const Icon(
+                              Icons.person_add_rounded,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Don't have an account?",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                        color: AppColors.textPrimary)),
-                                Text('Sign up and grow your gym business.',
-                                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                Text(
+                                  "Don't have an account?",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  'Sign up and grow your gym business.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                           TextButton(
                             onPressed: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                              MaterialPageRoute(
+                                builder: (_) => const RegisterScreen(),
+                              ),
                             ),
                             style: TextButton.styleFrom(
                               foregroundColor: AppColors.primary,
@@ -234,8 +280,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('Sign Up',
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                Text(
+                                  'Sign Up',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                                 SizedBox(width: 2),
                                 Icon(Icons.arrow_forward_rounded, size: 14),
                               ],
@@ -251,10 +302,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.shield_rounded, size: 14, color: AppColors.primary.withValues(alpha: 0.8)),
+                          Icon(
+                            Icons.shield_rounded,
+                            size: 14,
+                            color: AppColors.primary.withValues(alpha: 0.8),
+                          ),
                           const SizedBox(width: 6),
-                          const Text('Secure. Reliable. Built for Gyms.',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          const Text(
+                            'Secure. Reliable. Built for Gyms.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -300,7 +360,10 @@ class _LoginScreenState extends State<LoginScreen> {
         style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7), fontSize: 15),
+          hintStyle: TextStyle(
+            color: AppColors.textSecondary.withValues(alpha: 0.7),
+            fontSize: 15,
+          ),
           prefixIcon: Container(
             width: 48,
             height: 48,
@@ -315,7 +378,10 @@ class _LoginScreenState extends State<LoginScreen> {
           border: InputBorder.none,
           errorBorder: InputBorder.none,
           focusedErrorBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 18,
+          ),
         ),
       ),
     );
@@ -351,8 +417,11 @@ class _HeroSection extends StatelessWidget {
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.fitness_center_rounded,
-                      color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.fitness_center_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 RichText(
@@ -410,7 +479,10 @@ class _HeroSection extends StatelessWidget {
             const Text(
               'Login to your account and continue your fitness journey.',
               style: TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary, height: 1.45),
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.45,
+              ),
             ),
           ],
         ),
@@ -441,7 +513,11 @@ class _HeroSection extends StatelessWidget {
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.fitness_center_rounded, color: Colors.white, size: 20),
+                        child: const Icon(
+                          Icons.fitness_center_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       RichText(
@@ -476,7 +552,10 @@ class _HeroSection extends StatelessWidget {
                     padding: EdgeInsets.only(left: 46),
                     child: Text(
                       'Manage. Engage. Grow.',
-                      style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
 
@@ -535,7 +614,11 @@ class _HeroSection extends StatelessWidget {
                 errorBuilder: (_, __, ___) => Container(
                   color: AppColors.primaryLight,
                   child: const Center(
-                    child: Icon(Icons.fitness_center_rounded, size: 80, color: AppColors.primary),
+                    child: Icon(
+                      Icons.fitness_center_rounded,
+                      size: 80,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ),

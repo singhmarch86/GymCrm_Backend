@@ -96,7 +96,9 @@ class AppDataTable<T> extends StatelessWidget {
                 child: c.sortKey == null
                     ? _headerLabel(c.label, false)
                     : InkWell(
-                        onTap: onSort == null ? null : () => onSort!(c.sortKey!),
+                        onTap: onSort == null
+                            ? null
+                            : () => onSort!(c.sortKey!),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -121,17 +123,17 @@ class AppDataTable<T> extends StatelessWidget {
   }
 
   Widget _headerLabel(String text, bool active) => Padding(
-        padding: const EdgeInsets.only(right: 4),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.2,
-            color: active ? AppColors.primary : Colors.grey.shade600,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(right: 4),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 11.5,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.2,
+        color: active ? AppColors.primary : Colors.grey.shade600,
+      ),
+    ),
+  );
 
   Widget _row(T row, int index) {
     return Material(
@@ -181,13 +183,13 @@ class TableText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        value,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 12.5,
-          fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
-          color: color ?? AppColors.textPrimary,
-        ),
-      );
+    value,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: TextStyle(
+      fontSize: 12.5,
+      fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
+      color: color ?? AppColors.textPrimary,
+    ),
+  );
 }

@@ -29,38 +29,44 @@ class DashboardInsightBanner extends StatelessWidget {
     // a bigger concern than one who's merely due for renewal. Only show the
     // more urgent of the two 14/30-day churn signals, not both at once.
     if (inactive30Days > 0) {
-      rows.add(_InsightRow(
-        icon: Icons.person_off_outlined,
-        color: AppColors.danger,
-        background: AppColors.dangerLight,
-        title:
-            '$inactive30Days member${inactive30Days == 1 ? '' : 's'} inactive for 30+ days',
-        subtitle: 'At risk of lapsing — worth a check-in call.',
-        tooltip:
-            'Members with no gym check-in in the last 30 days are flagged as at risk of lapsing.',
-      ));
+      rows.add(
+        _InsightRow(
+          icon: Icons.person_off_outlined,
+          color: AppColors.danger,
+          background: AppColors.dangerLight,
+          title:
+              '$inactive30Days member${inactive30Days == 1 ? '' : 's'} inactive for 30+ days',
+          subtitle: 'At risk of lapsing — worth a check-in call.',
+          tooltip:
+              'Members with no gym check-in in the last 30 days are flagged as at risk of lapsing.',
+        ),
+      );
     } else if (inactive14Days > 0) {
-      rows.add(_InsightRow(
-        icon: Icons.person_off_outlined,
-        color: AppColors.warning,
-        background: AppColors.warningLight,
-        title:
-            '$inactive14Days member${inactive14Days == 1 ? '' : 's'} inactive for 14+ days',
-        subtitle: 'Attendance has dropped off — keep an eye on this.',
-        tooltip: 'Members with no gym check-in in the last 14 days.',
-      ));
+      rows.add(
+        _InsightRow(
+          icon: Icons.person_off_outlined,
+          color: AppColors.warning,
+          background: AppColors.warningLight,
+          title:
+              '$inactive14Days member${inactive14Days == 1 ? '' : 's'} inactive for 14+ days',
+          subtitle: 'Attendance has dropped off — keep an eye on this.',
+          tooltip: 'Members with no gym check-in in the last 14 days.',
+        ),
+      );
     }
 
     if (expiring7Days > 0) {
-      rows.add(_InsightRow(
-        icon: Icons.schedule_rounded,
-        color: AppColors.warning,
-        background: AppColors.warningLight,
-        title:
-            '$expiring7Days renewal${expiring7Days == 1 ? '' : 's'} due within 7 days',
-        subtitle: 'Follow up before their membership lapses.',
-        tooltip: 'Active members whose plan expires within the next 7 days.',
-      ));
+      rows.add(
+        _InsightRow(
+          icon: Icons.schedule_rounded,
+          color: AppColors.warning,
+          background: AppColors.warningLight,
+          title:
+              '$expiring7Days renewal${expiring7Days == 1 ? '' : 's'} due within 7 days',
+          subtitle: 'Follow up before their membership lapses.',
+          tooltip: 'Active members whose plan expires within the next 7 days.',
+        ),
+      );
     }
 
     if (rows.isEmpty) return const SizedBox.shrink();
@@ -125,7 +131,10 @@ class _InsightRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -134,7 +143,11 @@ class _InsightRow extends StatelessWidget {
               Tooltip(
                 message: tooltip!,
                 triggerMode: TooltipTriggerMode.tap,
-                child: Icon(Icons.info_outline_rounded, color: color.withValues(alpha: 0.7), size: 16),
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  color: color.withValues(alpha: 0.7),
+                  size: 16,
+                ),
               ),
           ],
         ),

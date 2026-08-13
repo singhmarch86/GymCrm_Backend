@@ -5,8 +5,8 @@ class AttendanceRecord {
   final int gymId;
   final int memberId;
   final String memberName;
-  final String checkedInAt;    // full UTC timestamp
-  final String checkedInDate;  // date-only
+  final String checkedInAt; // full UTC timestamp
+  final String checkedInDate; // date-only
   final String createdAt;
 
   AttendanceRecord({
@@ -20,14 +20,14 @@ class AttendanceRecord {
   });
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> j) => AttendanceRecord(
-        id: j['id'] ?? 0,
-        gymId: j['gym_id'] ?? 0,
-        memberId: j['member_id'] ?? 0,
-        memberName: j['member_name'] ?? '',
-        checkedInAt: j['checked_in_at'] ?? '',
-        checkedInDate: j['checked_in_date'] ?? '',
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    gymId: j['gym_id'] ?? 0,
+    memberId: j['member_id'] ?? 0,
+    memberName: j['member_name'] ?? '',
+    checkedInAt: j['checked_in_at'] ?? '',
+    checkedInDate: j['checked_in_date'] ?? '',
+    createdAt: j['created_at'] ?? '',
+  );
 
   /// Display-friendly time, e.g. "09:30 AM"
   String get timeLabel {
@@ -48,8 +48,19 @@ class AttendanceRecord {
     try {
       final dt = DateTime.parse(checkedInDate);
       const months = [
-        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        '',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month]} ${dt.year}';
     } catch (_) {

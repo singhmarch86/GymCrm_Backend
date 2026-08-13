@@ -41,7 +41,10 @@ class _ImportScreenState extends State<ImportScreen> {
           appBar: AppBar(
             title: const Text('Import data'),
             bottom: const TabBar(
-              tabs: [Tab(text: 'New import'), Tab(text: 'History')],
+              tabs: [
+                Tab(text: 'New import'),
+                Tab(text: 'History'),
+              ],
             ),
           ),
           body: TabBarView(
@@ -99,7 +102,10 @@ class _NewImportTabState extends State<_NewImportTab> {
   Future<void> _validate() async {
     final content = _controller.text.trim();
     if (content.isEmpty) {
-      setState(() => _error = 'Paste your data first, or load the template to see the format.');
+      setState(
+        () => _error =
+            'Paste your data first, or load the template to see the format.',
+      );
       return;
     }
     setState(() {
@@ -107,7 +113,10 @@ class _NewImportTabState extends State<_NewImportTab> {
       _error = null;
     });
     try {
-      final batch = await _service.validate(entityType: _entity, content: content);
+      final batch = await _service.validate(
+        entityType: _entity,
+        content: content,
+      );
       if (!mounted) return;
       setState(() {
         _batch = batch;
@@ -204,7 +213,8 @@ class _NewImportTabState extends State<_NewImportTab> {
         // reference members.
         const LifecycleNotice(
           tone: LifecycleTone.info,
-          text: 'Import in this order: plans first, then members, then payments — '
+          text:
+              'Import in this order: plans first, then members, then payments — '
               'members are matched to plans by name, and payments to members by phone.',
         ),
         AppSpacing.gapLg,
@@ -227,13 +237,15 @@ class _NewImportTabState extends State<_NewImportTab> {
           autofillHints: const [],
           style: const TextStyle(fontFamily: 'monospace', fontSize: 12.5),
           decoration: const InputDecoration(
-            hintText: 'Paste straight from Excel or a CSV file, including the header row…',
+            hintText:
+                'Paste straight from Excel or a CSV file, including the header row…',
           ),
         ),
         AppSpacing.gapSm,
         const LifecycleNotice(
           tone: LifecycleTone.info,
-          text: 'Column names are matched loosely — "Mobile No", "phone" and "Contact Number" '
+          text:
+              'Column names are matched loosely — "Mobile No", "phone" and "Contact Number" '
               'all work. Extra columns are ignored. Dates are read day-first (31/03/2027).',
         ),
         AppSpacing.gapLg,
@@ -260,8 +272,10 @@ class _NewImportTabState extends State<_NewImportTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('What will happen',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        const Text(
+          'What will happen',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
         AppSpacing.gapSm,
 
         _CountsGrid(batch: b),
@@ -270,12 +284,14 @@ class _NewImportTabState extends State<_NewImportTab> {
         if (b.validRows == 0 && b.duplicateRows == 0)
           const LifecycleNotice(
             tone: LifecycleTone.blocked,
-            text: 'Nothing in this file can be imported. Fix the problems below and paste it again.',
+            text:
+                'Nothing in this file can be imported. Fix the problems below and paste it again.',
           )
         else
           LifecycleNotice(
             tone: LifecycleTone.positive,
-            text: '${b.validRows} new record${b.validRows == 1 ? '' : 's'} will be created.'
+            text:
+                '${b.validRows} new record${b.validRows == 1 ? '' : 's'} will be created.'
                 '${b.invalidRows > 0 ? ' ${b.invalidRows} broken row${b.invalidRows == 1 ? '' : 's'} will be skipped.' : ''}',
           ),
 
@@ -296,33 +312,47 @@ class _NewImportTabState extends State<_NewImportTab> {
             _policy == 'skip'
                 ? '${b.duplicateRows} existing record${b.duplicateRows == 1 ? '' : 's'} will be left exactly as they are.'
                 : '${b.duplicateRows} existing record${b.duplicateRows == 1 ? '' : 's'} will be overwritten with the values in your file. '
-                    'Status and expiry are only changed if your file has those columns.',
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      'Status and expiry are only changed if your file has those columns.',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
 
         if (b.problems.isNotEmpty) ...[
           AppSpacing.gapLg,
-          Text('Rows needing attention (${b.problems.length})',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+          Text(
+            'Rows needing attention (${b.problems.length})',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          ),
           AppSpacing.gapXs,
           for (final row in b.problems.take(50)) _ProblemRow(row: row),
           if (b.problems.length > 50)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('…and ${b.problems.length - 50} more',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              child: Text(
+                '…and ${b.problems.length - 50} more',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
         ],
 
         AppSpacing.gapXl,
         Row(
           children: [
-            TextButton(onPressed: _busy ? null : _discard, child: const Text('Start over')),
+            TextButton(
+              onPressed: _busy ? null : _discard,
+              child: const Text('Start over'),
+            ),
             AppSpacing.gapMd,
             Expanded(
               child: AppButton(
-                text: 'Import ${b.validRows + (_policy == 'update' ? b.duplicateRows : 0)} records',
+                text:
+                    'Import ${b.validRows + (_policy == 'update' ? b.duplicateRows : 0)} records',
                 loading: _busy,
                 onPressed: (_busy || !b.canCommit) ? null : _commit,
               ),
@@ -338,9 +368,16 @@ class _NewImportTabState extends State<_NewImportTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.check_circle_outline, size: 44, color: AppColors.success),
+        const Icon(
+          Icons.check_circle_outline,
+          size: 44,
+          color: AppColors.success,
+        ),
         AppSpacing.gapSm,
-        const Text('Import complete', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+        const Text(
+          'Import complete',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
         AppSpacing.gapMd,
         LifecycleOutcome(
           emphasisColor: AppColors.success,
@@ -369,10 +406,26 @@ class _CountsGrid extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _Count(label: 'Rows read', value: batch.totalRows, color: AppColors.textSecondary),
-        _Count(label: 'Ready to import', value: batch.validRows, color: AppColors.success),
-        _Count(label: 'Already exist', value: batch.duplicateRows, color: AppColors.warning),
-        _Count(label: 'Problems', value: batch.invalidRows, color: AppColors.danger),
+        _Count(
+          label: 'Rows read',
+          value: batch.totalRows,
+          color: AppColors.textSecondary,
+        ),
+        _Count(
+          label: 'Ready to import',
+          value: batch.validRows,
+          color: AppColors.success,
+        ),
+        _Count(
+          label: 'Already exist',
+          value: batch.duplicateRows,
+          color: AppColors.warning,
+        ),
+        _Count(
+          label: 'Problems',
+          value: batch.invalidRows,
+          color: AppColors.danger,
+        ),
       ],
     );
   }
@@ -397,8 +450,21 @@ class _Count extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$value', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: color)),
-          Text(label, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+          Text(
+            '$value',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -429,18 +495,32 @@ class _ProblemRow extends StatelessWidget {
           Container(
             width: 44,
             padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Text('Line ${row.lineNumber}',
-                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: color)),
+            child: Text(
+              'Line ${row.lineNumber}',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(row.label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  row.label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 if (row.errorMessage != null)
-                  Text(row.errorMessage!,
-                      style: TextStyle(fontSize: 12, color: color, height: 1.3)),
+                  Text(
+                    row.errorMessage!,
+                    style: TextStyle(fontSize: 12, color: color, height: 1.3),
+                  ),
               ],
             ),
           ),
@@ -500,7 +580,8 @@ class _HistoryTabState extends State<_HistoryTab> {
       return const EmptyStateView(
         icon: Icons.upload_file_outlined,
         title: 'No imports yet',
-        body: 'Every import is kept here as a record of what was brought in, and when.',
+        body:
+            'Every import is kept here as a record of what was brought in, and when.',
       );
     }
 
@@ -528,15 +609,24 @@ class _HistoryTabState extends State<_HistoryTab> {
                       child: Text(
                         '${b.entityType[0].toUpperCase()}${b.entityType.substring(1)}'
                         '${b.filename != null ? ' · ${b.filename}' : ''}',
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                     Text(
-                      b.isCommitted ? 'Imported' : (b.status == 'discarded' ? 'Discarded' : 'Not committed'),
+                      b.isCommitted
+                          ? 'Imported'
+                          : (b.status == 'discarded'
+                                ? 'Discarded'
+                                : 'Not committed'),
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
-                        color: b.isCommitted ? AppColors.success : AppColors.textSecondary,
+                        color: b.isCommitted
+                            ? AppColors.success
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -547,13 +637,19 @@ class _HistoryTabState extends State<_HistoryTab> {
                   '${b.updatedRows > 0 ? ' · ${b.updatedRows} updated' : ''}'
                   '${b.skippedRows > 0 ? ' · ${b.skippedRows} skipped' : ''}'
                   ' · ${b.totalRows} rows read',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 if (b.createdAt.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     formatDate(DateTime.parse(b.createdAt).toLocal()),
-                    style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ],

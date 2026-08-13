@@ -18,7 +18,8 @@ class PaymentsBody extends StatelessWidget {
   final void Function({
     required PaymentFilterOption filter,
     required String search,
-  }) onQueryChanged;
+  })
+  onQueryChanged;
 
   const PaymentsBody({
     super.key,
@@ -45,10 +46,8 @@ class PaymentsBody extends StatelessWidget {
         const SizedBox(height: 18),
         PaymentFilterBar(
           selected: selectedFilter,
-          onChanged: (f) => onQueryChanged(
-            filter: f,
-            search: searchController.text.trim(),
-          ),
+          onChanged: (f) =>
+              onQueryChanged(filter: f, search: searchController.text.trim()),
         ),
         const SizedBox(height: 18),
         Expanded(

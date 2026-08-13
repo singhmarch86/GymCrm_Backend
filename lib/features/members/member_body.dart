@@ -27,19 +27,13 @@ class MemberBody extends StatefulWidget {
   });
 
   @override
-  State<MemberBody> createState() =>
-      _MemberBodyState();
+  State<MemberBody> createState() => _MemberBodyState();
 }
 
-class _MemberBodyState
-    extends State<MemberBody> {
+class _MemberBodyState extends State<MemberBody> {
+  final TextEditingController searchController = TextEditingController();
 
-  final TextEditingController
-  searchController =
-  TextEditingController();
-
-  MemberFilter selectedFilter =
-      MemberFilter.all;
+  MemberFilter selectedFilter = MemberFilter.all;
 
   List<Member> filteredMembers = [];
 
@@ -51,8 +45,7 @@ class _MemberBodyState
   }
 
   @override
-  void didUpdateWidget(
-      covariant MemberBody oldWidget) {
+  void didUpdateWidget(covariant MemberBody oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     applyFilters();
@@ -65,21 +58,13 @@ class _MemberBodyState
     // Search
     //----------------------------------
 
-    final keyword =
-    searchController.text
-        .trim()
-        .toLowerCase();
+    final keyword = searchController.text.trim().toLowerCase();
 
     if (keyword.isNotEmpty) {
       data = data.where((m) {
+        final fullName = "${m.firstName} ${m.lastName}".toLowerCase();
 
-        final fullName =
-        "${m.firstName} ${m.lastName}"
-            .toLowerCase();
-
-        return fullName.contains(keyword) ||
-            m.phone.contains(keyword);
-
+        return fullName.contains(keyword) || m.phone.contains(keyword);
       }).toList();
     }
 
@@ -88,55 +73,29 @@ class _MemberBodyState
     //----------------------------------
 
     switch (selectedFilter) {
-
       case MemberFilter.active:
-        data = data
-            .where((m) =>
-        m.status
-            .toLowerCase() ==
-            "active")
-            .toList();
+        data = data.where((m) => m.status.toLowerCase() == "active").toList();
         break;
 
       case MemberFilter.expired:
-        data = data
-            .where((m) =>
-        m.status
-            .toLowerCase() ==
-            "expired")
-            .toList();
+        data = data.where((m) => m.status.toLowerCase() == "expired").toList();
         break;
 
       case MemberFilter.expiring:
-
         data = data.where((m) {
-
           if (m.expiryDate == null) {
             return false;
           }
 
           try {
+            final expiry = DateTime.parse(m.expiryDate!);
 
-            final expiry =
-            DateTime.parse(
-                m.expiryDate!);
+            final diff = expiry.difference(DateTime.now()).inDays;
 
-            final diff =
-                expiry
-                    .difference(
-                  DateTime.now(),
-                )
-                    .inDays;
-
-            return diff >= 0 &&
-                diff <= 7;
-
+            return diff >= 0 && diff <= 7;
           } catch (_) {
-
             return false;
-
           }
-
         }).toList();
 
         break;
@@ -152,13 +111,10 @@ class _MemberBodyState
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       children: [
-
         MemberSearchBar(
-          controller:
-          searchController,
+          controller: searchController,
           onChanged: (_) {
             applyFilters();
           },
@@ -167,18 +123,13 @@ class _MemberBodyState
         const SizedBox(height: 18),
 
         MemberFilterBar(
-          selectedFilter:
-          selectedFilter,
-          onFilterChanged:
-              (filter) {
-
+          selectedFilter: selectedFilter,
+          onFilterChanged: (filter) {
             setState(() {
-              selectedFilter =
-                  filter;
+              selectedFilter = filter;
             });
 
             applyFilters();
-
           },
         ),
 
@@ -186,14 +137,10 @@ class _MemberBodyState
 
         Expanded(
           child: MemberList(
-            members:
-            filteredMembers,
-            isLoading:
-            widget.isLoading,
-            onRefresh:
-            widget.onRefresh,
-            onMemberChanged:
-            widget.onMemberChanged,
+            members: filteredMembers,
+            isLoading: widget.isLoading,
+            onRefresh: widget.onRefresh,
+            onMemberChanged: widget.onMemberChanged,
           ),
         ),
       ],

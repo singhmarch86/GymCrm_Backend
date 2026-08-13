@@ -48,20 +48,22 @@ class _MemberListState extends State<MemberList> {
       return a.compareTo(b);
     }
 
-    rows.sort((x, y) => _sortKey == 'expiry'
-        ? cmp(x.expiryDate, y.expiryDate)
-        : cmp(x.lastVisitAt, y.lastVisitAt));
+    rows.sort(
+      (x, y) => _sortKey == 'expiry'
+          ? cmp(x.expiryDate, y.expiryDate)
+          : cmp(x.lastVisitAt, y.lastVisitAt),
+    );
     return _sortAsc ? rows : rows.reversed.toList();
   }
 
   void _onSort(String key) => setState(() {
-        if (_sortKey == key) {
-          _sortAsc = !_sortAsc;
-        } else {
-          _sortKey = key;
-          _sortAsc = true;
-        }
-      });
+    if (_sortKey == key) {
+      _sortAsc = !_sortAsc;
+    } else {
+      _sortKey = key;
+      _sortAsc = true;
+    }
+  });
 
   Future<void> _openDetail(BuildContext context, Member member) async {
     // The panel closes fully before we act on its result — see
@@ -89,7 +91,10 @@ class _MemberListState extends State<MemberList> {
           title: const Text('Delete Member'),
           content: const Text('Are you sure you want to delete this member?'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.danger,
@@ -115,7 +120,11 @@ class _MemberListState extends State<MemberList> {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e is ApiException ? e.message : "Couldn't delete this member. Please try again."),
+            content: Text(
+              e is ApiException
+                  ? e.message
+                  : "Couldn't delete this member. Please try again.",
+            ),
             backgroundColor: AppColors.danger,
           ),
         );
@@ -134,9 +143,7 @@ class _MemberListState extends State<MemberList> {
   @override
   Widget build(BuildContext context) {
     if (widget.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (widget.members.isEmpty) {
@@ -169,10 +176,7 @@ class _MemberListState extends State<MemberList> {
     return RefreshIndicator(
       onRefresh: widget.onRefresh,
       child: ListView.separated(
-        padding: const EdgeInsets.only(
-          top: 8,
-          bottom: 100,
-        ),
+        padding: const EdgeInsets.only(top: 8, bottom: 100),
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: widget.members.length,
         separatorBuilder: (_, _) => const SizedBox(height: 14),

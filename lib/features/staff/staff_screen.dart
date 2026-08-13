@@ -96,11 +96,11 @@ class _StaffScreenState extends State<StaffScreen> {
           content: Text(
             s.leadCount > 0
                 ? 'They will no longer be able to log in. Their '
-                    '${s.leadCount} open lead${s.leadCount == 1 ? '' : 's'} stay '
-                    'assigned to them so nothing gets lost — reassign from the '
-                    'Leads screen if needed.'
+                      '${s.leadCount} open lead${s.leadCount == 1 ? '' : 's'} stay '
+                      'assigned to them so nothing gets lost — reassign from the '
+                      'Leads screen if needed.'
                 : 'They will no longer be able to log in. You can reactivate '
-                    'them at any time.',
+                      'them at any time.',
           ),
           actions: [
             TextButton(
@@ -109,8 +109,10 @@ class _StaffScreenState extends State<StaffScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Deactivate',
-                  style: TextStyle(color: AppColors.danger)),
+              child: const Text(
+                'Deactivate',
+                style: TextStyle(color: AppColors.danger),
+              ),
             ),
           ],
         ),
@@ -119,7 +121,10 @@ class _StaffScreenState extends State<StaffScreen> {
     }
 
     try {
-      await StaffService().setStatus(s.id, deactivating ? 'inactive' : 'active');
+      await StaffService().setStatus(
+        s.id,
+        deactivating ? 'inactive' : 'active',
+      );
       _dataChanged = true;
       await _load();
     } catch (e) {
@@ -128,7 +133,9 @@ class _StaffScreenState extends State<StaffScreen> {
       // surface that reason verbatim, it is the useful part.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e is ApiException ? e.message : "Couldn't change status."),
+          content: Text(
+            e is ApiException ? e.message : "Couldn't change status.",
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -168,8 +175,9 @@ class _StaffScreenState extends State<StaffScreen> {
               onPressed: () {
                 final v = controller.text;
                 if (v.length < 8 || !v.contains(RegExp(r'[0-9]'))) {
-                  setInner(() => inlineError =
-                      'At least 8 characters and one digit');
+                  setInner(
+                    () => inlineError = 'At least 8 characters and one digit',
+                  );
                   return;
                 }
                 Navigator.pop(ctx, true);
@@ -196,7 +204,9 @@ class _StaffScreenState extends State<StaffScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e is ApiException ? e.message : "Couldn't reset the password."),
+          content: Text(
+            e is ApiException ? e.message : "Couldn't reset the password.",
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -241,7 +251,8 @@ class _StaffScreenState extends State<StaffScreen> {
       return EmptyStateView(
         icon: Icons.badge_outlined,
         title: 'No Staff Yet',
-        body: 'Add trainers and front-desk staff so you can assign leads and '
+        body:
+            'Add trainers and front-desk staff so you can assign leads and '
             'track who is handling what.',
         actionLabel: 'Add Staff',
         onAction: _add,
@@ -273,8 +284,10 @@ class _StaffScreenState extends State<StaffScreen> {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: (s.isOwner ? AppColors.primary : AppColors.info)
-                    .withValues(alpha: 0.12),
+                backgroundColor:
+                    (s.isOwner ? AppColors.primary : AppColors.info).withValues(
+                      alpha: 0.12,
+                    ),
                 child: Text(
                   s.initial,
                   style: TextStyle(
@@ -295,7 +308,9 @@ class _StaffScreenState extends State<StaffScreen> {
                             s.name,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 15),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -312,7 +327,10 @@ class _StaffScreenState extends State<StaffScreen> {
                     const SizedBox(height: 3),
                     Text(
                       s.email.isEmpty ? s.phone : '${s.phone} · ${s.email}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (s.leadCount > 0) ...[
@@ -320,8 +338,11 @@ class _StaffScreenState extends State<StaffScreen> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.person_search_rounded,
-                              size: 12, color: Colors.teal),
+                          const Icon(
+                            Icons.person_search_rounded,
+                            size: 12,
+                            color: Colors.teal,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${s.leadCount} open lead${s.leadCount == 1 ? '' : 's'}',
@@ -339,7 +360,10 @@ class _StaffScreenState extends State<StaffScreen> {
               ),
               PopupMenuButton<String>(
                 tooltip: 'Actions for ${s.name}',
-                icon: Icon(Icons.more_vert_rounded, color: Colors.grey.shade600),
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  color: Colors.grey.shade600,
+                ),
                 onSelected: (v) {
                   switch (v) {
                     case 'edit':
@@ -353,15 +377,26 @@ class _StaffScreenState extends State<StaffScreen> {
                   }
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit details')),
-                  const PopupMenuItem(value: 'password', child: Text('Reset password')),
-                  const PopupMenuItem(value: 'move', child: Text('Move to another branch')),
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit details'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'password',
+                    child: Text('Reset password'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'move',
+                    child: Text('Move to another branch'),
+                  ),
                   PopupMenuItem(
                     value: 'status',
                     child: Text(
                       s.isActive ? 'Deactivate' : 'Reactivate',
                       style: TextStyle(
-                        color: s.isActive ? AppColors.danger : AppColors.success,
+                        color: s.isActive
+                            ? AppColors.danger
+                            : AppColors.success,
                       ),
                     ),
                   ),

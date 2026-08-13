@@ -28,7 +28,11 @@ class TerminateDialog extends StatefulWidget {
   final int memberId;
   final String memberName;
 
-  const TerminateDialog({super.key, required this.memberId, required this.memberName});
+  const TerminateDialog({
+    super.key,
+    required this.memberId,
+    required this.memberName,
+  });
 
   @override
   State<TerminateDialog> createState() => _TerminateDialogState();
@@ -67,7 +71,10 @@ class _TerminateDialogState extends State<TerminateDialog> {
 
   Future<void> _load({int feeInPaise = 0}) async {
     try {
-      final q = await _service.terminationQuote(widget.memberId, feeInPaise: feeInPaise);
+      final q = await _service.terminationQuote(
+        widget.memberId,
+        feeInPaise: feeInPaise,
+      );
       if (!mounted) return;
       setState(() {
         _quote = q;
@@ -141,7 +148,8 @@ class _TerminateDialogState extends State<TerminateDialog> {
         children: [
           const LifecycleNotice(
             tone: LifecycleTone.warning,
-            text: 'This cannot be undone. Restoring this member later means selling a new membership.',
+            text:
+                'This cannot be undone. Restoring this member later means selling a new membership.',
           ),
           AppSpacing.gapLg,
 
@@ -182,7 +190,8 @@ class _TerminateDialogState extends State<TerminateDialog> {
           AppSpacing.gapSm,
           const LifecycleNotice(
             tone: LifecycleTone.info,
-            text: 'The refund is recorded against this member, not paid out here. Settle it through Payments.',
+            text:
+                'The refund is recorded against this member, not paid out here. Settle it through Payments.',
           ),
           AppSpacing.gapLg,
 

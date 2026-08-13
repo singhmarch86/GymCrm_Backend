@@ -57,18 +57,18 @@ class ExpectedItem {
   bool get isRaised => kind == 'raised';
 
   factory ExpectedItem.fromJson(Map<String, dynamic> j) => ExpectedItem(
-        kind: j['kind'] ?? 'expiring',
-        memberId: j['member_id'] ?? 0,
-        member: j['member'] ?? '',
-        phone: j['phone'] ?? '',
-        amountInPaise: j['amount_in_paise'] ?? 0,
-        estimated: j['estimated'] ?? false,
-        date: _date(j['date']),
-        paymentId: j['payment_id'],
-        planName: j['plan_name'],
-        lastVisitAt: _date(j['last_visit_at']),
-        owedInPaise: j['owed_in_paise'] ?? 0,
-      );
+    kind: j['kind'] ?? 'expiring',
+    memberId: j['member_id'] ?? 0,
+    member: j['member'] ?? '',
+    phone: j['phone'] ?? '',
+    amountInPaise: j['amount_in_paise'] ?? 0,
+    estimated: j['estimated'] ?? false,
+    date: _date(j['date']),
+    paymentId: j['payment_id'],
+    planName: j['plan_name'],
+    lastVisitAt: _date(j['last_visit_at']),
+    owedInPaise: j['owed_in_paise'] ?? 0,
+  );
 
   static DateTime? _date(dynamic v) {
     if (v is! String || v.isEmpty) return null;
@@ -97,13 +97,13 @@ class ExpectedBucket {
   bool get isEmpty => raisedCount == 0 && expiringCount == 0;
 
   factory ExpectedBucket.fromJson(Map<String, dynamic> j) => ExpectedBucket(
-        key: j['key'] ?? '',
-        label: j['label'] ?? '',
-        raisedInPaise: j['raised_in_paise'] ?? 0,
-        expiringInPaise: j['expiring_in_paise'] ?? 0,
-        raisedCount: j['raised_count'] ?? 0,
-        expiringCount: j['expiring_count'] ?? 0,
-      );
+    key: j['key'] ?? '',
+    label: j['label'] ?? '',
+    raisedInPaise: j['raised_in_paise'] ?? 0,
+    expiringInPaise: j['expiring_in_paise'] ?? 0,
+    raisedCount: j['raised_count'] ?? 0,
+    expiringCount: j['expiring_count'] ?? 0,
+  );
 }
 
 class ExpectedPayments {
@@ -159,21 +159,21 @@ class ExpectedPayments {
   }
 
   factory ExpectedPayments.fromJson(Map<String, dynamic> j) => ExpectedPayments(
-        from: j['from'] ?? '',
-        to: j['to'] ?? '',
-        days: j['days'] ?? 1,
-        isSingleDay: j['is_single_day'] ?? false,
-        raisedCount: j['raised_count'] ?? 0,
-        raisedInPaise: j['raised_in_paise'] ?? 0,
-        expiringCount: j['expiring_count'] ?? 0,
-        expiringInPaise: j['expiring_in_paise'] ?? 0,
-        bucketUnit: j['bucket_unit'] ?? 'day',
-        buckets: ((j['buckets'] as List?) ?? [])
-            .map((e) => ExpectedBucket.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => ExpectedItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        truncated: j['truncated'] ?? false,
-      );
+    from: j['from'] ?? '',
+    to: j['to'] ?? '',
+    days: j['days'] ?? 1,
+    isSingleDay: j['is_single_day'] ?? false,
+    raisedCount: j['raised_count'] ?? 0,
+    raisedInPaise: j['raised_in_paise'] ?? 0,
+    expiringCount: j['expiring_count'] ?? 0,
+    expiringInPaise: j['expiring_in_paise'] ?? 0,
+    bucketUnit: j['bucket_unit'] ?? 'day',
+    buckets: ((j['buckets'] as List?) ?? [])
+        .map((e) => ExpectedBucket.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => ExpectedItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    truncated: j['truncated'] ?? false,
+  );
 }

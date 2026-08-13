@@ -63,11 +63,7 @@ class StatusChip extends StatelessWidget {
   /// color/icon underneath.
   final String? label;
 
-  const StatusChip({
-    super.key,
-    required this.status,
-    this.label,
-  });
+  const StatusChip({super.key, required this.status, this.label});
 
   /// Maps any module's raw status string onto the canonical [AppStatus] set.
   /// Centralising this mapping here — rather than in each card widget — is
@@ -135,14 +131,16 @@ class StatusChip extends StatelessWidget {
       case 'DRAFT':
         return AppStatus.draft;
       case 'ISSUED':
-        return AppStatus.scheduled; // issued but not yet settled — informational
+        return AppStatus
+            .scheduled; // issued but not yet settled — informational
       case 'UNPAID':
         return AppStatus.unpaid;
       case 'PARTIAL':
         return AppStatus.partial;
 
       default:
-        return AppStatus.pending; // unrecognised value — neutral, non-alarming fallback
+        return AppStatus
+            .pending; // unrecognised value — neutral, non-alarming fallback
     }
   }
 
@@ -287,10 +285,7 @@ class StatusChip extends StatelessWidget {
     final text = label ?? _defaultLabel(normalised);
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(30),
@@ -298,11 +293,7 @@ class StatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
+          Icon(icon, size: 14, color: color),
           const SizedBox(width: 5),
           Text(
             text,

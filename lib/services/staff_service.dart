@@ -34,17 +34,19 @@ class StaffService {
     String role = 'staff',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/users'),
-          headers: headers,
-          body: jsonEncode({
-            'name': name,
-            'phone': phone,
-            'password': password,
-            if (email.isNotEmpty) 'email': email,
-            'role': role,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/users'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'phone': phone,
+          'password': password,
+          if (email.isNotEmpty) 'email': email,
+          'role': role,
+        }),
+      ),
+    );
     final json = unwrapJson(response);
     return Staff.fromJson(json['data']);
   }
@@ -58,38 +60,44 @@ class StaffService {
     String? role,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$kBaseUrl/api/v1/users/$id'),
-          headers: headers,
-          body: jsonEncode({
-            'name': ?name,
-            'phone': ?phone,
-            'email': ?email,
-            'role': ?role,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$kBaseUrl/api/v1/users/$id'),
+        headers: headers,
+        body: jsonEncode({
+          'name': ?name,
+          'phone': ?phone,
+          'email': ?email,
+          'role': ?role,
+        }),
+      ),
+    );
     final json = unwrapJson(response);
     return Staff.fromJson(json['data']);
   }
 
   Future<Staff> setStatus(int id, String status) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.patch(
-          Uri.parse('$kBaseUrl/api/v1/users/$id/status'),
-          headers: headers,
-          body: jsonEncode({'status': status}),
-        ));
+    final response = await guardRequest(
+      () => http.patch(
+        Uri.parse('$kBaseUrl/api/v1/users/$id/status'),
+        headers: headers,
+        body: jsonEncode({'status': status}),
+      ),
+    );
     final json = unwrapJson(response);
     return Staff.fromJson(json['data']);
   }
 
   Future<void> resetPassword(int id, String password) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.patch(
-          Uri.parse('$kBaseUrl/api/v1/users/$id/password'),
-          headers: headers,
-          body: jsonEncode({'password': password}),
-        ));
+    final response = await guardRequest(
+      () => http.patch(
+        Uri.parse('$kBaseUrl/api/v1/users/$id/password'),
+        headers: headers,
+        body: jsonEncode({'password': password}),
+      ),
+    );
     // 204 No Content on success — nothing to unwrap unless it failed.
     if (response.statusCode < 200 || response.statusCode >= 300) {
       unwrapJson(response);

@@ -65,23 +65,23 @@ class ProductStock {
       verdict == 'overstocked';
 
   factory ProductStock.fromJson(Map<String, dynamic> j) => ProductStock(
-        productId: j['product_id'] ?? 0,
-        name: j['name'] ?? '',
-        sku: j['sku'] ?? '',
-        category: j['category'] ?? '',
-        stockQty: j['stock_qty'] ?? 0,
-        reorderLevel: j['reorder_level'] ?? 0,
-        unitsSold: j['units_sold'] ?? 0,
-        revenueInPaise: j['revenue_in_paise'] ?? 0,
-        profitInPaise: j['profit_in_paise'] ?? 0,
-        marginPct: j['margin_pct'] ?? 0,
-        perDay: (j['per_day'] ?? 0).toDouble(),
-        daysCover: j['days_cover'],
-        suggestedReorder: j['suggested_reorder'] ?? 0,
-        stockValueInPaise: j['stock_value_in_paise'] ?? 0,
-        verdict: j['verdict'] ?? 'healthy',
-        note: j['note'] ?? '',
-      );
+    productId: j['product_id'] ?? 0,
+    name: j['name'] ?? '',
+    sku: j['sku'] ?? '',
+    category: j['category'] ?? '',
+    stockQty: j['stock_qty'] ?? 0,
+    reorderLevel: j['reorder_level'] ?? 0,
+    unitsSold: j['units_sold'] ?? 0,
+    revenueInPaise: j['revenue_in_paise'] ?? 0,
+    profitInPaise: j['profit_in_paise'] ?? 0,
+    marginPct: j['margin_pct'] ?? 0,
+    perDay: (j['per_day'] ?? 0).toDouble(),
+    daysCover: j['days_cover'],
+    suggestedReorder: j['suggested_reorder'] ?? 0,
+    stockValueInPaise: j['stock_value_in_paise'] ?? 0,
+    verdict: j['verdict'] ?? 'healthy',
+    note: j['note'] ?? '',
+  );
 }
 
 class StockCategoryTotal {
@@ -160,22 +160,22 @@ class StockReport {
       products.where((p) => p.verdict == 'overstocked').length;
 
   factory StockReport.fromJson(Map<String, dynamic> j) => StockReport(
-        from: j['from'] ?? '',
-        to: j['to'] ?? '',
-        days: j['days'] ?? 0,
-        leadDays: j['lead_days'] ?? 7,
-        unitsSold: j['units_sold'] ?? 0,
-        revenueInPaise: j['revenue_in_paise'] ?? 0,
-        profitInPaise: j['profit_in_paise'] ?? 0,
-        stockValueInPaise: j['stock_value_in_paise'] ?? 0,
-        deadValueInPaise: j['dead_value_in_paise'] ?? 0,
-        deadCount: j['dead_count'] ?? 0,
-        mismatchCount: j['mismatch_count'] ?? 0,
-        products: ((j['products'] as List?) ?? [])
-            .map((e) => ProductStock.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        categories: ((j['categories'] as List?) ?? [])
-            .map((e) => StockCategoryTotal.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    from: j['from'] ?? '',
+    to: j['to'] ?? '',
+    days: j['days'] ?? 0,
+    leadDays: j['lead_days'] ?? 7,
+    unitsSold: j['units_sold'] ?? 0,
+    revenueInPaise: j['revenue_in_paise'] ?? 0,
+    profitInPaise: j['profit_in_paise'] ?? 0,
+    stockValueInPaise: j['stock_value_in_paise'] ?? 0,
+    deadValueInPaise: j['dead_value_in_paise'] ?? 0,
+    deadCount: j['dead_count'] ?? 0,
+    mismatchCount: j['mismatch_count'] ?? 0,
+    products: ((j['products'] as List?) ?? [])
+        .map((e) => ProductStock.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    categories: ((j['categories'] as List?) ?? [])
+        .map((e) => StockCategoryTotal.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }

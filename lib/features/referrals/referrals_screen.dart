@@ -68,7 +68,9 @@ class _ReferralsScreenState extends State<ReferralsScreen> {
     final memberId = await _pickMember(
       context,
       excludeMemberId: r.referrerMemberId,
-      initialQuery: r.referredPhone.isNotEmpty ? r.referredPhone : r.referredName,
+      initialQuery: r.referredPhone.isNotEmpty
+          ? r.referredPhone
+          : r.referredName,
     );
     if (memberId == null) return;
     try {
@@ -76,7 +78,9 @@ class _ReferralsScreenState extends State<ReferralsScreen> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -87,12 +91,16 @@ class _ReferralsScreenState extends State<ReferralsScreen> {
       final updated = await _service.rewardReferrer(r.id, rewardDays: days);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${updated.referrerName} credited $days free days')),
+        SnackBar(
+          content: Text('${updated.referrerName} credited $days free days'),
+        ),
       );
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -109,26 +117,26 @@ class _ReferralsScreenState extends State<ReferralsScreen> {
       body: _loading
           ? const LoadingView()
           : _error != null
-              ? ErrorBanner(message: _error!, onRetry: _load)
-              : _referrals.isEmpty
-                  ? const EmptyStateView(
-                      icon: Icons.diversity_3_outlined,
-                      title: 'No referrals yet',
-                      body: 'Members who bring in a friend show up here.',
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                        itemCount: _referrals.length,
-                        separatorBuilder: (_, __) => AppSpacing.gapSm,
-                        itemBuilder: (_, i) => _ReferralCard(
-                          referral: _referrals[i],
-                          onMarkJoined: () => _markJoined(_referrals[i]),
-                          onReward: () => _reward(_referrals[i]),
-                        ),
-                      ),
-                    ),
+          ? ErrorBanner(message: _error!, onRetry: _load)
+          : _referrals.isEmpty
+          ? const EmptyStateView(
+              icon: Icons.diversity_3_outlined,
+              title: 'No referrals yet',
+              body: 'Members who bring in a friend show up here.',
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                itemCount: _referrals.length,
+                separatorBuilder: (_, __) => AppSpacing.gapSm,
+                itemBuilder: (_, i) => _ReferralCard(
+                  referral: _referrals[i],
+                  onMarkJoined: () => _markJoined(_referrals[i]),
+                  onReward: () => _reward(_referrals[i]),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -138,14 +146,18 @@ class _ReferralCard extends StatelessWidget {
   final VoidCallback onMarkJoined;
   final VoidCallback onReward;
 
-  const _ReferralCard({required this.referral, required this.onMarkJoined, required this.onReward});
+  const _ReferralCard({
+    required this.referral,
+    required this.onMarkJoined,
+    required this.onReward,
+  });
 
   (Color, Color) get _statusColors => switch (referral.status) {
-        'joined' => (AppColors.info, AppColors.infoLight),
-        'rewarded' => (AppColors.success, AppColors.successLight),
-        'expired' => (AppColors.textSecondary, AppColors.background),
-        _ => (AppColors.warning, AppColors.warningLight),
-      };
+    'joined' => (AppColors.info, AppColors.infoLight),
+    'rewarded' => (AppColors.success, AppColors.successLight),
+    'expired' => (AppColors.textSecondary, AppColors.background),
+    _ => (AppColors.warning, AppColors.warningLight),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -164,37 +176,71 @@ class _ReferralCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text('${referral.referrerName} → ${referral.referredName}',
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                child: Text(
+                  '${referral.referrerName} → ${referral.referredName}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(6),
+                ),
                 child: Text(
-                  referral.status[0].toUpperCase() + referral.status.substring(1),
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg),
+                  referral.status[0].toUpperCase() +
+                      referral.status.substring(1),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: fg,
+                  ),
                 ),
               ),
             ],
           ),
           AppSpacing.gapXs,
-          Text(referral.referredPhone, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          Text(
+            referral.referredPhone,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
           if (referral.status == 'rewarded' && referral.rewardDays != null) ...[
             AppSpacing.gapXs,
-            Text('Rewarded ${referral.rewardDays} free days',
-                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.success)),
+            Text(
+              'Rewarded ${referral.rewardDays} free days',
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.success,
+              ),
+            ),
           ],
           if (referral.notes != null && referral.notes!.isNotEmpty) ...[
             AppSpacing.gapXs,
-            Text('"${referral.notes}"',
-                style: const TextStyle(fontSize: 12.5, fontStyle: FontStyle.italic, color: AppColors.textSecondary)),
+            Text(
+              '"${referral.notes}"',
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontStyle: FontStyle.italic,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
           if (referral.status == 'pending' || referral.status == 'joined') ...[
             AppSpacing.gapMd,
             Row(
               children: [
                 if (referral.status == 'pending')
-                  TextButton(onPressed: onMarkJoined, child: const Text('Mark joined')),
+                  TextButton(
+                    onPressed: onMarkJoined,
+                    child: const Text('Mark joined'),
+                  ),
                 if (referral.status == 'joined')
                   TextButton(onPressed: onReward, child: const Text('Reward')),
               ],
@@ -209,7 +255,10 @@ class _ReferralCard extends StatelessWidget {
 // ─── Create referral dialog ─────────────────────────────────────────────────
 
 Future<Referral?> showCreateReferralDialog(BuildContext context) {
-  return showDialog<Referral>(context: context, builder: (_) => const _CreateReferralDialog());
+  return showDialog<Referral>(
+    context: context,
+    builder: (_) => const _CreateReferralDialog(),
+  );
 }
 
 class _CreateReferralDialog extends StatefulWidget {
@@ -251,7 +300,10 @@ class _CreateReferralDialogState extends State<_CreateReferralDialog> {
       setState(() => _results = []);
       return;
     }
-    _debounce = Timer(const Duration(milliseconds: 350), () => _search(q.trim()));
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _search(q.trim()),
+    );
   }
 
   Future<void> _search(String q) async {
@@ -325,7 +377,11 @@ class _CreateReferralDialogState extends State<_CreateReferralDialog> {
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        AppButton(text: 'Create', loading: _saving, onPressed: _saving ? null : _submit),
+        AppButton(
+          text: 'Create',
+          loading: _saving,
+          onPressed: _saving ? null : _submit,
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,7 +397,11 @@ class _CreateReferralDialogState extends State<_CreateReferralDialog> {
               suffixIcon: _searching
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                      child: SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
                     )
                   : null,
             ),
@@ -353,17 +413,24 @@ class _CreateReferralDialogState extends State<_CreateReferralDialog> {
                 onTap: () => setState(() {
                   _referrer = m;
                   _results = [];
-                  _referrerSearchController.text = '${m.firstName} ${m.lastName}';
+                  _referrerSearchController.text =
+                      '${m.firstName} ${m.lastName}';
                 }),
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.card,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: AppColors.border),
                   ),
-                  child: Text('${m.firstName} ${m.lastName}', style: const TextStyle(fontSize: 13.5)),
+                  child: Text(
+                    '${m.firstName} ${m.lastName}',
+                    style: const TextStyle(fontSize: 13.5),
+                  ),
                 ),
               ),
               AppSpacing.gapXs,
@@ -392,10 +459,7 @@ class _CreateReferralDialogState extends State<_CreateReferralDialog> {
 
           const LifecycleFieldLabel('Notes (optional)'),
           AppSpacing.gapXs,
-          TextField(
-            controller: _notesController,
-            autofillHints: const [],
-          ),
+          TextField(controller: _notesController, autofillHints: const []),
         ],
       ),
     );
@@ -428,7 +492,11 @@ class _ModeButton extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _ModeButton({required this.label, required this.selected, required this.onTap});
+  const _ModeButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +509,10 @@ class _ModeButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppColors.primaryLight : AppColors.card,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.border, width: selected ? 1.5 : 1),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.border,
+            width: selected ? 1.5 : 1,
+          ),
         ),
         child: Text(
           label,
@@ -466,7 +537,10 @@ Future<int?> _promptRewardDays(BuildContext context) {
       icon: Icons.card_giftcard,
       accent: AppColors.success,
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         AppButton(
           text: 'Reward',
           onPressed: () {

@@ -133,7 +133,9 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : "Couldn't add this member. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't add this member. Please try again.";
       });
     }
 
@@ -141,7 +143,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     setState(() => _isLoading = false);
   }
 
-  String _formatDate(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _formatDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
   @override
   Widget build(BuildContext context) {
@@ -161,9 +164,18 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.person_add_alt_1_rounded, color: AppColors.primary),
+                      const Icon(
+                        Icons.person_add_alt_1_rounded,
+                        color: AppColors.primary,
+                      ),
                       AppSpacing.hGapSm,
-                      const Text('Add Member', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      const Text(
+                        'Add Member',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
 
@@ -175,8 +187,11 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                         child: TextFormField(
                           controller: firstNameController,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(labelText: 'First Name'),
-                          validator: (v) => Validators.required(v, 'First name'),
+                          decoration: const InputDecoration(
+                            labelText: 'First Name',
+                          ),
+                          validator: (v) =>
+                              Validators.required(v, 'First name'),
                         ),
                       ),
                       AppSpacing.hGapMd,
@@ -184,7 +199,9 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                         child: TextFormField(
                           controller: lastNameController,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(labelText: 'Last Name'),
+                          decoration: const InputDecoration(
+                            labelText: 'Last Name',
+                          ),
                           validator: (v) => Validators.required(v, 'Last name'),
                         ),
                       ),
@@ -205,7 +222,9 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Email (optional)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Email (optional)',
+                    ),
                     validator: Validators.emailOptional,
                   ),
                   AppSpacing.gapMd,
@@ -213,7 +232,9 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                   TextFormField(
                     controller: addressController,
                     textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(labelText: 'Address (optional)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Address (optional)',
+                    ),
                     onFieldSubmitted: (_) => saveMember(),
                   ),
                   AppSpacing.gapMd,
@@ -222,13 +243,17 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context,
-                        initialDate: _dateOfBirth ??
-                            DateTime.now().subtract(const Duration(days: 365 * 25)),
+                        initialDate:
+                            _dateOfBirth ??
+                            DateTime.now().subtract(
+                              const Duration(days: 365 * 25),
+                            ),
                         // No upper bound on age and nobody under 5: a gym has
                         // no business rejecting a date somebody actually has.
                         firstDate: DateTime(1920),
-                        lastDate: DateTime.now()
-                            .subtract(const Duration(days: 365 * 5)),
+                        lastDate: DateTime.now().subtract(
+                          const Duration(days: 365 * 5),
+                        ),
                         helpText: 'Date of birth',
                         initialDatePickerMode: DatePickerMode.year,
                       );
@@ -236,7 +261,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                     },
                     child: InputDecorator(
                       decoration: const InputDecoration(
-                          labelText: 'Date of Birth (optional)'),
+                        labelText: 'Date of Birth (optional)',
+                      ),
                       child: Text(
                         _dateOfBirth == null
                             ? 'Not set'
@@ -252,7 +278,9 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
                     initialValue: _gender,
-                    decoration: const InputDecoration(labelText: 'Gender (optional)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Gender (optional)',
+                    ),
                     items: const [
                       DropdownMenuItem(value: 'male', child: Text('Male')),
                       DropdownMenuItem(value: 'female', child: Text('Female')),
@@ -265,13 +293,26 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                   _loadingPlans
                       ? const Padding(
                           padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
                         )
                       : DropdownButtonFormField<int>(
                           initialValue: _planId,
-                          decoration: const InputDecoration(labelText: 'Membership Plan (optional)'),
+                          decoration: const InputDecoration(
+                            labelText: 'Membership Plan (optional)',
+                          ),
                           items: _plans
-                              .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
+                              .map(
+                                (p) => DropdownMenuItem(
+                                  value: p.id,
+                                  child: Text(p.name),
+                                ),
+                              )
                               .toList(),
                           onChanged: (v) => setState(() => _planId = v),
                         ),
@@ -290,7 +331,9 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                       Expanded(
                         child: _DateField(
                           label: 'Expiry Date (optional)',
-                          value: _expiryDate == null ? 'Not set' : _formatDate(_expiryDate!),
+                          value: _expiryDate == null
+                              ? 'Not set'
+                              : _formatDate(_expiryDate!),
                           onTap: () => _pickDate(isStart: false),
                         ),
                       ),
@@ -306,14 +349,20 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                   // moment it matters.
                   Row(
                     children: [
-                      Icon(Icons.emergency_share_rounded,
-                          size: 15, color: Colors.grey.shade600),
+                      Icon(
+                        Icons.emergency_share_rounded,
+                        size: 15,
+                        color: Colors.grey.shade600,
+                      ),
                       const SizedBox(width: 7),
-                      Text('In an emergency',
-                          style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade700)),
+                      Text(
+                        'In an emergency',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                     ],
                   ),
                   AppSpacing.gapSm,
@@ -324,7 +373,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                           controller: emergencyNameController,
                           textCapitalization: TextCapitalization.words,
                           decoration: const InputDecoration(
-                              labelText: 'Contact name (optional)'),
+                            labelText: 'Contact name (optional)',
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -333,14 +383,17 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                           controller: emergencyPhoneController,
                           keyboardType: TextInputType.phone,
                           decoration: const InputDecoration(
-                              labelText: 'Contact phone (optional)'),
+                            labelText: 'Contact phone (optional)',
+                          ),
                           // Validated only if filled: half an emergency
                           // contact still beats none, and a name with no
                           // number is something staff can act on.
                           validator: (v) {
                             final t = (v ?? '').trim();
                             if (t.isEmpty) return null;
-                            return t.length < 10 ? 'Enter a full phone number' : null;
+                            return t.length < 10
+                                ? 'Enter a full phone number'
+                                : null;
                           },
                         ),
                       ),
@@ -360,7 +413,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                     textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
                       labelText: 'Notes (optional)',
-                      hintText: 'Injuries, goals, anything the desk should know',
+                      hintText:
+                          'Injuries, goals, anything the desk should know',
                       alignLabelWithHint: true,
                     ),
                   ),
@@ -376,7 +430,9 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: _isLoading ? null : () => Navigator.pop(context),
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.pop(context),
                         child: const Text('Cancel'),
                       ),
                       AppSpacing.hGapSm,
@@ -387,7 +443,10 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               )
                             : const Text('Save Member'),
                       ),
@@ -408,7 +467,11 @@ class _DateField extends StatelessWidget {
   final String value;
   final VoidCallback onTap;
 
-  const _DateField({required this.label, required this.value, required this.onTap});
+  const _DateField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -421,7 +484,11 @@ class _DateField extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(value),
-            const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.textSecondary),
+            const Icon(
+              Icons.calendar_today_rounded,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
           ],
         ),
       ),

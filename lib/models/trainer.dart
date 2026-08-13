@@ -29,16 +29,17 @@ class Trainer {
   });
 
   factory Trainer.fromJson(Map<String, dynamic> j) => Trainer(
-        id: j['id'] ?? 0,
-        firstName: j['first_name'] ?? '',
-        lastName: j['last_name'] ?? '',
-        fullName: j['full_name'] ?? '${j['first_name'] ?? ''} ${j['last_name'] ?? ''}',
-        phone: j['phone'] ?? '',
-        email: j['email'],
-        specialization: j['specialization'],
-        status: j['status'] ?? 'active',
-        salaryInPaise: j['salary_in_paise'],
-        commissionPct: (j['commission_pct'] as num?)?.toDouble(),
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    firstName: j['first_name'] ?? '',
+    lastName: j['last_name'] ?? '',
+    fullName:
+        j['full_name'] ?? '${j['first_name'] ?? ''} ${j['last_name'] ?? ''}',
+    phone: j['phone'] ?? '',
+    email: j['email'],
+    specialization: j['specialization'],
+    status: j['status'] ?? 'active',
+    salaryInPaise: j['salary_in_paise'],
+    commissionPct: (j['commission_pct'] as num?)?.toDouble(),
+    createdAt: j['created_at'] ?? '',
+  );
 }

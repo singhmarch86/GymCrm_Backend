@@ -60,8 +60,13 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
       builder: (_) => const _WalletActionDialog(kind: _WalletActionKind.topUp),
     );
     if (result == null) return;
-    await _run(() => _service.topUp(widget.memberId,
-        amountInPaise: result.amountInPaise, reason: result.reason));
+    await _run(
+      () => _service.topUp(
+        widget.memberId,
+        amountInPaise: result.amountInPaise,
+        reason: result.reason,
+      ),
+    );
   }
 
   Future<void> _spend() async {
@@ -73,8 +78,13 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
       ),
     );
     if (result == null) return;
-    await _run(() => _service.spend(widget.memberId,
-        amountInPaise: result.amountInPaise, reason: result.reason));
+    await _run(
+      () => _service.spend(
+        widget.memberId,
+        amountInPaise: result.amountInPaise,
+        reason: result.reason,
+      ),
+    );
   }
 
   Future<void> _adjust() async {
@@ -83,8 +93,13 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
       builder: (_) => const _WalletActionDialog(kind: _WalletActionKind.adjust),
     );
     if (result == null) return;
-    await _run(() => _service.adjust(widget.memberId,
-        deltaInPaise: result.amountInPaise, reason: result.reason));
+    await _run(
+      () => _service.adjust(
+        widget.memberId,
+        deltaInPaise: result.amountInPaise,
+        reason: result.reason,
+      ),
+    );
   }
 
   Future<void> _run(Future<void> Function() action) async {
@@ -93,7 +108,9 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -107,8 +124,14 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Wallet',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            const Text(
+              'Wallet',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
             if (!_loading && _error == null)
               TextButton.icon(
                 onPressed: _topUp,
@@ -123,36 +146,62 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Center(
-                child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
           )
         else if (_error != null)
-          Text(_error!, style: const TextStyle(fontSize: 12.5, color: AppColors.danger))
+          Text(
+            _error!,
+            style: const TextStyle(fontSize: 12.5, color: AppColors.danger),
+          )
         else if (w != null) ...[
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: w.hasCredit ? AppColors.successLight : AppColors.background,
+              color: w.hasCredit
+                  ? AppColors.successLight
+                  : AppColors.background,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: w.hasCredit ? AppColors.success : AppColors.border),
+              border: Border.all(
+                color: w.hasCredit ? AppColors.success : AppColors.border,
+              ),
             ),
             child: Row(
               children: [
-                Icon(Icons.account_balance_wallet_outlined,
-                    size: 20, color: w.hasCredit ? AppColors.success : AppColors.textSecondary),
+                Icon(
+                  Icons.account_balance_wallet_outlined,
+                  size: 20,
+                  color: w.hasCredit
+                      ? AppColors.success
+                      : AppColors.textSecondary,
+                ),
                 AppSpacing.gapMd,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(formatRupees(w.balanceInRupees),
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: w.hasCredit ? AppColors.success : AppColors.textSecondary,
-                          )),
-                      const Text('available credit',
-                          style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+                      Text(
+                        formatRupees(w.balanceInRupees),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: w.hasCredit
+                              ? AppColors.success
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                      const Text(
+                        'available credit',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -169,8 +218,10 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
 
           if (w.transactions.isEmpty) ...[
             AppSpacing.gapSm,
-            const Text('No wallet activity yet.',
-                style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+            const Text(
+              'No wallet activity yet.',
+              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+            ),
           ] else ...[
             AppSpacing.gapSm,
             for (final t in w.transactions.take(8))
@@ -181,12 +232,16 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
                     Icon(
                       t.isCredit ? Icons.arrow_downward : Icons.arrow_upward,
                       size: 14,
-                      color: t.isCredit ? AppColors.success : AppColors.textSecondary,
+                      color: t.isCredit
+                          ? AppColors.success
+                          : AppColors.textSecondary,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        t.reason != null && t.reason!.isNotEmpty ? '${t.label} — ${t.reason}' : t.label,
+                        t.reason != null && t.reason!.isNotEmpty
+                            ? '${t.label} — ${t.reason}'
+                            : t.label,
                         style: const TextStyle(fontSize: 12.5),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -196,7 +251,9 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: t.isCredit ? AppColors.success : AppColors.textPrimary,
+                        color: t.isCredit
+                            ? AppColors.success
+                            : AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -243,10 +300,10 @@ class _WalletActionDialogState extends State<_WalletActionDialog> {
   }
 
   String get _title => switch (widget.kind) {
-        _WalletActionKind.topUp => 'Add credit',
-        _WalletActionKind.spend => 'Spend from wallet',
-        _WalletActionKind.adjust => 'Correct the balance',
-      };
+    _WalletActionKind.topUp => 'Add credit',
+    _WalletActionKind.spend => 'Spend from wallet',
+    _WalletActionKind.adjust => 'Correct the balance',
+  };
 
   bool get _reasonRequired => widget.kind == _WalletActionKind.adjust;
 
@@ -283,10 +340,15 @@ class _WalletActionDialogState extends State<_WalletActionDialog> {
           ? '${formatRupees(widget.availableInPaise / 100)} available'
           : 'Stored credit on the account',
       icon: Icons.account_balance_wallet_outlined,
-      accent: widget.kind == _WalletActionKind.topUp ? AppColors.success : AppColors.primary,
+      accent: widget.kind == _WalletActionKind.topUp
+          ? AppColors.success
+          : AppColors.primary,
       error: _error,
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         AppButton(text: 'Confirm', onPressed: _submit),
       ],
       child: Column(
@@ -332,7 +394,8 @@ class _WalletActionDialogState extends State<_WalletActionDialog> {
 
           const LifecycleNotice(
             tone: LifecycleTone.info,
-            text: 'Every change is recorded, so the balance can always be explained. '
+            text:
+                'Every change is recorded, so the balance can always be explained. '
                 'The wallet can never go below zero.',
           ),
         ],

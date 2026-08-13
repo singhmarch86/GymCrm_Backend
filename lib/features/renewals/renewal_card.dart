@@ -9,6 +9,7 @@ class RenewalCard extends StatelessWidget {
   final RenewalDue renewal;
   final VoidCallback? onRenew;
   final VoidCallback? onTap;
+
   /// Raises a GST invoice for the renewal. Only offered when the member is on
   /// a plan — an invoice line has to be for something.
   final VoidCallback? onInvoice;
@@ -73,14 +74,11 @@ class RenewalCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
-
               CircleAvatar(
                 radius: 26,
-                backgroundColor:
-                AppColors.primary.withValues(alpha: 0.12),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                 child: Text(
                   initial,
                   style: const TextStyle(
@@ -95,8 +93,7 @@ class RenewalCard extends StatelessWidget {
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       renewal.memberName,
@@ -119,10 +116,7 @@ class RenewalCard extends StatelessWidget {
                 ),
               ),
 
-              StatusChip(
-                status: renewal.status,
-                label: statusLabel,
-              ),
+              StatusChip(status: renewal.status, label: statusLabel),
             ],
           ),
 
@@ -156,11 +150,7 @@ class RenewalCard extends StatelessWidget {
 
           Row(
             children: [
-              Icon(
-                Icons.schedule_rounded,
-                size: 17,
-                color: urgencyColor,
-              ),
+              Icon(Icons.schedule_rounded, size: 17, color: urgencyColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -193,17 +183,12 @@ class RenewalCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: onRenew,
-                icon: const Icon(
-                  Icons.autorenew_rounded,
-                  size: 18,
-                ),
+                icon: const Icon(Icons.autorenew_rounded, size: 18),
                 label: const Text("Renew"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

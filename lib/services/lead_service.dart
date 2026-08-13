@@ -19,7 +19,10 @@ class LeadService {
 
   Future<LeadSummary> getSummary() async {
     final response = await guardRequest(
-      () async => http.get(Uri.parse('$kBaseUrl/api/v1/leads/summary'), headers: await _headers()),
+      () async => http.get(
+        Uri.parse('$kBaseUrl/api/v1/leads/summary'),
+        headers: await _headers(),
+      ),
     );
     final json = unwrapJson(response);
     return LeadSummary.fromJson(json['data']);
@@ -44,9 +47,13 @@ class LeadService {
       if (assignedTo.isNotEmpty) 'assigned_to': assignedTo,
     };
 
-    final uri = Uri.parse('$kBaseUrl/api/v1/leads').replace(queryParameters: query);
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/leads',
+    ).replace(queryParameters: query);
 
-    final response = await guardRequest(() async => http.get(uri, headers: await _headers()));
+    final response = await guardRequest(
+      () async => http.get(uri, headers: await _headers()),
+    );
     final json = unwrapJson(response);
     final List list = json['data']['leads'] as List;
     return list.map((e) => Lead.fromJson(e)).toList();
@@ -56,7 +63,10 @@ class LeadService {
 
   Future<Lead> getLead(int id) async {
     final response = await guardRequest(
-      () async => http.get(Uri.parse('$kBaseUrl/api/v1/leads/$id'), headers: await _headers()),
+      () async => http.get(
+        Uri.parse('$kBaseUrl/api/v1/leads/$id'),
+        headers: await _headers(),
+      ),
     );
     final json = unwrapJson(response);
     return Lead.fromJson(json['data']);
@@ -65,11 +75,13 @@ class LeadService {
   // ─── Create ──────────────────────────────────────────────────────────────────
 
   Future<Lead> createLead(Map<String, dynamic> data) async {
-    final response = await guardRequest(() async => http.post(
-          Uri.parse('$kBaseUrl/api/v1/leads'),
-          headers: await _headers(),
-          body: jsonEncode(data),
-        ));
+    final response = await guardRequest(
+      () async => http.post(
+        Uri.parse('$kBaseUrl/api/v1/leads'),
+        headers: await _headers(),
+        body: jsonEncode(data),
+      ),
+    );
     final json = unwrapJson(response);
     return Lead.fromJson(json['data']);
   }
@@ -77,11 +89,13 @@ class LeadService {
   // ─── Update ──────────────────────────────────────────────────────────────────
 
   Future<Lead> updateLead(int id, Map<String, dynamic> data) async {
-    final response = await guardRequest(() async => http.put(
-          Uri.parse('$kBaseUrl/api/v1/leads/$id'),
-          headers: await _headers(),
-          body: jsonEncode(data),
-        ));
+    final response = await guardRequest(
+      () async => http.put(
+        Uri.parse('$kBaseUrl/api/v1/leads/$id'),
+        headers: await _headers(),
+        body: jsonEncode(data),
+      ),
+    );
     final json = unwrapJson(response);
     return Lead.fromJson(json['data']);
   }
@@ -105,25 +119,35 @@ class LeadService {
       body['note'] = note.trim();
     }
 
-    final response = await guardRequest(() async => http.patch(
-          Uri.parse('$kBaseUrl/api/v1/leads/$id/status'),
-          headers: await _headers(),
-          body: jsonEncode(body),
-        ));
+    final response = await guardRequest(
+      () async => http.patch(
+        Uri.parse('$kBaseUrl/api/v1/leads/$id/status'),
+        headers: await _headers(),
+        body: jsonEncode(body),
+      ),
+    );
     final json = unwrapJson(response);
     return Lead.fromJson(json['data']);
   }
 
   // ─── Convert to member ───────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>> convertToMember(int leadId, Map<String, dynamic> data) async {
-    final response = await guardRequest(() async => http.post(
-          Uri.parse('$kBaseUrl/api/v1/leads/$leadId/convert'),
-          headers: await _headers(),
-          body: jsonEncode(data),
-        ));
+  Future<Map<String, dynamic>> convertToMember(
+    int leadId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await guardRequest(
+      () async => http.post(
+        Uri.parse('$kBaseUrl/api/v1/leads/$leadId/convert'),
+        headers: await _headers(),
+        body: jsonEncode(data),
+      ),
+    );
     if (response.statusCode == 409) {
-      throw const ApiException('This lead has already been converted to a member', statusCode: 409);
+      throw const ApiException(
+        'This lead has already been converted to a member',
+        statusCode: 409,
+      );
     }
     final json = unwrapJson(response);
     return json['data'] as Map<String, dynamic>;
@@ -131,7 +155,10 @@ class LeadService {
 
   Future<void> deleteLead(int id) async {
     final response = await guardRequest(
-      () async => http.delete(Uri.parse('$kBaseUrl/api/v1/leads/$id'), headers: await _headers()),
+      () async => http.delete(
+        Uri.parse('$kBaseUrl/api/v1/leads/$id'),
+        headers: await _headers(),
+      ),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       unwrapJson(response);
@@ -195,9 +222,9 @@ class LeadService {
       if (assignedTo.isNotEmpty) 'assigned_to': assignedTo,
       if (groupBy.isNotEmpty && groupBy != 'timing') 'group_by': groupBy,
     };
-    final uri = Uri.parse('$kBaseUrl/api/v1/leads/workflow').replace(
-      queryParameters: params.isEmpty ? null : params,
-    );
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/leads/workflow',
+    ).replace(queryParameters: params.isEmpty ? null : params);
     final response = await guardRequest(
       () async => http.get(uri, headers: await _headers()),
     );

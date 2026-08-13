@@ -30,60 +30,51 @@ class DashboardKpiCard extends StatelessWidget {
       button: onTap != null,
       excludeSemantics: true,
       child: AppCard(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius:
-              BorderRadius.circular(14),
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 24),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
-          ),
 
-          const SizedBox(height: 22),
+            const SizedBox(height: 22),
 
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-              height: 1,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          if (subtitle != null) ...[
-            const SizedBox(height: 10),
             Text(
-              subtitle!,
-              style: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: 12,
+              value,
+              style: const TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                height: 1,
               ),
             ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              title,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            if (subtitle != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                subtitle!,
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+              ),
+            ],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }

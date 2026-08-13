@@ -71,19 +71,26 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
   Future<void> _addLine() async {
-    final line = await showDialog<_NewLine>(context: context, builder: (_) => const _AddLineDialog());
+    final line = await showDialog<_NewLine>(
+      context: context,
+      builder: (_) => const _AddLineDialog(),
+    );
     if (line == null) return;
-    _run(() => _service.addItem(
-          widget.invoiceId,
-          description: line.description,
-          unitPriceInPaise: line.unitPriceInPaise,
-          quantity: line.quantity,
-        ));
+    _run(
+      () => _service.addItem(
+        widget.invoiceId,
+        description: line.description,
+        unitPriceInPaise: line.unitPriceInPaise,
+        quantity: line.quantity,
+      ),
+    );
   }
 
   Future<void> _applyDiscount() async {
@@ -92,12 +99,14 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
       builder: (_) => const _ApplyDiscountDialog(),
     );
     if (result == null) return;
-    _run(() => _service.applyDiscount(
-          widget.invoiceId,
-          code: result.code,
-          adHocInPaise: result.adHocInPaise,
-          reason: result.reason,
-        ));
+    _run(
+      () => _service.applyDiscount(
+        widget.invoiceId,
+        code: result.code,
+        adHocInPaise: result.adHocInPaise,
+        reason: result.reason,
+      ),
+    );
   }
 
   Future<void> _issue() async {
@@ -109,12 +118,19 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         icon: Icons.receipt_long,
         accent: AppColors.primary,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          AppButton(text: 'Issue', onPressed: () => Navigator.pop(context, true)),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          AppButton(
+            text: 'Issue',
+            onPressed: () => Navigator.pop(context, true),
+          ),
         ],
         child: const LifecycleNotice(
           tone: LifecycleTone.warning,
-          text: 'Once issued, lines and prices are frozen. To correct a mistake later '
+          text:
+              'Once issued, lines and prices are frozen. To correct a mistake later '
               'you cancel this invoice and issue a new one — both stay on record.',
         ),
       ),
@@ -132,7 +148,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         icon: Icons.block,
         accent: AppColors.danger,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Keep it')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Keep it'),
+          ),
           AppButton(
             text: 'Cancel invoice',
             onPressed: () {
@@ -146,7 +165,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
           children: [
             const LifecycleNotice(
               tone: LifecycleTone.warning,
-              text: 'The invoice number is kept and never reused — a cancelled document '
+              text:
+                  'The invoice number is kept and never reused — a cancelled document '
                   'stays visible on the record. A reason is required.',
             ),
             AppSpacing.gapLg,
@@ -155,13 +175,17 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
             TextField(
               controller: controller,
               autofillHints: const [],
-              decoration: const InputDecoration(hintText: 'e.g. raised in error, wrong member'),
+              decoration: const InputDecoration(
+                hintText: 'e.g. raised in error, wrong member',
+              ),
             ),
           ],
         ),
       ),
     );
-    if (reason != null) _run(() => _service.cancel(widget.invoiceId, reason: reason));
+    if (reason != null) {
+      _run(() => _service.cancel(widget.invoiceId, reason: reason));
+    }
   }
 
   @override
@@ -189,10 +213,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         body: _loading
             ? const LoadingView()
             : _error != null
-                ? ErrorBanner(message: _error!, onRetry: _load)
-                : inv == null
-                    ? const SizedBox.shrink()
-                    : _body(inv),
+            ? ErrorBanner(message: _error!, onRetry: _load)
+            : inv == null
+            ? const SizedBox.shrink()
+            : _body(inv),
         bottomNavigationBar: (inv != null && inv.isDraft)
             ? SafeArea(
                 child: Padding(
@@ -219,7 +243,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
           AppSpacing.gapMd,
 
           if (inv.isCancelled && inv.cancelledReason != null) ...[
-            LifecycleNotice(tone: LifecycleTone.blocked, text: 'Cancelled — ${inv.cancelledReason}'),
+            LifecycleNotice(
+              tone: LifecycleTone.blocked,
+              text: 'Cancelled — ${inv.cancelledReason}',
+            ),
             AppSpacing.gapMd,
           ],
 
@@ -231,9 +258,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               tone: LifecycleTone.info,
               text: inv.pricesIncludeTax
                   ? 'Prices include tax — the amounts you enter are what the member pays, '
-                      'and GST is calculated out of them.'
+                        'and GST is calculated out of them.'
                   : 'Tax is added on top — GST is added to the amounts you enter, so the '
-                      'member pays more than the figure typed in.',
+                        'member pays more than the figure typed in.',
             ),
             AppSpacing.gapMd,
           ],
@@ -241,7 +268,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Line items', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+              const Text(
+                'Line items',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              ),
               if (inv.isDraft)
                 TextButton.icon(
                   onPressed: _busy ? null : _addLine,
@@ -255,7 +285,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
           if (inv.items.isEmpty)
             const LifecycleNotice(
               tone: LifecycleTone.info,
-              text: 'No lines yet. An invoice needs at least one line before it can be issued.',
+              text:
+                  'No lines yet. An invoice needs at least one line before it can be issued.',
             ),
           for (final item in inv.items) ...[
             _lineCard(inv, item),
@@ -270,7 +301,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
             OutlinedButton.icon(
               onPressed: _busy ? null : _applyDiscount,
               icon: const Icon(Icons.local_offer_outlined, size: 18),
-              label: Text(inv.discountInPaise > 0 ? 'Change discount' : 'Apply discount'),
+              label: Text(
+                inv.discountInPaise > 0 ? 'Change discount' : 'Apply discount',
+              ),
             ),
           ],
           const SizedBox(height: 24),
@@ -293,8 +326,13 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
           Row(
             children: [
               Expanded(
-                child: Text(inv.memberName,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                child: Text(
+                  inv.memberName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
               ),
               StatusChip(status: inv.displayState),
             ],
@@ -303,15 +341,24 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
           Text(
             [
               inv.memberPhone,
-              if (inv.invoiceDate != null) 'Issued ${inv.invoiceDate!.substring(0, 10)}',
+              if (inv.invoiceDate != null)
+                'Issued ${inv.invoiceDate!.substring(0, 10)}',
               if (inv.dueDate != null) 'Due ${inv.dueDate!.substring(0, 10)}',
             ].join(' · '),
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
           if (inv.gstin != null) ...[
             AppSpacing.gapXs,
-            Text('GSTIN ${inv.gstin}${inv.placeOfSupply != null ? ' · ${inv.placeOfSupply}' : ''}',
-                style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+            Text(
+              'GSTIN ${inv.gstin}${inv.placeOfSupply != null ? ' · ${inv.placeOfSupply}' : ''}',
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
         ],
       ),
@@ -332,23 +379,36 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.description, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                Text(
+                  item.description,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13.5,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   '${item.quantity} × ${formatRupees(item.unitPriceInRupees)} · GST ${item.taxRatePct.toStringAsFixed(0)}%'
                   '${item.sacCode != null ? ' · SAC ${item.sacCode}' : ''}',
-                  style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
-          Text(formatRupees(item.lineTotalInRupees),
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+          Text(
+            formatRupees(item.lineTotalInRupees),
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+          ),
           if (inv.isDraft)
             IconButton(
               tooltip: 'Remove line',
               icon: const Icon(Icons.close, size: 16),
-              onPressed: _busy ? null : () => _run(() => _service.removeItem(inv.id, item.id)),
+              onPressed: _busy
+                  ? null
+                  : () => _run(() => _service.removeItem(inv.id, item.id)),
             ),
         ],
       ),
@@ -363,12 +423,13 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         if (inv.discountInPaise > 0)
           (
             'Discount${inv.discountLabel != null ? ' — ${inv.discountLabel}' : ''}',
-            '− ${formatRupees(inv.discountInPaise / 100)}'
+            '− ${formatRupees(inv.discountInPaise / 100)}',
           ),
         ('CGST', formatRupees(inv.cgstInPaise / 100)),
         ('SGST', formatRupees(inv.sgstInPaise / 100)),
         if (!inv.isDraft) ('Paid', formatRupees(inv.paidInPaise / 100)),
-        if (!inv.isDraft && inv.dueInPaise > 0) ('Balance due', formatRupees(inv.dueInPaise / 100)),
+        if (!inv.isDraft && inv.dueInPaise > 0)
+          ('Balance due', formatRupees(inv.dueInPaise / 100)),
         ('Total', formatRupees(inv.totalInRupees)),
       ],
     );
@@ -434,7 +495,10 @@ class _AddLineDialogState extends State<_AddLineDialog> {
       accent: AppColors.primary,
       error: _error,
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         AppButton(text: 'Add', onPressed: _submit),
       ],
       child: Column(
@@ -445,7 +509,9 @@ class _AddLineDialogState extends State<_AddLineDialog> {
           TextField(
             controller: _descriptionController,
             autofillHints: const [],
-            decoration: const InputDecoration(hintText: 'e.g. Annual Membership — Gold'),
+            decoration: const InputDecoration(
+              hintText: 'e.g. Annual Membership — Gold',
+            ),
           ),
           AppSpacing.gapLg,
           Row(
@@ -459,7 +525,9 @@ class _AddLineDialogState extends State<_AddLineDialog> {
                     AppSpacing.gapXs,
                     TextField(
                       controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       autofillHints: const [],
                     ),
                   ],
@@ -564,10 +632,15 @@ class _ApplyDiscountDialogState extends State<_ApplyDiscountDialog> {
           return;
         }
         if (reason.isEmpty) {
-          setState(() => _error = 'A reason is required for an off-the-books discount');
+          setState(
+            () => _error = 'A reason is required for an off-the-books discount',
+          );
           return;
         }
-        Navigator.pop(context, _DiscountChoice(adHocInPaise: (rupees * 100).round(), reason: reason));
+        Navigator.pop(
+          context,
+          _DiscountChoice(adHocInPaise: (rupees * 100).round(), reason: reason),
+        );
       case _DiscountMode.none:
         Navigator.pop(context, _DiscountChoice());
     }
@@ -583,7 +656,10 @@ class _ApplyDiscountDialogState extends State<_ApplyDiscountDialog> {
       loading: _loading,
       error: _error,
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         AppButton(text: 'Apply', onPressed: _submit),
       ],
       child: Column(
@@ -607,7 +683,8 @@ class _ApplyDiscountDialogState extends State<_ApplyDiscountDialog> {
             if (_discounts.isEmpty)
               const LifecycleNotice(
                 tone: LifecycleTone.info,
-                text: 'No active discount codes yet. Create one from the Discounts tab, '
+                text:
+                    'No active discount codes yet. Create one from the Discounts tab, '
                     'or use a one-off amount.',
               )
             else
@@ -615,11 +692,15 @@ class _ApplyDiscountDialogState extends State<_ApplyDiscountDialog> {
                 initialValue: _selectedCode,
                 isExpanded: true,
                 items: _discounts
-                    .map((d) => DropdownMenuItem(
-                          value: d.code,
-                          child: Text('${d.code} — ${d.name} (${d.valueLabel})',
-                              overflow: TextOverflow.ellipsis),
-                        ))
+                    .map(
+                      (d) => DropdownMenuItem(
+                        value: d.code,
+                        child: Text(
+                          '${d.code} — ${d.name} (${d.valueLabel})',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) => setState(() => _selectedCode = v),
               ),
@@ -628,7 +709,9 @@ class _ApplyDiscountDialogState extends State<_ApplyDiscountDialog> {
             AppSpacing.gapXs,
             TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               autofillHints: const [],
             ),
             AppSpacing.gapLg,
@@ -637,12 +720,15 @@ class _ApplyDiscountDialogState extends State<_ApplyDiscountDialog> {
             TextField(
               controller: _reasonController,
               autofillHints: const [],
-              decoration: const InputDecoration(hintText: 'e.g. matched competitor quote'),
+              decoration: const InputDecoration(
+                hintText: 'e.g. matched competitor quote',
+              ),
             ),
             AppSpacing.gapSm,
             const LifecycleNotice(
               tone: LifecycleTone.info,
-              text: 'One-off discounts always need a reason, so the price can be explained later.',
+              text:
+                  'One-off discounts always need a reason, so the price can be explained later.',
             ),
           ] else
             const LifecycleNotice(

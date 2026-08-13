@@ -45,8 +45,9 @@ class _CollapsibleGroupState extends State<CollapsibleGroup> {
       return Column(children: widget.children);
     }
 
-    final shown =
-        _expanded ? widget.children : widget.children.take(widget.visible).toList();
+    final shown = _expanded
+        ? widget.children
+        : widget.children.take(widget.visible).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -129,7 +129,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
 
       setState(() {
-        error = e is ApiException ? e.message : "Couldn't load your dashboard. Please try again.";
+        error = e is ApiException
+            ? e.message
+            : "Couldn't load your dashboard. Please try again.";
         loading = false;
       });
     }

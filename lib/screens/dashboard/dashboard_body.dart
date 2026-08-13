@@ -88,16 +88,10 @@ class DashboardBody extends StatelessWidget {
 
   Widget _content(bool isWide) {
     return ListView(
-      physics:
-      const AlwaysScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: AppSpacing.screenPadding,
       children: [
-
-        DashboardHeader(
-          userName: userName,
-          role: role,
-          onLogout: onLogout,
-        ),
+        DashboardHeader(userName: userName, role: role, onLogout: onLogout),
 
         AppSpacing.gapXl,
 
@@ -107,9 +101,7 @@ class DashboardBody extends StatelessWidget {
           expiring7Days: expiring7Days,
         ),
 
-        const DashboardSectionTitle(
-          title: "Today's Overview",
-        ),
+        const DashboardSectionTitle(title: "Today's Overview"),
 
         AppSpacing.gapLg,
 
@@ -159,9 +151,7 @@ class DashboardBody extends StatelessWidget {
         if (showQuickActions) ...[
           AppSpacing.gapXxl,
 
-          const DashboardSectionTitle(
-            title: "Quick Actions",
-          ),
+          const DashboardSectionTitle(title: "Quick Actions"),
 
           AppSpacing.gapLg,
 
@@ -174,9 +164,7 @@ class DashboardBody extends StatelessWidget {
 
         AppSpacing.gapXxl,
 
-        const DashboardSectionTitle(
-          title: "Recent Activity",
-        ),
+        const DashboardSectionTitle(title: "Recent Activity"),
 
         AppSpacing.gapLg,
 

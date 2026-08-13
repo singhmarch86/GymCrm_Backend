@@ -25,8 +25,10 @@ class QueueService {
   Future<StockQueue> getStock() async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/queues/stock'),
-          headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/queues/stock'),
+        headers: headers,
+      ),
     );
     return StockQueue.fromJson(unwrapJson(response)['data']);
   }
@@ -51,8 +53,7 @@ class QueueService {
   Future<RenewalQueue> getRenewals({int? windowDays}) async {
     final headers = await _headers();
     final uri = Uri.parse('$kBaseUrl/api/v1/queues/renewals').replace(
-      queryParameters:
-          windowDays == null ? null : {'window': '$windowDays'},
+      queryParameters: windowDays == null ? null : {'window': '$windowDays'},
     );
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return RenewalQueue.fromJson(unwrapJson(response)['data']);
@@ -65,8 +66,9 @@ class QueueService {
   /// this asks about a window by definition.
   Future<ExpectedPayments> getExpected({DateSpan? span}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/queues/expected')
-        .replace(queryParameters: _spanParams(span));
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/queues/expected',
+    ).replace(queryParameters: _spanParams(span));
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return ExpectedPayments.fromJson(unwrapJson(response)['data']);
   }
@@ -79,8 +81,10 @@ class QueueService {
   Future<LeakageReport> getLeakage() async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/queues/leakage'),
-          headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/queues/leakage'),
+        headers: headers,
+      ),
     );
     return LeakageReport.fromJson(unwrapJson(response)['data']);
   }

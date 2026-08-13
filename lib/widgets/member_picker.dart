@@ -106,8 +106,10 @@ class _MemberPickerState extends State<_MemberPicker> {
       });
       return;
     }
-    _debounce =
-        Timer(const Duration(milliseconds: 350), () => _search(q.trim()));
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _search(q.trim()),
+    );
   }
 
   Future<void> _search(String q) async {
@@ -169,25 +171,26 @@ class _MemberPickerState extends State<_MemberPicker> {
           ),
           AppSpacing.gapSm,
           if (!_searching && _searched && _results.isEmpty)
-            LifecycleNotice(
-              tone: LifecycleTone.info,
-              text: widget.emptyHint,
-            ),
+            LifecycleNotice(tone: LifecycleTone.info, text: widget.emptyHint),
           for (final m in _results) ...[
             InkWell(
               onTap: () => Navigator.pop(context, m),
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.card,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: Text('${m.firstName} ${m.lastName} · ${m.phone}',
-                    style: const TextStyle(fontSize: 13.5)),
+                child: Text(
+                  '${m.firstName} ${m.lastName} · ${m.phone}',
+                  style: const TextStyle(fontSize: 13.5),
+                ),
               ),
             ),
             AppSpacing.gapXs,

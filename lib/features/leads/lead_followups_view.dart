@@ -34,7 +34,11 @@ class LeadFollowUpsView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.task_alt_rounded, size: 72, color: AppColors.success),
+              const Icon(
+                Icons.task_alt_rounded,
+                size: 72,
+                color: AppColors.success,
+              ),
               const SizedBox(height: 18),
               const Text(
                 'All caught up',
@@ -198,7 +202,11 @@ class LeadFollowUpsView extends StatelessWidget {
                         _tag(Icons.event_rounded, lead.followUpLabel, accent),
                       if (lead.assignedUserName != null &&
                           lead.assignedUserName!.isNotEmpty)
-                        _tag(Icons.person_rounded, lead.assignedUserName!, Colors.teal),
+                        _tag(
+                          Icons.person_rounded,
+                          lead.assignedUserName!,
+                          Colors.teal,
+                        ),
                     ],
                   ),
                 ],
@@ -231,7 +239,11 @@ class LeadFollowUpsView extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           text,
-          style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 11,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
@@ -254,8 +266,7 @@ class _OutcomeSummary extends StatelessWidget {
     // yet", so the row stays hidden until there is something to say.
     if (!queue.hasLoggedOutcomes) return const SizedBox.shrink();
 
-    final total =
-        queue.outcomeCounts.fold<int>(0, (sum, c) => sum + c.count);
+    final total = queue.outcomeCounts.fold<int>(0, (sum, c) => sum + c.count);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
@@ -266,13 +277,18 @@ class _OutcomeSummary extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.call_made_rounded,
-                    size: 15, color: AppColors.primary),
+                const Icon(
+                  Icons.call_made_rounded,
+                  size: 15,
+                  color: AppColors.primary,
+                ),
                 const SizedBox(width: 7),
                 Text(
                   'Last ${queue.outcomeDays} days',
                   style: const TextStyle(
-                      fontSize: 12.5, fontWeight: FontWeight.bold),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Spacer(),
                 Text(
@@ -292,7 +308,9 @@ class _OutcomeSummary extends StatelessWidget {
                 for (final c in queue.outcomeCounts)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 9, vertical: 5),
+                      horizontal: 9,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: c.count == 0
                           ? Colors.grey.shade50
@@ -308,8 +326,9 @@ class _OutcomeSummary extends StatelessWidget {
                       '${c.count}  ${c.label}',
                       style: TextStyle(
                         fontSize: 11.5,
-                        fontWeight:
-                            c.count == 0 ? FontWeight.normal : FontWeight.w600,
+                        fontWeight: c.count == 0
+                            ? FontWeight.normal
+                            : FontWeight.w600,
                         color: c.count == 0
                             ? Colors.grey.shade400
                             : _tint(c.outcome),

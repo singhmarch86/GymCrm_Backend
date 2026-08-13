@@ -61,22 +61,24 @@ class DateSpanBar extends StatelessWidget {
                       showingAll ? 'Everything outstanding' : span.label,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 15),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                     if (sub != null)
                       Text(
                         sub,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade500),
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                   ],
                 ),
               ),
               IconButton(
-                tooltip: forward == null
-                    ? 'Nothing later to show'
-                    : 'Next',
+                tooltip: forward == null ? 'Nothing later to show' : 'Next',
                 icon: const Icon(Icons.chevron_right_rounded),
                 onPressed: forward == null ? null : () => onChanged(forward),
               ),
@@ -94,7 +96,8 @@ class DateSpanBar extends StatelessWidget {
                   style: ButtonStyle(
                     visualDensity: VisualDensity.compact,
                     textStyle: WidgetStatePropertyAll(
-                        TextStyle(fontSize: 12.5)),
+                      TextStyle(fontSize: 12.5),
+                    ),
                   ),
                   segments: [
                     if (allowAll)
@@ -111,10 +114,7 @@ class DateSpanBar extends StatelessWidget {
                       onShowAll?.call();
                       return;
                     }
-                    _switchTo(
-                      context,
-                      SpanMode.values.byName(picked),
-                    );
+                    _switchTo(context, SpanMode.values.byName(picked));
                   },
                 ),
               ),

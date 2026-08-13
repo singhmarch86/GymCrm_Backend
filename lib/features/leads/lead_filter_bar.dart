@@ -27,12 +27,7 @@ class LeadFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _chip(
-    BuildContext context,
-    String status,
-    String label,
-    Color color,
-  ) {
+  Widget _chip(BuildContext context, String status, String label, Color color) {
     final selected = selectedStatus == status;
     return Padding(
       padding: const EdgeInsets.only(right: 10),
@@ -49,9 +44,7 @@ class LeadFilterBar extends StatelessWidget {
           fontWeight: FontWeight.w600,
           fontSize: 13,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
     );
   }

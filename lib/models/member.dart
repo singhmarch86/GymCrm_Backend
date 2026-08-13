@@ -34,9 +34,7 @@ class Member {
     this.expiryDate,
   });
 
-  factory Member.fromJson(
-      Map<String, dynamic> json,
-      ) {
+  factory Member.fromJson(Map<String, dynamic> json) {
     return Member(
       id: json['id'] ?? 0,
       firstName: json['first_name'] ?? '',

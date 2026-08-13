@@ -75,22 +75,29 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
 
   void _snack(String text, {bool isError = false}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(text),
-      backgroundColor: isError ? AppColors.danger : null,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        backgroundColor: isError ? AppColors.danger : null,
+      ),
+    );
   }
 
   Future<void> _bookMember() async {
-    final member = await _pickMember(context, excludeMemberIds: _activeMemberIds);
+    final member = await _pickMember(
+      context,
+      excludeMemberIds: _activeMemberIds,
+    );
     if (member == null) return;
     try {
       final result = await _service.book(widget.sessionId, member.id);
       _changed = true;
       final waitlisted = result.booking.status == 'waitlisted';
-      _snack(waitlisted
-          ? '${member.firstName} added to the waitlist (#${result.booking.waitlistPosition})'
-          : '${member.firstName} booked');
+      _snack(
+        waitlisted
+            ? '${member.firstName} added to the waitlist (#${result.booking.waitlistPosition})'
+            : '${member.firstName} booked',
+      );
       await _load();
     } on ApiException catch (e) {
       _snack(e.message, isError: true);
@@ -107,7 +114,9 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       final result = await _service.cancelBooking(b.id);
       _changed = true;
       if (result.promoted != null) {
-        _snack('${b.memberName} cancelled — ${result.promoted!.memberName} moved off the waitlist');
+        _snack(
+          '${b.memberName} cancelled — ${result.promoted!.memberName} moved off the waitlist',
+        );
       } else {
         _snack('${b.memberName}\'s booking cancelled');
       }
@@ -121,7 +130,11 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
     try {
       await _service.markAttendance(b.id, attended: attended);
       _changed = true;
-      _snack(attended ? '${b.memberName} marked attended' : '${b.memberName} marked no-show');
+      _snack(
+        attended
+            ? '${b.memberName} marked attended'
+            : '${b.memberName} marked no-show',
+      );
       await _load();
     } on ApiException catch (e) {
       _snack(e.message, isError: true);
@@ -137,7 +150,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
           'Every active booking will be cancelled and the member notified list updated. This cannot be undone.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Back')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Back'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
@@ -182,10 +198,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         body: _loading
             ? const LoadingView()
             : _error != null
-                ? ErrorBanner(message: _error!, onRetry: _load)
-                : s == null
-                    ? const SizedBox.shrink()
-                    : _body(s),
+            ? ErrorBanner(message: _error!, onRetry: _load)
+            : s == null
+            ? const SizedBox.shrink()
+            : _body(s),
       ),
     );
   }
@@ -219,7 +235,9 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
                 OutlinedButton.icon(
                   icon: const Icon(Icons.cancel_outlined, size: 18),
                   label: const Text('Cancel session'),
-                  style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.danger,
+                  ),
                   onPressed: _cancelSession,
                 ),
               ],
@@ -227,7 +245,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             AppSpacing.gapXl,
           ],
 
-          const Text('Roster', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          const Text(
+            'Roster',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
           AppSpacing.gapMd,
 
           if (_roster.isEmpty)
@@ -275,7 +296,10 @@ class _SessionSummaryCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   session.classTypeName,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               StatusChip(status: session.status),
@@ -285,12 +309,20 @@ class _SessionSummaryCard extends StatelessWidget {
           Text(
             '${formatDate(session.sessionDate)} · ${session.startTime.substring(0, 5)} · '
             '${session.durationMinutes} min',
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
           if (session.trainerName != null) ...[
             AppSpacing.gapXs,
-            Text('Trainer: ${session.trainerName}',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+            Text(
+              'Trainer: ${session.trainerName}',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
           ],
           AppSpacing.gapMd,
           Row(
@@ -303,15 +335,26 @@ class _SessionSummaryCard extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 '${session.bookedCount}/${session.capacity} booked',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
               ),
               if (session.waitlistCount > 0) ...[
                 const SizedBox(width: 12),
-                const Icon(Icons.hourglass_bottom, size: 16, color: AppColors.warning),
+                const Icon(
+                  Icons.hourglass_bottom,
+                  size: 16,
+                  color: AppColors.warning,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   '${session.waitlistCount} waitlisted',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.warning),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: AppColors.warning,
+                  ),
                 ),
               ],
             ],
@@ -335,7 +378,8 @@ class _BookingRow extends StatelessWidget {
     required this.onMarkAttendance,
   });
 
-  bool get _isActive => booking.status == 'booked' || booking.status == 'waitlisted';
+  bool get _isActive =>
+      booking.status == 'booked' || booking.status == 'waitlisted';
 
   @override
   Widget build(BuildContext context) {
@@ -353,12 +397,21 @@ class _BookingRow extends StatelessWidget {
               children: [
                 Text(
                   booking.memberName,
-                  style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                if (booking.status == 'waitlisted' && booking.waitlistPosition != null) ...[
+                if (booking.status == 'waitlisted' &&
+                    booking.waitlistPosition != null) ...[
                   const SizedBox(width: 8),
-                  Text('#${booking.waitlistPosition}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text(
+                    '#${booking.waitlistPosition}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -370,18 +423,30 @@ class _BookingRow extends StatelessWidget {
             if (booking.status == 'booked') ...[
               IconButton(
                 tooltip: 'Mark attended',
-                icon: const Icon(Icons.check_circle_outline, size: 20, color: AppColors.success),
+                icon: const Icon(
+                  Icons.check_circle_outline,
+                  size: 20,
+                  color: AppColors.success,
+                ),
                 onPressed: () => onMarkAttendance(true),
               ),
               IconButton(
                 tooltip: 'Mark no-show',
-                icon: const Icon(Icons.person_off_outlined, size: 20, color: AppColors.danger),
+                icon: const Icon(
+                  Icons.person_off_outlined,
+                  size: 20,
+                  color: AppColors.danger,
+                ),
                 onPressed: () => onMarkAttendance(false),
               ),
             ],
             IconButton(
               tooltip: 'Cancel booking',
-              icon: const Icon(Icons.close, size: 20, color: AppColors.textSecondary),
+              icon: const Icon(
+                Icons.close,
+                size: 20,
+                color: AppColors.textSecondary,
+              ),
               onPressed: onCancel,
             ),
           ],
@@ -406,4 +471,3 @@ Future<Member?> _pickMember(
     excludeIds: excludeMemberIds,
   );
 }
-

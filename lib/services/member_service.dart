@@ -33,8 +33,9 @@ class MemberService {
   Future<List<Member>> searchMembers(String query) async {
     final headers = await _authHeaders();
 
-    final uri = Uri.parse('$baseUrl/api/v1/members/search')
-        .replace(queryParameters: {'q': query});
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/members/search',
+    ).replace(queryParameters: {'q': query});
     final response = await guardRequest(() => http.get(uri, headers: headers));
 
     final json = unwrapJson(response);
@@ -62,27 +63,29 @@ class MemberService {
   }) async {
     final headers = await _authHeaders();
 
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$baseUrl/api/v1/members'),
-          headers: headers,
-          body: jsonEncode({
-            'first_name': firstName,
-            'last_name': lastName,
-            'phone': phone,
-            if (email != null && email.isNotEmpty) 'email': email,
-            if (address != null && address.isNotEmpty) 'address': address,
-            if (gender != null) 'gender': gender,
-            if (membershipPlanId != null) 'membership_plan_id': membershipPlanId,
-            if (startDate != null) 'start_date': _dateOnly(startDate),
-            if (expiryDate != null) 'expiry_date': _dateOnly(expiryDate),
-            if (dateOfBirth != null) 'date_of_birth': _dateOnly(dateOfBirth),
-            if (notes != null && notes.isNotEmpty) 'notes': notes,
-            if (emergencyContactName != null && emergencyContactName.isNotEmpty)
-              'emergency_contact_name': emergencyContactName,
-            if (emergencyContactPhone != null && emergencyContactPhone.isNotEmpty)
-              'emergency_contact_phone': emergencyContactPhone,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$baseUrl/api/v1/members'),
+        headers: headers,
+        body: jsonEncode({
+          'first_name': firstName,
+          'last_name': lastName,
+          'phone': phone,
+          if (email != null && email.isNotEmpty) 'email': email,
+          if (address != null && address.isNotEmpty) 'address': address,
+          if (gender != null) 'gender': gender,
+          if (membershipPlanId != null) 'membership_plan_id': membershipPlanId,
+          if (startDate != null) 'start_date': _dateOnly(startDate),
+          if (expiryDate != null) 'expiry_date': _dateOnly(expiryDate),
+          if (dateOfBirth != null) 'date_of_birth': _dateOnly(dateOfBirth),
+          if (notes != null && notes.isNotEmpty) 'notes': notes,
+          if (emergencyContactName != null && emergencyContactName.isNotEmpty)
+            'emergency_contact_name': emergencyContactName,
+          if (emergencyContactPhone != null && emergencyContactPhone.isNotEmpty)
+            'emergency_contact_phone': emergencyContactPhone,
+        }),
+      ),
+    );
 
     final json = unwrapJson(response);
     return Member.fromJson(json['data']);
@@ -98,17 +101,19 @@ class MemberService {
   }) async {
     final headers = await _authHeaders();
 
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$baseUrl/api/v1/members/$memberId'),
-          headers: headers,
-          body: jsonEncode({
-            'first_name': firstName,
-            'last_name': lastName,
-            'phone': phone,
-            'status': status,
-            'membership_plan_id': membershipPlanId,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$baseUrl/api/v1/members/$memberId'),
+        headers: headers,
+        body: jsonEncode({
+          'first_name': firstName,
+          'last_name': lastName,
+          'phone': phone,
+          'status': status,
+          'membership_plan_id': membershipPlanId,
+        }),
+      ),
+    );
 
     unwrapJson(response);
   }
@@ -117,7 +122,10 @@ class MemberService {
     final headers = await _authHeaders();
 
     final response = await guardRequest(
-      () => http.delete(Uri.parse('$baseUrl/api/v1/members/$memberId'), headers: headers),
+      () => http.delete(
+        Uri.parse('$baseUrl/api/v1/members/$memberId'),
+        headers: headers,
+      ),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {

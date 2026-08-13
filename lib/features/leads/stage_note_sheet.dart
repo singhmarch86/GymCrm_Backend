@@ -77,7 +77,9 @@ class _StageNoteSheetState extends State<_StageNoteSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -98,9 +100,13 @@ class _StageNoteSheetState extends State<_StageNoteSheet> {
                 ),
                 const SizedBox(height: 16),
 
-                Text(widget.leadName,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.bold)),
+                Text(
+                  widget.leadName,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 6),
 
                 // The transition, spelled out. On a board the drag already
@@ -110,8 +116,11 @@ class _StageNoteSheetState extends State<_StageNoteSheet> {
                     _chip(from.label, Colors.grey.shade600),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 7),
-                      child: Icon(Icons.arrow_forward_rounded,
-                          size: 15, color: Colors.grey.shade500),
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 15,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                     _chip(to.label, AppColors.primary),
                   ],
@@ -128,7 +137,9 @@ class _StageNoteSheetState extends State<_StageNoteSheet> {
                     labelText: 'Why? (optional)',
                     hintText: 'e.g. booked Saturday 7am with Simran',
                     hintStyle: TextStyle(
-                        fontSize: 12.5, color: Colors.grey.shade400),
+                      fontSize: 12.5,
+                      color: Colors.grey.shade400,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -146,8 +157,7 @@ class _StageNoteSheetState extends State<_StageNoteSheet> {
                 const SizedBox(height: 6),
                 Text(
                   'Goes on the lead’s timeline next to the move.',
-                  style:
-                      TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
 
                 const SizedBox(height: 16),
@@ -178,9 +188,13 @@ class _StageNoteSheetState extends State<_StageNoteSheet> {
                   child: TextButton(
                     onPressed: () =>
                         Navigator.pop(context, const StageNote('')),
-                    child: Text('Move without a note',
-                        style: TextStyle(
-                            fontSize: 12.5, color: Colors.grey.shade700)),
+                    child: Text(
+                      'Move without a note',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -192,13 +206,18 @@ class _StageNoteSheetState extends State<_StageNoteSheet> {
   }
 
   Widget _chip(String text, Color colour) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-        decoration: BoxDecoration(
-          color: colour.withValues(alpha: 0.11),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(text,
-            style: TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w600, color: colour)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    decoration: BoxDecoration(
+      color: colour.withValues(alpha: 0.11),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: colour,
+      ),
+    ),
+  );
 }

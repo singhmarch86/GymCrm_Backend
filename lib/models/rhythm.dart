@@ -25,13 +25,13 @@ class RhythmScanResult {
   });
 
   factory RhythmScanResult.fromJson(Map<String, dynamic> j) => RhythmScanResult(
-        asOf: j['as_of'] as String? ?? '',
-        evaluated: j['evaluated'] as int? ?? 0,
-        eligible: j['eligible'] as int? ?? 0,
-        broken: j['broken'] as int? ?? 0,
-        alertsRaised: j['alerts_raised'] as int? ?? 0,
-        alertsResolved: j['alerts_resolved'] as int? ?? 0,
-      );
+    asOf: j['as_of'] as String? ?? '',
+    evaluated: j['evaluated'] as int? ?? 0,
+    eligible: j['eligible'] as int? ?? 0,
+    broken: j['broken'] as int? ?? 0,
+    alertsRaised: j['alerts_raised'] as int? ?? 0,
+    alertsResolved: j['alerts_resolved'] as int? ?? 0,
+  );
 
   /// Deliberately mentions how many members were *eligible*, not just how many
   /// broke: "0 rhythm breaks" out of 0 eligible members means the gym has no
@@ -46,8 +46,14 @@ class RhythmScanResult {
       return '$eligible members have a settled routine, and all of them are keeping it.';
     }
     final parts = <String>[];
-    if (alertsRaised > 0) parts.add('$alertsRaised new rhythm break${alertsRaised == 1 ? '' : 's'}');
-    if (broken > alertsRaised) parts.add('${broken - alertsRaised} already flagged');
+    if (alertsRaised > 0) {
+      parts.add(
+        '$alertsRaised new rhythm break${alertsRaised == 1 ? '' : 's'}',
+      );
+    }
+    if (broken > alertsRaised) {
+      parts.add('${broken - alertsRaised} already flagged');
+    }
     if (alertsResolved > 0) parts.add('$alertsResolved back on track');
     return '${parts.join(', ')} — out of $eligible members with a settled routine.';
   }
@@ -87,19 +93,19 @@ class RhythmStats {
   static double _d(dynamic v) => (v as num?)?.toDouble() ?? 0;
 
   factory RhythmStats.fromJson(Map<String, dynamic> j) => RhythmStats(
-        anchorMinute: j['anchor_minute'] as int? ?? 0,
-        usualTime: j['usual_time'] as String? ?? '',
-        baselineVisits: j['baseline_visits'] as int? ?? 0,
-        baselineOnSlot: j['baseline_on_slot'] as int? ?? 0,
-        baselineConsistency: _d(j['baseline_consistency']),
-        baselineRate: _d(j['baseline_rate']),
-        recentVisits: j['recent_visits'] as int? ?? 0,
-        recentOnSlot: j['recent_on_slot'] as int? ?? 0,
-        recentConsistency: _d(j['recent_consistency']),
-        recentRate: _d(j['recent_rate']),
-        baselineWeekdays: j['baseline_weekdays'] as String? ?? '.......',
-        recentWeekdays: j['recent_weekdays'] as String? ?? '.......',
-      );
+    anchorMinute: j['anchor_minute'] as int? ?? 0,
+    usualTime: j['usual_time'] as String? ?? '',
+    baselineVisits: j['baseline_visits'] as int? ?? 0,
+    baselineOnSlot: j['baseline_on_slot'] as int? ?? 0,
+    baselineConsistency: _d(j['baseline_consistency']),
+    baselineRate: _d(j['baseline_rate']),
+    recentVisits: j['recent_visits'] as int? ?? 0,
+    recentOnSlot: j['recent_on_slot'] as int? ?? 0,
+    recentConsistency: _d(j['recent_consistency']),
+    recentRate: _d(j['recent_rate']),
+    baselineWeekdays: j['baseline_weekdays'] as String? ?? '.......',
+    recentWeekdays: j['recent_weekdays'] as String? ?? '.......',
+  );
 
   int get baselinePct => (baselineConsistency * 100).round();
   int get recentPct => (recentConsistency * 100).round();
@@ -138,15 +144,15 @@ class RhythmBreak {
   });
 
   factory RhythmBreak.fromJson(Map<String, dynamic> j) => RhythmBreak(
-        alertId: j['alert_id'] as int? ?? 0,
-        memberId: j['member_id'] as int? ?? 0,
-        memberName: (j['member_name'] as String? ?? '').trim(),
-        phone: j['phone'] as String?,
-        severity: j['severity'] as String? ?? 'low',
-        message: j['message'] as String? ?? '',
-        createdAt: DateTime.tryParse(j['created_at'] as String? ?? ''),
-        stats: RhythmStats.fromJson(j),
-      );
+    alertId: j['alert_id'] as int? ?? 0,
+    memberId: j['member_id'] as int? ?? 0,
+    memberName: (j['member_name'] as String? ?? '').trim(),
+    phone: j['phone'] as String?,
+    severity: j['severity'] as String? ?? 'low',
+    message: j['message'] as String? ?? '',
+    createdAt: DateTime.tryParse(j['created_at'] as String? ?? ''),
+    stats: RhythmStats.fromJson(j),
+  );
 }
 
 /// One member's rhythm, whether or not it has broken.
@@ -164,9 +170,9 @@ class RhythmProfile {
   });
 
   factory RhythmProfile.fromJson(Map<String, dynamic> j) => RhythmProfile(
-        memberId: j['member_id'] as int? ?? 0,
-        isBroken: j['is_broken'] as bool? ?? false,
-        baselineWeeks: j['baseline_weeks'] as int? ?? 0,
-        stats: RhythmStats.fromJson(j),
-      );
+    memberId: j['member_id'] as int? ?? 0,
+    isBroken: j['is_broken'] as bool? ?? false,
+    baselineWeeks: j['baseline_weeks'] as int? ?? 0,
+    stats: RhythmStats.fromJson(j),
+  );
 }

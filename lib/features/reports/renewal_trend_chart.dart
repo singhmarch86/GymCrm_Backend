@@ -18,13 +18,16 @@ class RenewalTrendChart extends StatelessWidget {
           runSpacing: 12,
           children: [
             _kpi('Due Today', '${report.dueToday}', AppColors.warning),
-            _kpi('Completed This Month',
-                '${report.completedThisMonth}', AppColors.success),
-            _kpi('Success Rate',
-                '${report.successRate.toStringAsFixed(0)}%',
-                report.successRate >= 70
-                    ? AppColors.success
-                    : AppColors.warning),
+            _kpi(
+              'Completed This Month',
+              '${report.completedThisMonth}',
+              AppColors.success,
+            ),
+            _kpi(
+              'Success Rate',
+              '${report.successRate.toStringAsFixed(0)}%',
+              report.successRate >= 70 ? AppColors.success : AppColors.warning,
+            ),
           ],
         ),
         const SizedBox(height: 24),
@@ -38,8 +41,10 @@ class RenewalTrendChart extends StatelessWidget {
           SizedBox(height: 160, child: _barChart()),
         ] else
           Center(
-            child: Text('No renewal data yet',
-                style: TextStyle(color: Colors.grey.shade400)),
+            child: Text(
+              'No renewal data yet',
+              style: TextStyle(color: Colors.grey.shade400),
+            ),
           ),
       ],
     );
@@ -56,19 +61,27 @@ class RenewalTrendChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 15, color: color)),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(label,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
         ],
       ),
     );
   }
 
   Widget _barChart() {
-    final maxY = report.trend
+    final maxY =
+        report.trend
             .map((t) => t.count.toDouble())
             .fold(0.0, (a, b) => a > b ? a : b) *
         1.3;
@@ -84,12 +97,15 @@ class RenewalTrendChart extends StatelessWidget {
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          leftTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -101,9 +117,10 @@ class RenewalTrendChart extends StatelessWidget {
                 }
                 if (i % 3 != 0) return const SizedBox.shrink();
                 final label = report.trend[i].month.split(' ')[0];
-                return Text(label,
-                    style: TextStyle(
-                        fontSize: 10, color: Colors.grey.shade500));
+                return Text(
+                  label,
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                );
               },
             ),
           ),

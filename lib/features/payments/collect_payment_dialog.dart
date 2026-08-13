@@ -34,8 +34,7 @@ class CollectPaymentDialog extends StatefulWidget {
   const CollectPaymentDialog({super.key, required this.member});
 
   @override
-  State<CollectPaymentDialog> createState() =>
-      _CollectPaymentDialogState();
+  State<CollectPaymentDialog> createState() => _CollectPaymentDialogState();
 }
 
 class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
@@ -80,8 +79,9 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
           );
           if (match.isNotEmpty) {
             _selectedPlanId = match.first.id;
-            _amountController.text =
-                match.first.priceInRupees.toStringAsFixed(0);
+            _amountController.text = match.first.priceInRupees.toStringAsFixed(
+              0,
+            );
           }
         }
       });
@@ -96,8 +96,7 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
       _selectedPlanId = id;
       final match = _plans.where((p) => p.id == id);
       if (match.isNotEmpty) {
-        _amountController.text =
-            match.first.priceInRupees.toStringAsFixed(0);
+        _amountController.text = match.first.priceInRupees.toStringAsFixed(0);
       }
     });
   }
@@ -128,7 +127,9 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
       if (!mounted) return;
       setState(() {
         _saving = false;
-        _errorText = e is ApiException ? e.message : "Couldn't collect this payment. Please try again.";
+        _errorText = e is ApiException
+            ? e.message
+            : "Couldn't collect this payment. Please try again.";
       });
     }
   }
@@ -144,9 +145,7 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Padding(
@@ -154,171 +153,168 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ── Header ────────────────────────────────────────────────
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.payment_rounded,
+                        color: AppColors.primary,
+                      ),
+                      AppSpacing.hGapSm,
+                      const Text(
+                        'Collect Payment',
+                        style: AppTextStyles.sectionTitle,
+                      ),
+                    ],
+                  ),
 
-                // ── Header ────────────────────────────────────────────────
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.payment_rounded,
-                      color: AppColors.primary,
-                    ),
-                    AppSpacing.hGapSm,
-                    const Text(
-                      'Collect Payment',
-                      style: AppTextStyles.sectionTitle,
+                  AppSpacing.gapSm,
+
+                  Text(
+                    widget.member.memberName,
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+
+                  if (widget.member.membershipPlanName != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Current Plan: ${widget.member.membershipPlanName}',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
-                ),
 
-                AppSpacing.gapSm,
+                  AppSpacing.gapXl,
 
-                Text(
-                  widget.member.memberName,
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-
-                if (widget.member.membershipPlanName != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    'Current Plan: ${widget.member.membershipPlanName}',
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-
-                AppSpacing.gapXl,
-
-                // ── Plan selector ──────────────────────────────────────────
-                _loadingPlans
-                    ? const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(12),
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    : DropdownButtonFormField<int>(
-                        initialValue: _selectedPlanId,
-                        decoration: const InputDecoration(
-                          labelText: 'Plan',
-                        ),
-                        items: _plans
-                            .map(
-                              (p) => DropdownMenuItem(
-                                value: p.id,
-                                child: Text(
-                                  '${p.name} (₹${p.priceInRupees.toStringAsFixed(0)})',
+                  // ── Plan selector ──────────────────────────────────────────
+                  _loadingPlans
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : DropdownButtonFormField<int>(
+                          initialValue: _selectedPlanId,
+                          decoration: const InputDecoration(labelText: 'Plan'),
+                          items: _plans
+                              .map(
+                                (p) => DropdownMenuItem(
+                                  value: p.id,
+                                  child: Text(
+                                    '${p.name} (₹${p.priceInRupees.toStringAsFixed(0)})',
+                                  ),
                                 ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: _onPlanChanged,
-                        validator: (v) => v == null ? 'Please select a plan' : null,
-                      ),
-
-                AppSpacing.gapLg,
-
-                // ── Amount ─────────────────────────────────────────────────
-                TextFormField(
-                  controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Amount (₹)',
-                    prefixIcon: Icon(Icons.currency_rupee_rounded),
-                  ),
-                  validator: (v) => Validators.positiveNumber(v, 'Amount'),
-                ),
-
-                AppSpacing.gapLg,
-
-                // ── Payment mode ───────────────────────────────────────────
-                DropdownButtonFormField<String>(
-                  initialValue: _paymentMode,
-                  decoration: const InputDecoration(
-                    labelText: 'Payment Mode',
-                  ),
-                  items: _modes
-                      .map(
-                        (m) => DropdownMenuItem(
-                          value: m.$1,
-                          child: Text(m.$2),
+                              )
+                              .toList(),
+                          onChanged: _onPlanChanged,
+                          validator: (v) =>
+                              v == null ? 'Please select a plan' : null,
                         ),
-                      )
-                      .toList(),
-                  onChanged: (v) {
-                    if (v != null) setState(() => _paymentMode = v);
-                  },
-                ),
 
-                AppSpacing.gapLg,
+                  AppSpacing.gapLg,
 
-                // ── Reference (optional) ────────────────────────────────────
-                TextFormField(
-                  controller: _referenceController,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Reference Number (optional)',
-                    hintText: 'UPI / bank transaction ID',
+                  // ── Amount ─────────────────────────────────────────────────
+                  TextFormField(
+                    controller: _amountController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      labelText: 'Amount (₹)',
+                      prefixIcon: Icon(Icons.currency_rupee_rounded),
+                    ),
+                    validator: (v) => Validators.positiveNumber(v, 'Amount'),
                   ),
-                ),
 
-                AppSpacing.gapLg,
+                  AppSpacing.gapLg,
 
-                // ── Notes (optional) ────────────────────────────────────────
-                TextFormField(
-                  controller: _notesController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes (optional)',
+                  // ── Payment mode ───────────────────────────────────────────
+                  DropdownButtonFormField<String>(
+                    initialValue: _paymentMode,
+                    decoration: const InputDecoration(
+                      labelText: 'Payment Mode',
+                    ),
+                    items: _modes
+                        .map(
+                          (m) =>
+                              DropdownMenuItem(value: m.$1, child: Text(m.$2)),
+                        )
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) setState(() => _paymentMode = v);
+                    },
                   ),
-                ),
 
-                // ── Error ──────────────────────────────────────────────────
-                if (_errorText != null) ...[
-                  AppSpacing.gapMd,
-                  Text(
-                    _errorText!,
-                    style: const TextStyle(
-                      color: AppColors.danger,
-                      fontSize: 13,
+                  AppSpacing.gapLg,
+
+                  // ── Reference (optional) ────────────────────────────────────
+                  TextFormField(
+                    controller: _referenceController,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      labelText: 'Reference Number (optional)',
+                      hintText: 'UPI / bank transaction ID',
                     ),
                   ),
-                ],
 
-                AppSpacing.gapXl,
+                  AppSpacing.gapLg,
 
-                // ── Actions ────────────────────────────────────────────────
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed:
-                            _saving ? null : () => Navigator.pop(context, false),
-                        child: const Text('Cancel'),
-                      ),
+                  // ── Notes (optional) ────────────────────────────────────────
+                  TextFormField(
+                    controller: _notesController,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Notes (optional)',
                     ),
-                    AppSpacing.hGapMd,
-                    Expanded(
-                      flex: 2,
-                      child: AppButton(
-                        text: 'Save',
-                        icon: Icons.check_rounded,
-                        loading: _saving,
-                        onPressed: _save,
+                  ),
+
+                  // ── Error ──────────────────────────────────────────────────
+                  if (_errorText != null) ...[
+                    AppSpacing.gapMd,
+                    Text(
+                      _errorText!,
+                      style: const TextStyle(
+                        color: AppColors.danger,
+                        fontSize: 13,
                       ),
                     ),
                   ],
-                ),
-              ],
-            ),
+
+                  AppSpacing.gapXl,
+
+                  // ── Actions ────────────────────────────────────────────────
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: _saving
+                              ? null
+                              : () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      AppSpacing.hGapMd,
+                      Expanded(
+                        flex: 2,
+                        child: AppButton(
+                          text: 'Save',
+                          icon: Icons.check_rounded,
+                          loading: _saving,
+                          onPressed: _save,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum MemberFilter {
-  all,
-  active,
-  expired,
-  expiring,
-}
+enum MemberFilter { all, active, expired, expiring }
 
 class MemberFilterBar extends StatelessWidget {
   final MemberFilter selectedFilter;
@@ -23,34 +18,19 @@ class MemberFilterBar extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildChip(
-            label: "All",
-            filter: MemberFilter.all,
-          ),
+          _buildChip(label: "All", filter: MemberFilter.all),
           const SizedBox(width: 10),
-          _buildChip(
-            label: "Active",
-            filter: MemberFilter.active,
-          ),
+          _buildChip(label: "Active", filter: MemberFilter.active),
           const SizedBox(width: 10),
-          _buildChip(
-            label: "Expired",
-            filter: MemberFilter.expired,
-          ),
+          _buildChip(label: "Expired", filter: MemberFilter.expired),
           const SizedBox(width: 10),
-          _buildChip(
-            label: "Expiring",
-            filter: MemberFilter.expiring,
-          ),
+          _buildChip(label: "Expiring", filter: MemberFilter.expiring),
         ],
       ),
     );
   }
 
-  Widget _buildChip({
-    required String label,
-    required MemberFilter filter,
-  }) {
+  Widget _buildChip({required String label, required MemberFilter filter}) {
     return ChoiceChip(
       label: Text(label),
 
@@ -62,25 +42,18 @@ class MemberFilterBar extends StatelessWidget {
 
       showCheckmark: false,
 
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
 
       selectedColor: Colors.blue.shade600,
 
       backgroundColor: Colors.grey.shade100,
 
       labelStyle: TextStyle(
-        color: selectedFilter == filter
-            ? Colors.white
-            : Colors.black87,
+        color: selectedFilter == filter ? Colors.white : Colors.black87,
         fontWeight: FontWeight.w600,
       ),
 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     );
   }
 }

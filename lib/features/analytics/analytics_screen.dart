@@ -76,8 +76,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             Tab(icon: Icon(Icons.insights_rounded, size: 18), text: 'Business'),
             Tab(icon: Icon(Icons.filter_alt_rounded, size: 18), text: 'Leads'),
             Tab(
-                icon: Icon(Icons.health_and_safety_rounded, size: 18),
-                text: 'Retention'),
+              icon: Icon(Icons.health_and_safety_rounded, size: 18),
+              text: 'Retention',
+            ),
             Tab(icon: Icon(Icons.badge_rounded, size: 18), text: 'Staff'),
           ],
         ),
@@ -233,7 +234,10 @@ class _RetentionAnalyticsTabState extends State<_RetentionAnalyticsTab>
             'measure here.',
             textAlign: TextAlign.center,
             style: TextStyle(
-                fontSize: 13, height: 1.5, color: Colors.grey.shade600),
+              fontSize: 13,
+              height: 1.5,
+              color: Colors.grey.shade600,
+            ),
           ),
         ),
       );
@@ -249,12 +253,17 @@ class _RetentionAnalyticsTabState extends State<_RetentionAnalyticsTab>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${s.total}',
-                    style: const TextStyle(
-                        fontSize: 30, fontWeight: FontWeight.bold)),
-                Text('members flagged as at risk',
-                    style: TextStyle(
-                        fontSize: 12, color: Colors.grey.shade600)),
+                Text(
+                  '${s.total}',
+                  style: const TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'members flagged as at risk',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
                 const SizedBox(height: 14),
                 _bar('Needs attention now', s.high, s.total, AppColors.danger),
                 const SizedBox(height: 8),
@@ -293,8 +302,10 @@ class _RetentionAnalyticsTabState extends State<_RetentionAnalyticsTab>
       children: [
         SizedBox(
           width: 132,
-          child: Text(label,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+          ),
         ),
         Expanded(
           child: ClipRRect(
@@ -310,10 +321,11 @@ class _RetentionAnalyticsTabState extends State<_RetentionAnalyticsTab>
         const SizedBox(width: 10),
         SizedBox(
           width: 34,
-          child: Text('$value',
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                  fontSize: 13, fontWeight: FontWeight.bold)),
+          child: Text(
+            '$value',
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          ),
         ),
       ],
     );

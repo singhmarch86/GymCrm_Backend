@@ -29,16 +29,18 @@ class Visitor {
   });
 
   factory Visitor.fromJson(Map<String, dynamic> j) => Visitor(
-        id: j['id'] as int,
-        name: (j['name'] ?? '') as String,
-        phone: j['phone'] as String?,
-        purpose: (j['purpose'] ?? 'trial') as String,
-        checkedInAt: DateTime.parse(j['checked_in_at'] as String),
-        checkedOutAt: j['checked_out_at'] == null ? null : DateTime.parse(j['checked_out_at']),
-        hostStaffUserId: j['host_staff_user_id'] as int?,
-        hostStaffName: j['host_staff_name'] as String?,
-        convertedLeadId: j['converted_lead_id'] as int?,
-        notes: j['notes'] as String?,
-        stillInBuilding: (j['still_in_building'] ?? false) as bool,
-      );
+    id: j['id'] as int,
+    name: (j['name'] ?? '') as String,
+    phone: j['phone'] as String?,
+    purpose: (j['purpose'] ?? 'trial') as String,
+    checkedInAt: DateTime.parse(j['checked_in_at'] as String),
+    checkedOutAt: j['checked_out_at'] == null
+        ? null
+        : DateTime.parse(j['checked_out_at']),
+    hostStaffUserId: j['host_staff_user_id'] as int?,
+    hostStaffName: j['host_staff_name'] as String?,
+    convertedLeadId: j['converted_lead_id'] as int?,
+    notes: j['notes'] as String?,
+    stillInBuilding: (j['still_in_building'] ?? false) as bool,
+  );
 }

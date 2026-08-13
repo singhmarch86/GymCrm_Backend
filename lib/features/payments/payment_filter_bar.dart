@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum PaymentFilterOption {
-  all,
-  paid,
-  pending,
-  overdue,
-  today,
-  thisMonth,
-}
+enum PaymentFilterOption { all, paid, pending, overdue, today, thisMonth }
 
 extension PaymentFilterApi on PaymentFilterOption {
   String get apiValue {
@@ -69,10 +62,7 @@ class PaymentFilterBar extends StatelessWidget {
               selected: isSelected,
               onSelected: (_) => onChanged(filter),
               showCheckmark: false,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               selectedColor: Colors.blue.shade600,
               backgroundColor: Colors.grey.shade100,
               labelStyle: TextStyle(

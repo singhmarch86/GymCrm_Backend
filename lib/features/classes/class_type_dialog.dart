@@ -21,7 +21,10 @@ Future<ClassType?> showCreateClassTypeDialog(BuildContext context) {
 /// toggle. Editing never touches schedules or sessions already created from
 /// this type; they hold their own snapshot taken at creation time
 /// (FR-02 §0.1), so this only changes what happens from here on.
-Future<ClassType?> showEditClassTypeDialog(BuildContext context, ClassType existing) {
+Future<ClassType?> showEditClassTypeDialog(
+  BuildContext context,
+  ClassType existing,
+) {
   return showDialog<ClassType>(
     context: context,
     builder: (_) => CreateClassTypeDialog(existing: existing),
@@ -40,13 +43,18 @@ class CreateClassTypeDialog extends StatefulWidget {
 
 class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
   final _service = ClassesService();
-  late final _nameController = TextEditingController(text: widget.existing?.name ?? '');
-  late final _descriptionController =
-      TextEditingController(text: widget.existing?.description ?? '');
-  late final _durationController =
-      TextEditingController(text: '${widget.existing?.durationMinutes ?? 60}');
-  late final _capacityController =
-      TextEditingController(text: '${widget.existing?.defaultCapacity ?? 12}');
+  late final _nameController = TextEditingController(
+    text: widget.existing?.name ?? '',
+  );
+  late final _descriptionController = TextEditingController(
+    text: widget.existing?.description ?? '',
+  );
+  late final _durationController = TextEditingController(
+    text: '${widget.existing?.durationMinutes ?? 60}',
+  );
+  late final _capacityController = TextEditingController(
+    text: '${widget.existing?.defaultCapacity ?? 12}',
+  );
   late bool _isActive = widget.existing?.isActive ?? true;
 
   bool _saving = false;
@@ -123,7 +131,9 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
   Widget build(BuildContext context) {
     return LifecycleDialogShell(
       title: widget.isEdit ? 'Edit class type' : 'New class type',
-      subtitle: widget.isEdit ? widget.existing!.name : 'The offering — Yoga, Zumba, HIIT',
+      subtitle: widget.isEdit
+          ? widget.existing!.name
+          : 'The offering — Yoga, Zumba, HIIT',
       icon: Icons.self_improvement,
       accent: AppColors.primary,
       error: _error,
@@ -197,7 +207,9 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
           TextField(
             controller: _descriptionController,
             autofillHints: const [],
-            decoration: const InputDecoration(hintText: 'What members should expect'),
+            decoration: const InputDecoration(
+              hintText: 'What members should expect',
+            ),
           ),
 
           if (widget.isEdit) ...[
@@ -211,7 +223,10 @@ class _CreateClassTypeDialogState extends State<CreateClassTypeDialog> {
             AppSpacing.gapSm,
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Active', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500)),
+              title: const Text(
+                'Active',
+                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
+              ),
               value: _isActive,
               onChanged: (v) => setState(() => _isActive = v),
             ),

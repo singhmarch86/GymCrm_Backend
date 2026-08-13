@@ -170,7 +170,9 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -190,14 +192,14 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text('Raise a due',
-                    style:
-                        TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Raise a due',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   'Records that a member owes money. It does not take payment.',
-                  style:
-                      TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
                 ),
 
                 const SizedBox(height: 16),
@@ -243,8 +245,7 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
                 Text(
                   'Required. It decides where the due sits in the queue, so '
                   'guessing today would file it wrong.',
-                  style:
-                      TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
 
                 const SizedBox(height: 10),
@@ -257,7 +258,9 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
                     labelText: 'What for? (optional)',
                     hintText: 'e.g. PT package balance',
                     hintStyle: TextStyle(
-                        fontSize: 12.5, color: Colors.grey.shade400),
+                      fontSize: 12.5,
+                      color: Colors.grey.shade400,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -273,9 +276,13 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
 
                 if (_error != null) ...[
                   const SizedBox(height: 10),
-                  Text(_error!,
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.danger)),
+                  Text(
+                    _error!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.danger,
+                    ),
+                  ),
                 ],
 
                 const SizedBox(height: 16),
@@ -293,7 +300,9 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Text('Raise the due'),
                   ),
@@ -312,54 +321,68 @@ class _RaiseDueSheetState extends State<_RaiseDueSheet> {
     required String placeholder,
     required IconData icon,
     required VoidCallback? onTap,
-  }) =>
-      InkWell(
-        onTap: onTap,
+  }) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(8),
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 17, color: AppColors.primary),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label,
-                        style: TextStyle(
-                            fontSize: 10.5, color: Colors.grey.shade600)),
-                    const SizedBox(height: 1),
-                    Text(
-                      value ?? placeholder,
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight:
-                            value == null ? FontWeight.normal : FontWeight.w600,
-                        color: value == null
-                            ? Colors.grey.shade500
-                            : AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 17, color: AppColors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
                 ),
-              ),
-              Icon(Icons.chevron_right_rounded,
-                  size: 18, color: Colors.grey.shade400),
-            ],
+                const SizedBox(height: 1),
+                Text(
+                  value ?? placeholder,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: value == null
+                        ? FontWeight.normal
+                        : FontWeight.w600,
+                    color: value == null
+                        ? Colors.grey.shade500
+                        : AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 18,
+            color: Colors.grey.shade400,
+          ),
+        ],
+      ),
+    ),
+  );
 
   static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   static String _formatDate(DateTime d) =>

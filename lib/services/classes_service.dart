@@ -17,9 +17,9 @@ class ClassesService {
 
   Future<List<ClassType>> getClassTypes({bool activeOnly = false}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/class-types').replace(
-      queryParameters: activeOnly ? {'active_only': 'true'} : null,
-    );
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/class-types',
+    ).replace(queryParameters: activeOnly ? {'active_only': 'true'} : null);
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => ClassType.fromJson(e)).toList();
@@ -32,16 +32,18 @@ class ClassesService {
     String description = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/class-types'),
-          headers: headers,
-          body: jsonEncode({
-            'name': name,
-            'duration_minutes': durationMinutes,
-            'default_capacity': defaultCapacity,
-            'description': description,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/class-types'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'duration_minutes': durationMinutes,
+          'default_capacity': defaultCapacity,
+          'description': description,
+        }),
+      ),
+    );
     return ClassType.fromJson(unwrapJson(response)['data']);
   }
 
@@ -57,17 +59,19 @@ class ClassesService {
     bool? isActive,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$kBaseUrl/api/v1/class-types/$id'),
-          headers: headers,
-          body: jsonEncode({
-            if (name != null) 'name': name,
-            if (description != null) 'description': description,
-            if (durationMinutes != null) 'duration_minutes': durationMinutes,
-            if (defaultCapacity != null) 'default_capacity': defaultCapacity,
-            if (isActive != null) 'is_active': isActive,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$kBaseUrl/api/v1/class-types/$id'),
+        headers: headers,
+        body: jsonEncode({
+          if (name != null) 'name': name,
+          if (description != null) 'description': description,
+          if (durationMinutes != null) 'duration_minutes': durationMinutes,
+          if (defaultCapacity != null) 'default_capacity': defaultCapacity,
+          if (isActive != null) 'is_active': isActive,
+        }),
+      ),
+    );
     return ClassType.fromJson(unwrapJson(response)['data']);
   }
 
@@ -75,9 +79,9 @@ class ClassesService {
 
   Future<List<ClassSchedule>> getSchedules({bool activeOnly = false}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/class-schedules').replace(
-      queryParameters: activeOnly ? {'active_only': 'true'} : null,
-    );
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/class-schedules',
+    ).replace(queryParameters: activeOnly ? {'active_only': 'true'} : null);
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => ClassSchedule.fromJson(e)).toList();
@@ -97,20 +101,22 @@ class ClassesService {
     DateTime? effectiveUntil,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/class-schedules'),
-          headers: headers,
-          body: jsonEncode({
-            'class_type_id': classTypeId,
-            'day_of_week': dayOfWeek,
-            'start_time': startTime,
-            if (durationMinutes > 0) 'duration_minutes': durationMinutes,
-            if (capacity > 0) 'capacity': capacity,
-            if (trainerUserId != null) 'trainer_user_id': trainerUserId,
-            if (effectiveFrom != null) 'effective_from': _ymd(effectiveFrom),
-            if (effectiveUntil != null) 'effective_until': _ymd(effectiveUntil),
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/class-schedules'),
+        headers: headers,
+        body: jsonEncode({
+          'class_type_id': classTypeId,
+          'day_of_week': dayOfWeek,
+          'start_time': startTime,
+          if (durationMinutes > 0) 'duration_minutes': durationMinutes,
+          if (capacity > 0) 'capacity': capacity,
+          if (trainerUserId != null) 'trainer_user_id': trainerUserId,
+          if (effectiveFrom != null) 'effective_from': _ymd(effectiveFrom),
+          if (effectiveUntil != null) 'effective_until': _ymd(effectiveUntil),
+        }),
+      ),
+    );
     return ClassSchedule.fromJson(unwrapJson(response)['data']);
   }
 
@@ -121,9 +127,9 @@ class ClassesService {
     required DateTime to,
   }) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/class-sessions').replace(
-      queryParameters: {'from': _ymd(from), 'to': _ymd(to)},
-    );
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/class-sessions',
+    ).replace(queryParameters: {'from': _ymd(from), 'to': _ymd(to)});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => ClassSession.fromJson(e)).toList();
@@ -132,7 +138,10 @@ class ClassesService {
   Future<ClassSession> getSession(int id) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/class-sessions/$id'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/class-sessions/$id'),
+        headers: headers,
+      ),
     );
     return ClassSession.fromJson(unwrapJson(response)['data']);
   }
@@ -143,14 +152,16 @@ class ClassesService {
     int? trainerUserId,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$kBaseUrl/api/v1/class-sessions/$id'),
-          headers: headers,
-          body: jsonEncode({
-            if (capacity != null) 'capacity': capacity,
-            if (trainerUserId != null) 'trainer_user_id': trainerUserId,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$kBaseUrl/api/v1/class-sessions/$id'),
+        headers: headers,
+        body: jsonEncode({
+          if (capacity != null) 'capacity': capacity,
+          if (trainerUserId != null) 'trainer_user_id': trainerUserId,
+        }),
+      ),
+    );
     return ClassSession.fromJson(unwrapJson(response)['data']);
   }
 
@@ -158,7 +169,10 @@ class ClassesService {
   Future<ClassSession> cancelSession(int id) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.post(Uri.parse('$kBaseUrl/api/v1/class-sessions/$id/cancel'), headers: headers),
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/class-sessions/$id/cancel'),
+        headers: headers,
+      ),
     );
     return ClassSession.fromJson(unwrapJson(response)['data']);
   }
@@ -166,7 +180,10 @@ class ClassesService {
   Future<ClassSession> completeSession(int id) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.post(Uri.parse('$kBaseUrl/api/v1/class-sessions/$id/complete'), headers: headers),
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/class-sessions/$id/complete'),
+        headers: headers,
+      ),
     );
     return ClassSession.fromJson(unwrapJson(response)['data']);
   }
@@ -176,34 +193,46 @@ class ClassesService {
   /// Books the member, or places them on the waitlist if the session is full.
   Future<BookingResult> book(int sessionId, int memberId) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/class-sessions/$sessionId/bookings'),
-          headers: headers,
-          body: jsonEncode({'member_id': memberId}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/class-sessions/$sessionId/bookings'),
+        headers: headers,
+        body: jsonEncode({'member_id': memberId}),
+      ),
+    );
     return BookingResult.fromJson(unwrapJson(response)['data']);
   }
 
   /// Cancels a booking. If it held a session slot, the oldest waitlisted
   /// member is promoted — check `result.promoted` to tell the caller.
-  Future<BookingResult> cancelBooking(int bookingId, {String reason = ''}) async {
+  Future<BookingResult> cancelBooking(
+    int bookingId, {
+    String reason = '',
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/bookings/$bookingId/cancel'),
-          headers: headers,
-          body: jsonEncode({'reason': reason}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/bookings/$bookingId/cancel'),
+        headers: headers,
+        body: jsonEncode({'reason': reason}),
+      ),
+    );
     return BookingResult.fromJson(unwrapJson(response)['data']);
   }
 
   /// Marks a booking attended or no-show. Only valid after the session starts.
-  Future<BookingResult> markAttendance(int bookingId, {required bool attended}) async {
+  Future<BookingResult> markAttendance(
+    int bookingId, {
+    required bool attended,
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/bookings/$bookingId/attendance'),
-          headers: headers,
-          body: jsonEncode({'attended': attended}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/bookings/$bookingId/attendance'),
+        headers: headers,
+        body: jsonEncode({'attended': attended}),
+      ),
+    );
     return BookingResult.fromJson(unwrapJson(response)['data']);
   }
 
@@ -212,7 +241,10 @@ class ClassesService {
   Future<List<Booking>> sessionBookings(int sessionId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/class-sessions/$sessionId/bookings'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/class-sessions/$sessionId/bookings'),
+        headers: headers,
+      ),
     );
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => Booking.fromJson(e)).toList();
@@ -222,7 +254,10 @@ class ClassesService {
   Future<List<Booking>> memberBookings(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/members/$memberId/bookings'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/members/$memberId/bookings'),
+        headers: headers,
+      ),
     );
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => Booking.fromJson(e)).toList();

@@ -31,8 +31,7 @@ class _PaymentHistoryState extends State<PaymentHistory> {
 
   Future<void> _load() async {
     try {
-      final data =
-          await PaymentService().getMemberPayments(widget.memberId);
+      final data = await PaymentService().getMemberPayments(widget.memberId);
       if (!mounted) return;
       setState(() {
         _payments = data;
@@ -60,10 +59,7 @@ class _PaymentHistoryState extends State<PaymentHistory> {
 
     if (_error != null) {
       return Center(
-        child: Text(
-          _error!,
-          style: const TextStyle(color: AppColors.danger),
-        ),
+        child: Text(_error!, style: const TextStyle(color: AppColors.danger)),
       );
     }
 
@@ -83,20 +79,15 @@ class _PaymentHistoryState extends State<PaymentHistory> {
           padding: EdgeInsets.symmetric(vertical: 12),
           child: Text(
             'Payment History',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: _payments.length,
-          separatorBuilder: (_, __) => Divider(
-            color: Colors.grey.shade200,
-            height: 1,
-          ),
+          separatorBuilder: (_, __) =>
+              Divider(color: Colors.grey.shade200, height: 1),
           itemBuilder: (_, i) => _PaymentHistoryTile(payment: _payments[i]),
         ),
       ],
@@ -122,9 +113,20 @@ class _PaymentHistoryTile extends StatelessWidget {
   }
 
   String _monthAbbr(int m) => const [
-        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-      ][m];
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ][m];
 
   @override
   Widget build(BuildContext context) {
@@ -146,19 +148,13 @@ class _PaymentHistoryTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   _formatDate(payment.paidDate ?? payment.dueDate),
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                 ),
                 if (payment.paymentMode != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     payment.paymentModeLabel,
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                   ),
                 ],
               ],

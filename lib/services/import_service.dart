@@ -20,34 +20,44 @@ class ImportService {
     String filename = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/imports'),
-          headers: headers,
-          body: jsonEncode({
-            'entity_type': entityType,
-            'filename': filename,
-            'content': content,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/imports'),
+        headers: headers,
+        body: jsonEncode({
+          'entity_type': entityType,
+          'filename': filename,
+          'content': content,
+        }),
+      ),
+    );
     return ImportBatch.fromJson(unwrapJson(response)['data']);
   }
 
   /// Writes the records. [duplicatePolicy] is 'skip' (leave existing records
   /// alone) or 'update' (overwrite them from the file).
-  Future<ImportBatch> commit(int batchId, {String duplicatePolicy = 'skip'}) async {
+  Future<ImportBatch> commit(
+    int batchId, {
+    String duplicatePolicy = 'skip',
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/imports/$batchId/commit'),
-          headers: headers,
-          body: jsonEncode({'duplicate_policy': duplicatePolicy}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/imports/$batchId/commit'),
+        headers: headers,
+        body: jsonEncode({'duplicate_policy': duplicatePolicy}),
+      ),
+    );
     return ImportBatch.fromJson(unwrapJson(response)['data']);
   }
 
   Future<ImportBatch> getBatch(int batchId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/imports/$batchId'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/imports/$batchId'),
+        headers: headers,
+      ),
     );
     return ImportBatch.fromJson(unwrapJson(response)['data']);
   }
@@ -65,7 +75,10 @@ class ImportService {
   Future<void> discard(int batchId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.delete(Uri.parse('$kBaseUrl/api/v1/imports/$batchId'), headers: headers),
+      () => http.delete(
+        Uri.parse('$kBaseUrl/api/v1/imports/$batchId'),
+        headers: headers,
+      ),
     );
     unwrapJson(response);
   }
@@ -74,8 +87,9 @@ class ImportService {
   /// accepted too — the server maps aliases.
   Future<String> template(String entityType) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/imports/template')
-        .replace(queryParameters: {'entity': entityType});
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/imports/template',
+    ).replace(queryParameters: {'entity': entityType});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response.body;

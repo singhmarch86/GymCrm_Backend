@@ -44,7 +44,9 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
   @override
   void initState() {
     super.initState();
-    if (widget.activePackages.isNotEmpty) _packageId = widget.activePackages.first.id;
+    if (widget.activePackages.isNotEmpty) {
+      _packageId = widget.activePackages.first.id;
+    }
   }
 
   @override
@@ -62,7 +64,13 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
       _error = null;
     });
     try {
-      final scheduledAt = DateTime(_date.year, _date.month, _date.day, _time.hour, _time.minute);
+      final scheduledAt = DateTime(
+        _date.year,
+        _date.month,
+        _date.day,
+        _time.hour,
+        _time.minute,
+      );
       final appt = await _service.bookAppointment(
         ptPackageId: _packageId!,
         scheduledAt: scheduledAt,
@@ -89,11 +97,15 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
         icon: Icons.event_available,
         accent: AppColors.primary,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
         ],
         child: const LifecycleNotice(
           tone: LifecycleTone.blocked,
-          text: 'No active PT packages exist yet. Sell a package to a member first.',
+          text:
+              'No active PT packages exist yet. Sell a package to a member first.',
         ),
       );
     }
@@ -109,7 +121,11 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        AppButton(text: 'Book', loading: _saving, onPressed: _canSubmit ? _submit : null),
+        AppButton(
+          text: 'Book',
+          loading: _saving,
+          onPressed: _canSubmit ? _submit : null,
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,13 +140,15 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
             // overflows instead of truncating.
             isExpanded: true,
             items: widget.activePackages
-                .map((p) => DropdownMenuItem(
-                      value: p.id,
-                      child: Text(
-                        '${p.memberName} · ${p.packageName} (${p.sessionsRemaining}/${p.totalSessions} left) · ${p.trainerName}',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ))
+                .map(
+                  (p) => DropdownMenuItem(
+                    value: p.id,
+                    child: Text(
+                      '${p.memberName} · ${p.packageName} (${p.sessionsRemaining}/${p.totalSessions} left) · ${p.trainerName}',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
                 .toList(),
             onChanged: (v) => setState(() => _packageId = v),
           ),
@@ -149,14 +167,20 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
                         final picked = await showDatePicker(
                           context: context,
                           initialDate: _date,
-                          firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          firstDate: DateTime.now().subtract(
+                            const Duration(days: 1),
+                          ),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
                         );
                         if (picked != null) setState(() => _date = picked);
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: InputDecorator(
-                        decoration: const InputDecoration(suffixIcon: Icon(Icons.calendar_today, size: 16)),
+                        decoration: const InputDecoration(
+                          suffixIcon: Icon(Icons.calendar_today, size: 16),
+                        ),
                         child: Text(formatDate(_date)),
                       ),
                     ),
@@ -172,12 +196,17 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
                     AppSpacing.gapXs,
                     InkWell(
                       onTap: () async {
-                        final picked = await showTimePicker(context: context, initialTime: _time);
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: _time,
+                        );
                         if (picked != null) setState(() => _time = picked);
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: InputDecorator(
-                        decoration: const InputDecoration(suffixIcon: Icon(Icons.access_time, size: 16)),
+                        decoration: const InputDecoration(
+                          suffixIcon: Icon(Icons.access_time, size: 16),
+                        ),
                         child: Text(_time.format(context)),
                       ),
                     ),

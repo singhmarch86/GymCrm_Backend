@@ -20,24 +20,29 @@ class VisitorService {
     String notes = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/visitors/check-in'),
-          headers: headers,
-          body: jsonEncode({
-            'name': name,
-            'phone': phone,
-            'purpose': purpose,
-            if (hostStaffUserId != null) 'host_staff_user_id': hostStaffUserId,
-            'notes': notes,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/visitors/check-in'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'phone': phone,
+          'purpose': purpose,
+          if (hostStaffUserId != null) 'host_staff_user_id': hostStaffUserId,
+          'notes': notes,
+        }),
+      ),
+    );
     return Visitor.fromJson(unwrapJson(response)['data']);
   }
 
   Future<Visitor> checkOut(int id) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.post(Uri.parse('$kBaseUrl/api/v1/visitors/$id/check-out'), headers: headers),
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/visitors/$id/check-out'),
+        headers: headers,
+      ),
     );
     return Visitor.fromJson(unwrapJson(response)['data']);
   }
@@ -51,26 +56,30 @@ class VisitorService {
     String followUpDate = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/visitors/$id/convert-to-lead'),
-          headers: headers,
-          body: jsonEncode({
-            'email': email,
-            'gender': gender,
-            'goal': goal,
-            'trial_date': trialDate,
-            'follow_up_date': followUpDate,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/visitors/$id/convert-to-lead'),
+        headers: headers,
+        body: jsonEncode({
+          'email': email,
+          'gender': gender,
+          'goal': goal,
+          'trial_date': trialDate,
+          'follow_up_date': followUpDate,
+        }),
+      ),
+    );
     return Visitor.fromJson(unwrapJson(response)['data']);
   }
 
   Future<List<Visitor>> list({DateTime? from, DateTime? to}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/visitors').replace(queryParameters: {
-      if (from != null) 'from': _ymd(from),
-      if (to != null) 'to': _ymd(to),
-    });
+    final uri = Uri.parse('$kBaseUrl/api/v1/visitors').replace(
+      queryParameters: {
+        if (from != null) 'from': _ymd(from),
+        if (to != null) 'to': _ymd(to),
+      },
+    );
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => Visitor.fromJson(e)).toList();

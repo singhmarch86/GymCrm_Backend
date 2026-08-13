@@ -20,17 +20,13 @@ class Plan {
     required this.isActive,
   });
 
-  factory Plan.fromJson(
-      Map<String, dynamic> json,
-      ) {
+  factory Plan.fromJson(Map<String, dynamic> json) {
     return Plan(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'],
       durationDays: json['duration_days'] ?? 0,
-      priceInRupees:
-      (json['price_in_rupees'] ?? 0)
-          .toDouble(),
+      priceInRupees: (json['price_in_rupees'] ?? 0).toDouble(),
       isActive: json['is_active'] ?? true,
     );
   }

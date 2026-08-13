@@ -37,7 +37,8 @@ class _CreateScheduleDialogState extends State<CreateScheduleDialog> {
   final _staffService = StaffService();
 
   int? _classTypeId;
-  int _dayOfWeek = DateTime.now().weekday % 7; // Dart: 1=Mon..7=Sun -> 0=Sun..6=Sat
+  int _dayOfWeek =
+      DateTime.now().weekday % 7; // Dart: 1=Mon..7=Sun -> 0=Sun..6=Sat
   TimeOfDay _time = const TimeOfDay(hour: 7, minute: 0);
   int? _trainerUserId;
 
@@ -47,7 +48,13 @@ class _CreateScheduleDialogState extends State<CreateScheduleDialog> {
   String? _error;
 
   static const _dayNames = [
-    'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
   ];
 
   @override
@@ -67,7 +74,9 @@ class _CreateScheduleDialogState extends State<CreateScheduleDialog> {
       });
     } on ApiException {
       if (!mounted) return;
-      setState(() => _loadingStaff = false); // trainer stays optional either way
+      setState(
+        () => _loadingStaff = false,
+      ); // trainer stays optional either way
     }
   }
 
@@ -147,7 +156,10 @@ class _CreateScheduleDialogState extends State<CreateScheduleDialog> {
           AppSpacing.gapXs,
           InkWell(
             onTap: () async {
-              final picked = await showTimePicker(context: context, initialTime: _time);
+              final picked = await showTimePicker(
+                context: context,
+                initialTime: _time,
+              );
               if (picked != null) setState(() => _time = picked);
             },
             borderRadius: BorderRadius.circular(8),
@@ -168,7 +180,10 @@ class _CreateScheduleDialogState extends State<CreateScheduleDialog> {
                   initialValue: _trainerUserId,
                   hint: const Text('Unassigned'),
                   items: [
-                    const DropdownMenuItem<int?>(value: null, child: Text('Unassigned')),
+                    const DropdownMenuItem<int?>(
+                      value: null,
+                      child: Text('Unassigned'),
+                    ),
                     for (final s in _staff)
                       DropdownMenuItem<int?>(value: s.id, child: Text(s.name)),
                   ],
@@ -178,7 +193,8 @@ class _CreateScheduleDialogState extends State<CreateScheduleDialog> {
 
           const LifecycleNotice(
             tone: LifecycleTone.info,
-            text: 'Duration and capacity default from the class type. '
+            text:
+                'Duration and capacity default from the class type. '
                 'Sessions for the next 30 days are created immediately.',
           ),
         ],

@@ -36,8 +36,9 @@ class LeadKanbanBoard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: kPipelineStages.map((stage) {
-          final stageLeads =
-              leads.where((l) => l.status == stage.status).toList();
+          final stageLeads = leads
+              .where((l) => l.status == stage.status)
+              .toList();
           return _StageColumn(
             stage: stage,
             leads: stageLeads,
@@ -82,7 +83,9 @@ class _StageColumn extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
               color: stage.color.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(13)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(13),
+              ),
             ),
             child: Row(
               children: [
@@ -99,8 +102,10 @@ class _StageColumn extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: stage.color,
                     borderRadius: BorderRadius.circular(20),
@@ -175,7 +180,9 @@ class _KanbanCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
-          color: overdue ? AppColors.danger.withValues(alpha: 0.35) : Colors.grey.shade200,
+          color: overdue
+              ? AppColors.danger.withValues(alpha: 0.35)
+              : Colors.grey.shade200,
         ),
       ),
       child: InkWell(
@@ -212,7 +219,11 @@ class _KanbanCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 4,
                 children: [
-                  _miniTag(Icons.sensors_rounded, lead.sourceLabel, Colors.indigo),
+                  _miniTag(
+                    Icons.sensors_rounded,
+                    lead.sourceLabel,
+                    Colors.indigo,
+                  ),
                   if (lead.followUpDate != null)
                     _miniTag(
                       Icons.event_rounded,
@@ -243,7 +254,11 @@ class _KanbanCard extends StatelessWidget {
         const SizedBox(width: 3),
         Text(
           text,
-          style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 10,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
@@ -251,13 +266,18 @@ class _KanbanCard extends StatelessWidget {
 
   Widget _moveMenu(BuildContext context) {
     // Every stage except the one the lead is already in.
-    final targets =
-        kPipelineStages.where((s) => s.status != lead.status).toList();
+    final targets = kPipelineStages
+        .where((s) => s.status != lead.status)
+        .toList();
 
     return PopupMenuButton<String>(
       tooltip: 'Move ${lead.name}',
       padding: EdgeInsets.zero,
-      icon: Icon(Icons.more_vert_rounded, size: 16, color: Colors.grey.shade500),
+      icon: Icon(
+        Icons.more_vert_rounded,
+        size: 16,
+        color: Colors.grey.shade500,
+      ),
       onSelected: onMove,
       itemBuilder: (_) => targets
           .map(
@@ -268,7 +288,10 @@ class _KanbanCard extends StatelessWidget {
                 children: [
                   Icon(s.icon, size: 15, color: s.color),
                   const SizedBox(width: 10),
-                  Text('Move to ${s.label}', style: const TextStyle(fontSize: 13)),
+                  Text(
+                    'Move to ${s.label}',
+                    style: const TextStyle(fontSize: 13),
+                  ),
                 ],
               ),
             ),

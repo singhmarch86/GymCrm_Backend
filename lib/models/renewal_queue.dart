@@ -45,18 +45,18 @@ class RenewalItem {
   });
 
   factory RenewalItem.fromJson(Map<String, dynamic> j) => RenewalItem(
-        memberId: j['member_id'] ?? 0,
-        member: j['member'] ?? '',
-        phone: j['phone'] ?? '',
-        planId: j['plan_id'],
-        planName: j['plan_name'],
-        planInPaise: j['plan_in_paise'],
-        expiryDate: _date(j['expiry_date']),
-        daysUntilExpiry: j['days_until_expiry'] ?? 0,
-        lastVisitAt: _date(j['last_visit_at']),
-        owedInPaise: j['owed_in_paise'] ?? 0,
-        previousRenewals: j['previous_renewals'] ?? 0,
-      );
+    memberId: j['member_id'] ?? 0,
+    member: j['member'] ?? '',
+    phone: j['phone'] ?? '',
+    planId: j['plan_id'],
+    planName: j['plan_name'],
+    planInPaise: j['plan_in_paise'],
+    expiryDate: _date(j['expiry_date']),
+    daysUntilExpiry: j['days_until_expiry'] ?? 0,
+    lastVisitAt: _date(j['last_visit_at']),
+    owedInPaise: j['owed_in_paise'] ?? 0,
+    previousRenewals: j['previous_renewals'] ?? 0,
+  );
 
   bool get hasLapsed => daysUntilExpiry < 0;
   bool get owesMoney => owedInPaise > 0;
@@ -67,9 +67,11 @@ class RenewalItem {
     final v = lastVisitAt;
     if (v == null) return null;
     final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day)
-        .difference(DateTime(v.year, v.month, v.day))
-        .inDays;
+    return DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).difference(DateTime(v.year, v.month, v.day)).inDays;
   }
 
   static DateTime? _date(dynamic v) {
@@ -96,15 +98,15 @@ class RenewalGroup {
   });
 
   factory RenewalGroup.fromJson(Map<String, dynamic> j) => RenewalGroup(
-        key: j['key'] ?? '',
-        label: j['label'] ?? '',
-        note: j['note'] ?? '',
-        severity: j['severity'] ?? 'normal',
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => RenewalItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        valueInPaise: j['value_in_paise'] ?? 0,
-      );
+    key: j['key'] ?? '',
+    label: j['label'] ?? '',
+    note: j['note'] ?? '',
+    severity: j['severity'] ?? 'normal',
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => RenewalItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    valueInPaise: j['value_in_paise'] ?? 0,
+  );
 }
 
 class RenewalQueue {
@@ -126,14 +128,14 @@ class RenewalQueue {
   });
 
   factory RenewalQueue.fromJson(Map<String, dynamic> j) => RenewalQueue(
-        groups: ((j['groups'] as List?) ?? [])
-            .map((e) => RenewalGroup.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        windowDays: j['window_days'] ?? 30,
-        totalCount: j['total_count'] ?? 0,
-        valueInPaise: j['value_in_paise'] ?? 0,
-        beyondWindow: j['beyond_window'] ?? 0,
-      );
+    groups: ((j['groups'] as List?) ?? [])
+        .map((e) => RenewalGroup.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    windowDays: j['window_days'] ?? 30,
+    totalCount: j['total_count'] ?? 0,
+    valueInPaise: j['value_in_paise'] ?? 0,
+    beyondWindow: j['beyond_window'] ?? 0,
+  );
 
   bool get isClear => totalCount == 0;
 }

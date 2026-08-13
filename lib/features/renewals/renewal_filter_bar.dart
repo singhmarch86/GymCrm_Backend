@@ -2,13 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Mirrors backend RenewalFilter values (internal/members/service.go):
 /// all | today | tomorrow | this_week | expired
-enum RenewalFilterOption {
-  all,
-  today,
-  tomorrow,
-  thisWeek,
-  expired,
-}
+enum RenewalFilterOption { all, today, tomorrow, thisWeek, expired }
 
 extension RenewalFilterOptionApi on RenewalFilterOption {
   /// The exact string the backend's ?filter= query param expects.
@@ -44,30 +38,15 @@ class RenewalFilterBar extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildChip(
-            label: "All",
-            filter: RenewalFilterOption.all,
-          ),
+          _buildChip(label: "All", filter: RenewalFilterOption.all),
           const SizedBox(width: 10),
-          _buildChip(
-            label: "Today",
-            filter: RenewalFilterOption.today,
-          ),
+          _buildChip(label: "Today", filter: RenewalFilterOption.today),
           const SizedBox(width: 10),
-          _buildChip(
-            label: "Tomorrow",
-            filter: RenewalFilterOption.tomorrow,
-          ),
+          _buildChip(label: "Tomorrow", filter: RenewalFilterOption.tomorrow),
           const SizedBox(width: 10),
-          _buildChip(
-            label: "This Week",
-            filter: RenewalFilterOption.thisWeek,
-          ),
+          _buildChip(label: "This Week", filter: RenewalFilterOption.thisWeek),
           const SizedBox(width: 10),
-          _buildChip(
-            label: "Expired",
-            filter: RenewalFilterOption.expired,
-          ),
+          _buildChip(label: "Expired", filter: RenewalFilterOption.expired),
         ],
       ),
     );
@@ -88,25 +67,18 @@ class RenewalFilterBar extends StatelessWidget {
 
       showCheckmark: false,
 
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
 
       selectedColor: Colors.blue.shade600,
 
       backgroundColor: Colors.grey.shade100,
 
       labelStyle: TextStyle(
-        color: selectedFilter == filter
-            ? Colors.white
-            : Colors.black87,
+        color: selectedFilter == filter ? Colors.white : Colors.black87,
         fontWeight: FontWeight.w600,
       ),
 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     );
   }
 }

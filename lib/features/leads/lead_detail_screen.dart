@@ -77,7 +77,9 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : "Couldn't load this lead. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't load this lead. Please try again.";
         _loading = false;
       });
     }
@@ -113,7 +115,11 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e is ApiException ? e.message : "Couldn't reassign this lead.")),
+        SnackBar(
+          content: Text(
+            e is ApiException ? e.message : "Couldn't reassign this lead.",
+          ),
+        ),
       );
     }
   }
@@ -131,20 +137,34 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
           decoration: const InputDecoration(hintText: 'What happened?'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Save')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
     if (saved != true || controller.text.trim().isEmpty) return;
 
     try {
-      await LeadService().addActivity(widget.leadId, type: 'note', note: controller.text.trim());
+      await LeadService().addActivity(
+        widget.leadId,
+        type: 'note',
+        note: controller.text.trim(),
+      );
       _loadActivities();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e is ApiException ? e.message : "Couldn't save the note.")),
+        SnackBar(
+          content: Text(
+            e is ApiException ? e.message : "Couldn't save the note.",
+          ),
+        ),
       );
     }
   }
@@ -164,8 +184,11 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
     if (result == null || !mounted) return;
 
     try {
-      final updated = await LeadService()
-          .advanceStatus(widget.leadId, newStatus, note: result.note);
+      final updated = await LeadService().advanceStatus(
+        widget.leadId,
+        newStatus,
+        note: result.note,
+      );
       if (!mounted) return;
       setState(() {
         _lead = updated;
@@ -181,7 +204,11 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e is ApiException ? e.message : "Couldn't update this lead's status."),
+          content: Text(
+            e is ApiException
+                ? e.message
+                : "Couldn't update this lead's status.",
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -244,11 +271,17 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
                     children: [
                       const Text(
                         'Converted to Member',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.success),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.success,
+                        ),
                       ),
                       Text(
                         'Member ID: ${lead.convertedMemberId}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -256,7 +289,8 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
               ],
             ),
           ),
-        ] else if (lead.status == 'trial_completed' || lead.status == 'joined') ...[
+        ] else if (lead.status == 'trial_completed' ||
+            lead.status == 'joined') ...[
           AppSpacing.gapLg,
           SizedBox(
             width: double.infinity,
@@ -271,7 +305,9 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
                 backgroundColor: AppColors.success,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
           ),
@@ -282,7 +318,10 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Pipeline', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text(
+                'Pipeline',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
               AppSpacing.gapMd,
               _pipelineBar(lead.status),
             ],
@@ -292,10 +331,7 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
         AppSpacing.gapLg,
 
         // ── Quick advance button ────────────────────────────────────────
-        if (lead.isActive) ...[
-          _advanceSection(lead, stage),
-          AppSpacing.gapLg,
-        ],
+        if (lead.isActive) ...[_advanceSection(lead, stage), AppSpacing.gapLg],
 
         // ── Owner ───────────────────────────────────────────────────────
         _assigneeSection(lead),
@@ -307,12 +343,17 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Contact', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text(
+                'Contact',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
               AppSpacing.gapMd,
               _row(Icons.person_rounded, 'Name', lead.name),
               _row(Icons.phone_rounded, 'Phone', lead.phone),
-              if (lead.email != null) _row(Icons.email_rounded, 'Email', lead.email!),
-              if (lead.gender != null) _row(Icons.wc_rounded, 'Gender', lead.gender!),
+              if (lead.email != null)
+                _row(Icons.email_rounded, 'Email', lead.email!),
+              if (lead.gender != null)
+                _row(Icons.wc_rounded, 'Gender', lead.gender!),
             ],
           ),
         ),
@@ -324,12 +365,20 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text(
+                'Details',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
               AppSpacing.gapMd,
               _row(Icons.sensors_rounded, 'Source', lead.sourceLabel),
-              if (lead.goalLabel != null) _row(Icons.flag_rounded, 'Goal', lead.goalLabel!),
+              if (lead.goalLabel != null)
+                _row(Icons.flag_rounded, 'Goal', lead.goalLabel!),
               if (lead.trialDate != null)
-                _row(Icons.fitness_center_rounded, 'Trial Date', _fmtDateStr(lead.trialDate!)),
+                _row(
+                  Icons.fitness_center_rounded,
+                  'Trial Date',
+                  _fmtDateStr(lead.trialDate!),
+                ),
               if (lead.followUpDate != null)
                 _row(
                   Icons.event_rounded,
@@ -337,10 +386,20 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
                   lead.followUpLabel,
                   valueColor: lead.isFollowUpOverdue ? AppColors.danger : null,
                 ),
-              if (lead.assignedUserName != null && lead.assignedUserName!.isNotEmpty)
-                _row(Icons.badge_rounded, 'Assigned To', lead.assignedUserName!),
+              if (lead.assignedUserName != null &&
+                  lead.assignedUserName!.isNotEmpty)
+                _row(
+                  Icons.badge_rounded,
+                  'Assigned To',
+                  lead.assignedUserName!,
+                ),
               if (lead.lostReason != null)
-                _row(Icons.info_outline_rounded, 'Lost Reason', lead.lostReason!, valueColor: AppColors.danger),
+                _row(
+                  Icons.info_outline_rounded,
+                  'Lost Reason',
+                  lead.lostReason!,
+                  valueColor: AppColors.danger,
+                ),
             ],
           ),
         ),
@@ -351,7 +410,10 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Notes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text(
+                  'Notes',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
                 AppSpacing.gapSm,
                 Text(lead.notes!, style: const TextStyle(height: 1.5)),
               ],
@@ -377,7 +439,10 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
         children: [
           const Icon(Icons.badge_rounded, size: 18, color: AppColors.primary),
           const SizedBox(width: 10),
-          const Text('Owner', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          const Text(
+            'Owner',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
           const Spacer(),
           if (_assignees.isEmpty)
             Text('—', style: TextStyle(color: Colors.grey.shade500))
@@ -388,12 +453,13 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
               underline: const SizedBox.shrink(),
               onChanged: _assign,
               items: [
-                const DropdownMenuItem<int?>(value: null, child: Text('Unassigned')),
+                const DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text('Unassigned'),
+                ),
                 ..._assignees.map(
-                  (a) => DropdownMenuItem<int?>(
-                    value: a.id,
-                    child: Text(a.name),
-                  ),
+                  (a) =>
+                      DropdownMenuItem<int?>(value: a.id, child: Text(a.name)),
                 ),
               ],
             ),
@@ -409,7 +475,10 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
         children: [
           Row(
             children: [
-              const Text('Activity', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text(
+                'Activity',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
               const Spacer(),
               TextButton.icon(
                 onPressed: _addNote,
@@ -483,7 +552,9 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: const TextStyle(fontSize: 13, height: 1.4)),
-                if (a.type == 'stage_change' && a.note != null && a.note!.isNotEmpty)
+                if (a.type == 'stage_change' &&
+                    a.note != null &&
+                    a.note!.isNotEmpty)
                   Text(
                     a.note!,
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
@@ -492,7 +563,8 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
                 Text(
                   [
                     a.relativeTime,
-                    if (a.userName != null && a.userName!.isNotEmpty) a.userName!,
+                    if (a.userName != null && a.userName!.isNotEmpty)
+                      a.userName!,
                   ].where((s) => s.isNotEmpty).join(' · '),
                   style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
@@ -526,13 +598,17 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: (isPast || isCurrent) ? s.color : Colors.grey.shade200,
+                        color: (isPast || isCurrent)
+                            ? s.color
+                            : Colors.grey.shade200,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         s.icon,
                         size: 16,
-                        color: (isPast || isCurrent) ? Colors.white : Colors.grey.shade400,
+                        color: (isPast || isCurrent)
+                            ? Colors.white
+                            : Colors.grey.shade400,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -540,7 +616,9 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
                       s.label,
                       style: TextStyle(
                         fontSize: 9,
-                        fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isCurrent
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                         color: isCurrent ? s.color : Colors.grey.shade500,
                       ),
                       textAlign: TextAlign.center,
@@ -562,7 +640,9 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
   }
 
   Widget _advanceSection(Lead lead, PipelineStage stage) {
-    final currentIdx = kPipelineStages.indexWhere((s) => s.status == lead.status);
+    final currentIdx = kPipelineStages.indexWhere(
+      (s) => s.status == lead.status,
+    );
     final nextStages = <PipelineStage>[];
     if (currentIdx >= 0 && currentIdx < kPipelineStages.length - 2) {
       nextStages.add(kPipelineStages[currentIdx + 1]);
@@ -573,7 +653,10 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Actions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          const Text(
+            'Actions',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
           AppSpacing.gapMd,
           ...nextStages.map(
             (s) => Padding(
@@ -588,7 +671,9 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
                     backgroundColor: s.color,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -600,10 +685,17 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
               child: OutlinedButton.icon(
                 onPressed: () => _advance('lost'),
                 icon: Icon(lostStage.icon, size: 16, color: lostStage.color),
-                label: Text('Mark as Lost', style: TextStyle(color: lostStage.color)),
+                label: Text(
+                  'Mark as Lost',
+                  style: TextStyle(color: lostStage.color),
+                ),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: lostStage.color.withValues(alpha: 0.4)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  side: BorderSide(
+                    color: lostStage.color.withValues(alpha: 0.4),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
               ),
@@ -613,12 +705,7 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
     );
   }
 
-  Widget _row(
-    IconData icon,
-    String label,
-    String value, {
-    Color? valueColor,
-  }) {
+  Widget _row(IconData icon, String label, String value, {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -628,12 +715,19 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
           const SizedBox(width: 10),
           SizedBox(
             width: 90,
-            child: Text(label, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            ),
           ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: valueColor),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: valueColor,
+              ),
             ),
           ),
         ],
@@ -644,7 +738,21 @@ class _LeadDetailPanelState extends State<LeadDetailPanel> {
   String _fmtDateStr(String raw) {
     try {
       final d = DateTime.parse(raw);
-      const m = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const m = [
+        '',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       return '${d.day.toString().padLeft(2, '0')} ${m[d.month]} ${d.year}';
     } catch (_) {
       return raw;

@@ -35,11 +35,13 @@ class BranchService {
   /// that branch — which is the server refusing, not the app deciding.
   Future<Branch> switchBranch(int gymId) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/branches/switch'),
-          headers: headers,
-          body: jsonEncode({'gym_id': gymId}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/branches/switch'),
+        headers: headers,
+        body: jsonEncode({'gym_id': gymId}),
+      ),
+    );
     final data = unwrapJson(response)['data'] as Map<String, dynamic>;
 
     final refresh = await StorageService.getRefreshToken() ?? '';
@@ -70,17 +72,19 @@ class BranchService {
     String phone = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/branches'),
-          headers: headers,
-          body: jsonEncode({
-            'name': name,
-            'branch_name': branchName,
-            'city': city,
-            'state': state,
-            'phone': phone,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/branches'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'branch_name': branchName,
+          'city': city,
+          'state': state,
+          'phone': phone,
+        }),
+      ),
+    );
     return Branch.fromJson(unwrapJson(response)['data']);
   }
 
@@ -92,41 +96,59 @@ class BranchService {
     required int memberTarget,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$kBaseUrl/api/v1/branches/$gymId/targets'),
-          headers: headers,
-          body: jsonEncode({
-            'monthly_revenue_target_in_paise': revenueTargetInPaise,
-            'monthly_member_target': memberTarget,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$kBaseUrl/api/v1/branches/$gymId/targets'),
+        headers: headers,
+        body: jsonEncode({
+          'monthly_revenue_target_in_paise': revenueTargetInPaise,
+          'monthly_member_target': memberTarget,
+        }),
+      ),
+    );
     unwrapJson(response);
   }
 
   /// Moves a member to another branch. Their payments and invoices stay with
   /// the branch that issued them.
-  Future<void> transferMember(int memberId, int toGymId, {String reason = ''}) async {
+  Future<void> transferMember(
+    int memberId,
+    int toGymId, {
+    String reason = '',
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/branches/transfer-member'),
-          headers: headers,
-          body: jsonEncode({
-            'member_id': memberId,
-            'to_gym_id': toGymId,
-            'reason': reason,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/branches/transfer-member'),
+        headers: headers,
+        body: jsonEncode({
+          'member_id': memberId,
+          'to_gym_id': toGymId,
+          'reason': reason,
+        }),
+      ),
+    );
     unwrapJson(response);
   }
 
   /// Moves a staff member's home branch. Owners only; the server enforces it.
-  Future<void> transferStaff(int userId, int toGymId, {String role = 'staff'}) async {
+  Future<void> transferStaff(
+    int userId,
+    int toGymId, {
+    String role = 'staff',
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/branches/transfer-staff'),
-          headers: headers,
-          body: jsonEncode({'user_id': userId, 'to_gym_id': toGymId, 'role': role}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/branches/transfer-staff'),
+        headers: headers,
+        body: jsonEncode({
+          'user_id': userId,
+          'to_gym_id': toGymId,
+          'role': role,
+        }),
+      ),
+    );
     unwrapJson(response);
   }
 
@@ -134,11 +156,13 @@ class BranchService {
   /// branch that sold them.
   Future<void> transferTrainer(int trainerId, int toGymId) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/branches/transfer-trainer'),
-          headers: headers,
-          body: jsonEncode({'trainer_id': trainerId, 'to_gym_id': toGymId}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/branches/transfer-trainer'),
+        headers: headers,
+        body: jsonEncode({'trainer_id': trainerId, 'to_gym_id': toGymId}),
+      ),
+    );
     unwrapJson(response);
   }
 
@@ -147,7 +171,8 @@ class BranchService {
   Future<List<BranchSummary>> chainSummary() async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/org/summary'), headers: headers),
+      () =>
+          http.get(Uri.parse('$kBaseUrl/api/v1/org/summary'), headers: headers),
     );
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => BranchSummary.fromJson(e)).toList();

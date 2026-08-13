@@ -127,7 +127,10 @@ class _PaymentsScreenState extends State<PaymentsScreen>
   Widget _collectionsTab() {
     if (_collectionsLoading) return const LoadingView();
     if (_collectionsError != null) {
-      return ErrorBanner(message: _collectionsError!, onRetry: _loadCollections);
+      return ErrorBanner(
+        message: _collectionsError!,
+        onRetry: _loadCollections,
+      );
     }
     if (_collections == null) return const LoadingView();
 
@@ -175,7 +178,9 @@ class _PaymentsScreenState extends State<PaymentsScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : "Couldn't load payments. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't load payments. Please try again.";
         _isLoading = false;
       });
     }
@@ -252,8 +257,14 @@ class _PaymentsScreenState extends State<PaymentsScreen>
               // Collections is a worklist; Ledger is the record. Keeping them
               // as separate tabs rather than a filter is the whole point of
               // FR-19 — a worklist behind a filter stops being one.
-              Tab(icon: Icon(Icons.gavel_rounded, size: 18), text: 'Collections'),
-              Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Ledger'),
+              Tab(
+                icon: Icon(Icons.gavel_rounded, size: 18),
+                text: 'Collections',
+              ),
+              Tab(
+                icon: Icon(Icons.receipt_long_rounded, size: 18),
+                text: 'Ledger',
+              ),
             ],
           ),
         ),

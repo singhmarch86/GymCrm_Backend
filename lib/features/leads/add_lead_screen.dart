@@ -58,7 +58,21 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
       '${d.day.toString().padLeft(2, '0')}';
 
   String _fmt(DateTime d) {
-    const m = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const m = [
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${d.day.toString().padLeft(2, '0')} ${m[d.month]} ${d.year}';
   }
 
@@ -93,10 +107,12 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
         'name': _nameController.text.trim(),
         'phone': _phoneController.text.trim(),
         'source': _source,
-        if (_emailController.text.trim().isNotEmpty) 'email': _emailController.text.trim(),
+        if (_emailController.text.trim().isNotEmpty)
+          'email': _emailController.text.trim(),
         if (_goal != null) 'goal': _goal,
         if (_gender != null) 'gender': _gender,
-        if (_notesController.text.trim().isNotEmpty) 'notes': _notesController.text.trim(),
+        if (_notesController.text.trim().isNotEmpty)
+          'notes': _notesController.text.trim(),
         if (_trialDate != null) 'trial_date': _iso(_trialDate!),
         if (_followUpDate != null) 'follow_up_date': _iso(_followUpDate!),
       };
@@ -108,7 +124,9 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
       if (!mounted) return;
       setState(() {
         _saving = false;
-        _error = e is ApiException ? e.message : "Couldn't add this lead. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't add this lead. Please try again.";
       });
     }
   }
@@ -133,7 +151,13 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
                     children: [
                       Icon(Icons.person_add_rounded, color: AppColors.primary),
                       SizedBox(width: 8),
-                      Text('New Lead', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      Text(
+                        'New Lead',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
 
@@ -197,7 +221,12 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
                       prefixIcon: Icon(Icons.sensors_rounded),
                     ),
                     items: kLeadSources
-                        .map((s) => DropdownMenuItem(value: s['value'], child: Text(s['label']!)))
+                        .map(
+                          (s) => DropdownMenuItem(
+                            value: s['value'],
+                            child: Text(s['label']!),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) {
                       if (v != null) setState(() => _source = v);
@@ -212,7 +241,12 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
                       prefixIcon: Icon(Icons.flag_rounded),
                     ),
                     items: kLeadGoals
-                        .map((g) => DropdownMenuItem(value: g['value'], child: Text(g['label']!)))
+                        .map(
+                          (g) => DropdownMenuItem(
+                            value: g['value'],
+                            child: Text(g['label']!),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() => _goal = v),
                   ),
@@ -228,7 +262,11 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
                       ),
                       child: Text(
                         _trialDate != null ? _fmt(_trialDate!) : 'Pick a date',
-                        style: TextStyle(color: _trialDate != null ? Colors.black87 : Colors.grey.shade500),
+                        style: TextStyle(
+                          color: _trialDate != null
+                              ? Colors.black87
+                              : Colors.grey.shade500,
+                        ),
                       ),
                     ),
                   ),
@@ -242,8 +280,14 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
                         prefixIcon: Icon(Icons.event_rounded),
                       ),
                       child: Text(
-                        _followUpDate != null ? _fmt(_followUpDate!) : 'Pick a date',
-                        style: TextStyle(color: _followUpDate != null ? Colors.black87 : Colors.grey.shade500),
+                        _followUpDate != null
+                            ? _fmt(_followUpDate!)
+                            : 'Pick a date',
+                        style: TextStyle(
+                          color: _followUpDate != null
+                              ? Colors.black87
+                              : Colors.grey.shade500,
+                        ),
                       ),
                     ),
                   ),
@@ -271,7 +315,9 @@ class _AddLeadDialogState extends State<AddLeadDialog> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: _saving ? null : () => Navigator.pop(context),
+                          onPressed: _saving
+                              ? null
+                              : () => Navigator.pop(context),
                           child: const Text('Cancel'),
                         ),
                       ),

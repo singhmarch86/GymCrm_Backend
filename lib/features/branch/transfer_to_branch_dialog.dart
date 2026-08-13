@@ -47,7 +47,8 @@ class _TransferToBranchDialog extends StatefulWidget {
   });
 
   @override
-  State<_TransferToBranchDialog> createState() => _TransferToBranchDialogState();
+  State<_TransferToBranchDialog> createState() =>
+      _TransferToBranchDialogState();
 }
 
 class _TransferToBranchDialogState extends State<_TransferToBranchDialog> {
@@ -96,24 +97,24 @@ class _TransferToBranchDialogState extends State<_TransferToBranchDialog> {
   }
 
   String get _title => switch (widget.kind) {
-        TransferKind.member => 'Move member to another branch',
-        TransferKind.staff => 'Move staff to another branch',
-        TransferKind.trainer => 'Move trainer to another branch',
-      };
+    TransferKind.member => 'Move member to another branch',
+    TransferKind.staff => 'Move staff to another branch',
+    TransferKind.trainer => 'Move trainer to another branch',
+  };
 
   /// The consequence sentence — what does NOT move is the part people get
   /// wrong, so it is stated before the button, not after.
   String get _consequence => switch (widget.kind) {
-        TransferKind.member =>
-          'Their payments and invoices stay with this branch — that revenue was '
-              'earned and filed here. The member, and everything from here on, moves.',
-        TransferKind.staff =>
-          'Their home branch changes and they get access there. Their access to '
-              'this branch is kept, so they can still cover shifts.',
-        TransferKind.trainer =>
-          'PT packages already sold stay with this branch and remain readable. '
-              'Only new packages follow the trainer.',
-      };
+    TransferKind.member =>
+      'Their payments and invoices stay with this branch — that revenue was '
+          'earned and filed here. The member, and everything from here on, moves.',
+    TransferKind.staff =>
+      'Their home branch changes and they get access there. Their access to '
+          'this branch is kept, so they can still cover shifts.',
+    TransferKind.trainer =>
+      'PT packages already sold stay with this branch and remain readable. '
+          'Only new packages follow the trainer.',
+  };
 
   Future<void> _submit() async {
     final target = _targetGymId;
@@ -128,8 +129,11 @@ class _TransferToBranchDialogState extends State<_TransferToBranchDialog> {
     try {
       switch (widget.kind) {
         case TransferKind.member:
-          await _service.transferMember(widget.entityId, target,
-              reason: _reasonController.text.trim());
+          await _service.transferMember(
+            widget.entityId,
+            target,
+            reason: _reasonController.text.trim(),
+          );
         case TransferKind.staff:
           await _service.transferStaff(widget.entityId, target);
         case TransferKind.trainer:
@@ -172,7 +176,8 @@ class _TransferToBranchDialogState extends State<_TransferToBranchDialog> {
           if (_branches.isEmpty && !_loading)
             const LifecycleNotice(
               tone: LifecycleTone.blocked,
-              text: 'There is nowhere to move to — you only have access to this branch. '
+              text:
+                  'There is nowhere to move to — you only have access to this branch. '
                   'Add a branch, or ask an owner for access to another one.',
             )
           else ...[
@@ -182,15 +187,17 @@ class _TransferToBranchDialogState extends State<_TransferToBranchDialog> {
               initialValue: _targetGymId,
               isExpanded: true,
               items: _branches
-                  .map((b) => DropdownMenuItem(
-                        value: b.id,
-                        child: Text(
-                          b.city != null && b.city!.isNotEmpty
-                              ? '${b.displayName} · ${b.city}'
-                              : b.displayName,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ))
+                  .map(
+                    (b) => DropdownMenuItem(
+                      value: b.id,
+                      child: Text(
+                        b.city != null && b.city!.isNotEmpty
+                            ? '${b.displayName} · ${b.city}'
+                            : b.displayName,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
                   .toList(),
               onChanged: (v) => setState(() => _targetGymId = v),
             ),
@@ -213,7 +220,8 @@ class _TransferToBranchDialogState extends State<_TransferToBranchDialog> {
             AppSpacing.gapSm,
             const LifecycleNotice(
               tone: LifecycleTone.info,
-              text: 'Could not tell which branch you are currently in — sign out and back in '
+              text:
+                  'Could not tell which branch you are currently in — sign out and back in '
                   'if the destination list looks wrong.',
             ),
           ],

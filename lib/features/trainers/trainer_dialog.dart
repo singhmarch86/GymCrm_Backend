@@ -11,13 +11,19 @@ import '../lifecycle/lifecycle_shared.dart';
 /// Add-trainer dialog. A trainer is a standalone roster entry — not a
 /// `User` login — so this never touches auth or staff accounts.
 Future<Trainer?> showCreateTrainerDialog(BuildContext context) {
-  return showDialog<Trainer>(context: context, builder: (_) => const TrainerDialog());
+  return showDialog<Trainer>(
+    context: context,
+    builder: (_) => const TrainerDialog(),
+  );
 }
 
 /// Edit-trainer dialog — same form, pre-filled, plus an active/inactive
 /// toggle. Never affects PT packages already tied to this trainer.
 Future<Trainer?> showEditTrainerDialog(BuildContext context, Trainer existing) {
-  return showDialog<Trainer>(context: context, builder: (_) => TrainerDialog(existing: existing));
+  return showDialog<Trainer>(
+    context: context,
+    builder: (_) => TrainerDialog(existing: existing),
+  );
 }
 
 class TrainerDialog extends StatefulWidget {
@@ -32,14 +38,24 @@ class TrainerDialog extends StatefulWidget {
 
 class _TrainerDialogState extends State<TrainerDialog> {
   final _service = TrainerService();
-  late final _firstNameController = TextEditingController(text: widget.existing?.firstName ?? '');
-  late final _lastNameController = TextEditingController(text: widget.existing?.lastName ?? '');
-  late final _phoneController = TextEditingController(text: widget.existing?.phone ?? '');
-  late final _emailController = TextEditingController(text: widget.existing?.email ?? '');
-  late final _specializationController =
-      TextEditingController(text: widget.existing?.specialization ?? '');
-  late final _commissionController =
-      TextEditingController(text: widget.existing?.commissionPct?.toString() ?? '');
+  late final _firstNameController = TextEditingController(
+    text: widget.existing?.firstName ?? '',
+  );
+  late final _lastNameController = TextEditingController(
+    text: widget.existing?.lastName ?? '',
+  );
+  late final _phoneController = TextEditingController(
+    text: widget.existing?.phone ?? '',
+  );
+  late final _emailController = TextEditingController(
+    text: widget.existing?.email ?? '',
+  );
+  late final _specializationController = TextEditingController(
+    text: widget.existing?.specialization ?? '',
+  );
+  late final _commissionController = TextEditingController(
+    text: widget.existing?.commissionPct?.toString() ?? '',
+  );
   late bool _isActive = (widget.existing?.status ?? 'active') == 'active';
 
   bool _saving = false;
@@ -78,7 +94,9 @@ class _TrainerDialogState extends State<TrainerDialog> {
     if (commissionText.isNotEmpty) {
       commission = double.tryParse(commissionText);
       if (commission == null || commission < 0 || commission > 100) {
-        setState(() => _error = 'Commission must be a number between 0 and 100');
+        setState(
+          () => _error = 'Commission must be a number between 0 and 100',
+        );
         return;
       }
     }
@@ -122,7 +140,9 @@ class _TrainerDialogState extends State<TrainerDialog> {
   Widget build(BuildContext context) {
     return LifecycleDialogShell(
       title: widget.isEdit ? 'Edit trainer' : 'New trainer',
-      subtitle: widget.isEdit ? widget.existing!.fullName : 'Add someone to the PT roster',
+      subtitle: widget.isEdit
+          ? widget.existing!.fullName
+          : 'Add someone to the PT roster',
       icon: Icons.sports_rounded,
       accent: AppColors.primary,
       error: _error,
@@ -148,7 +168,10 @@ class _TrainerDialogState extends State<TrainerDialog> {
                   children: [
                     const LifecycleFieldLabel('First name'),
                     AppSpacing.gapXs,
-                    TextField(controller: _firstNameController, autofillHints: const []),
+                    TextField(
+                      controller: _firstNameController,
+                      autofillHints: const [],
+                    ),
                   ],
                 ),
               ),
@@ -159,7 +182,10 @@ class _TrainerDialogState extends State<TrainerDialog> {
                   children: [
                     const LifecycleFieldLabel('Last name'),
                     AppSpacing.gapXs,
-                    TextField(controller: _lastNameController, autofillHints: const []),
+                    TextField(
+                      controller: _lastNameController,
+                      autofillHints: const [],
+                    ),
                   ],
                 ),
               ),
@@ -190,7 +216,9 @@ class _TrainerDialogState extends State<TrainerDialog> {
           TextField(
             controller: _specializationController,
             autofillHints: const [],
-            decoration: const InputDecoration(hintText: 'Strength, Yoga, HIIT…'),
+            decoration: const InputDecoration(
+              hintText: 'Strength, Yoga, HIIT…',
+            ),
           ),
           AppSpacing.gapLg,
 
@@ -213,7 +241,10 @@ class _TrainerDialogState extends State<TrainerDialog> {
             AppSpacing.gapSm,
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Active', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500)),
+              title: const Text(
+                'Active',
+                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
+              ),
               value: _isActive,
               onChanged: (v) => setState(() => _isActive = v),
             ),

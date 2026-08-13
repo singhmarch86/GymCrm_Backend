@@ -85,7 +85,9 @@ class _RenewalsScreenState extends State<RenewalsScreen>
       if (!mounted) return;
 
       setState(() {
-        error = e is ApiException ? e.message : "Couldn't load renewals. Please try again.";
+        error = e is ApiException
+            ? e.message
+            : "Couldn't load renewals. Please try again.";
         isLoading = false;
       });
     }
@@ -114,11 +116,7 @@ class _RenewalsScreenState extends State<RenewalsScreen>
       _dataChanged = true;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${renewal.memberName}'s membership renewed",
-          ),
-        ),
+        SnackBar(content: Text("${renewal.memberName}'s membership renewed")),
       );
 
       await loadRenewals();
@@ -208,7 +206,10 @@ class _RenewalsScreenState extends State<RenewalsScreen>
               // Due is the worklist, All is the searchable list. Separate
               // tabs rather than a filter, for the same reason Collections
               // sits beside Ledger (FR-19 §1).
-              Tab(icon: Icon(Icons.event_repeat_rounded, size: 18), text: 'Due'),
+              Tab(
+                icon: Icon(Icons.event_repeat_rounded, size: 18),
+                text: 'Due',
+              ),
               Tab(icon: Icon(Icons.list_rounded, size: 18), text: 'All'),
             ],
           ),

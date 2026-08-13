@@ -81,9 +81,7 @@ class RenewalList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (renewals.isEmpty) {
@@ -95,10 +93,7 @@ class RenewalList extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView.builder(
-        padding: const EdgeInsets.only(
-          top: 8,
-          bottom: 100,
-        ),
+        padding: const EdgeInsets.only(top: 8, bottom: 100),
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: items.length,
         itemBuilder: (context, index) {
@@ -106,14 +101,8 @@ class RenewalList extends StatelessWidget {
 
           if (item.header != null) {
             return Padding(
-              padding: EdgeInsets.only(
-                top: index == 0 ? 4 : 20,
-                bottom: 10,
-              ),
-              child: Text(
-                item.header!,
-                style: AppTextStyles.sectionTitle,
-              ),
+              padding: EdgeInsets.only(top: index == 0 ? 4 : 20, bottom: 10),
+              child: Text(item.header!, style: AppTextStyles.sectionTitle),
             );
           }
 
@@ -125,10 +114,10 @@ class RenewalList extends StatelessWidget {
               onInvoice: item.renewal!.planId == null
                   ? null
                   : () => QuickInvoice.createForPlan(
-                        context,
-                        memberId: item.renewal!.id,
-                        planId: item.renewal!.planId!,
-                      ),
+                      context,
+                      memberId: item.renewal!.id,
+                      planId: item.renewal!.planId!,
+                    ),
             ),
           );
         },

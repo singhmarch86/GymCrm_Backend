@@ -52,6 +52,5 @@ class DashboardResponse {
       inactive14Days: json['inactive_14_days'] ?? 0,
       inactive30Days: json['inactive_30_days'] ?? 0,
     );
-
   }
 }

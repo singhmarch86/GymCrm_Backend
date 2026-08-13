@@ -42,31 +42,37 @@ class MemberGrowthChart extends StatelessWidget {
             children: [
               _dot(AppColors.success),
               const SizedBox(width: 4),
-              Text('Joined',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+              Text(
+                'Joined',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              ),
               const SizedBox(width: 12),
               _dot(AppColors.danger.withValues(alpha: 0.7)),
               const SizedBox(width: 4),
-              Text('Expired',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+              Text(
+                'Expired',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           SizedBox(height: 180, child: _barChart()),
         ] else
           Center(
-            child: Text('No growth data yet',
-                style: TextStyle(color: Colors.grey.shade400)),
+            child: Text(
+              'No growth data yet',
+              style: TextStyle(color: Colors.grey.shade400),
+            ),
           ),
       ],
     );
   }
 
   Widget _dot(Color color) => Container(
-        width: 10,
-        height: 10,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      );
+    width: 10,
+    height: 10,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
 
   Widget _kpi(String label, String value, Color color) {
     return Container(
@@ -79,19 +85,27 @@ class MemberGrowthChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 15, color: color)),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(label,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
         ],
       ),
     );
   }
 
   Widget _barChart() {
-    final maxY = report.growth
+    final maxY =
+        report.growth
             .map((p) => p.joined > p.expired ? p.joined : p.expired)
             .fold(0, (a, b) => a > b ? a : b)
             .toDouble() *
@@ -108,12 +122,15 @@ class MemberGrowthChart extends StatelessWidget {
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          leftTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -125,9 +142,10 @@ class MemberGrowthChart extends StatelessWidget {
                 }
                 if (i % 3 != 0) return const SizedBox.shrink();
                 final label = report.growth[i].month.split(' ')[0];
-                return Text(label,
-                    style: TextStyle(
-                        fontSize: 10, color: Colors.grey.shade500));
+                return Text(
+                  label,
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                );
               },
             ),
           ),
@@ -139,15 +157,17 @@ class MemberGrowthChart extends StatelessWidget {
             x: i,
             barRods: [
               BarChartRodData(
-                  toY: p.joined.toDouble(),
-                  color: AppColors.success,
-                  width: 6,
-                  borderRadius: BorderRadius.circular(3)),
+                toY: p.joined.toDouble(),
+                color: AppColors.success,
+                width: 6,
+                borderRadius: BorderRadius.circular(3),
+              ),
               BarChartRodData(
-                  toY: p.expired.toDouble(),
-                  color: AppColors.danger.withValues(alpha: 0.7),
-                  width: 6,
-                  borderRadius: BorderRadius.circular(3)),
+                toY: p.expired.toDouble(),
+                color: AppColors.danger.withValues(alpha: 0.7),
+                width: 6,
+                borderRadius: BorderRadius.circular(3),
+              ),
             ],
             barsSpace: 2,
           );

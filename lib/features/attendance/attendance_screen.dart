@@ -52,7 +52,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : "Couldn't load attendance. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't load attendance. Please try again.";
         _isLoading = false;
       });
     }

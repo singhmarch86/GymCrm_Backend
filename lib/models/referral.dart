@@ -30,17 +30,19 @@ class Referral {
   });
 
   factory Referral.fromJson(Map<String, dynamic> j) => Referral(
-        id: j['id'] as int,
-        referrerMemberId: j['referrer_member_id'] as int,
-        referrerName: (j['referrer_name'] ?? '') as String,
-        referredName: (j['referred_name'] ?? '') as String,
-        referredPhone: (j['referred_phone'] ?? '') as String,
-        referredMemberId: j['referred_member_id'] as int?,
-        status: (j['status'] ?? 'pending') as String,
-        rewardDays: j['reward_days'] as int?,
-        rewardGivenAt: j['reward_given_at'] == null ? null : DateTime.parse(j['reward_given_at']),
-        notes: j['notes'] as String?,
-        createdByUserName: (j['created_by_user_name'] ?? 'Unknown') as String,
-        createdAt: DateTime.parse(j['created_at'] as String),
-      );
+    id: j['id'] as int,
+    referrerMemberId: j['referrer_member_id'] as int,
+    referrerName: (j['referrer_name'] ?? '') as String,
+    referredName: (j['referred_name'] ?? '') as String,
+    referredPhone: (j['referred_phone'] ?? '') as String,
+    referredMemberId: j['referred_member_id'] as int?,
+    status: (j['status'] ?? 'pending') as String,
+    rewardDays: j['reward_days'] as int?,
+    rewardGivenAt: j['reward_given_at'] == null
+        ? null
+        : DateTime.parse(j['reward_given_at']),
+    notes: j['notes'] as String?,
+    createdByUserName: (j['created_by_user_name'] ?? 'Unknown') as String,
+    createdAt: DateTime.parse(j['created_at'] as String),
+  );
 }

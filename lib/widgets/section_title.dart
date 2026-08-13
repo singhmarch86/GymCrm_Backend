@@ -18,10 +18,7 @@ class SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
-          title,
-          style: AppTextStyles.sectionTitle,
-        ),
+        Text(title, style: AppTextStyles.sectionTitle),
 
         const Spacer(),
 
@@ -30,10 +27,7 @@ class SectionTitle extends StatelessWidget {
             onTap: onActionTap,
             borderRadius: BorderRadius.circular(8),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6,
-                vertical: 4,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               child: Row(
                 children: [
                   Text(

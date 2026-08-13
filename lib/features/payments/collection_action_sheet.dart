@@ -91,15 +91,21 @@ class _CollectionActionSheetState extends State<_CollectionActionSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.member,
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold)),
+                    Text(
+                      item.member,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       '₹${item.amountInPaise ~/ 100} outstanding'
                       '${item.phone.isEmpty ? '' : ' · ${item.phone}'}',
                       style: TextStyle(
-                          fontSize: 12.5, color: Colors.grey.shade600),
+                        fontSize: 12.5,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -115,9 +121,13 @@ class _CollectionActionSheetState extends State<_CollectionActionSheet> {
                       color: AppColors.danger.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(_error!,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColors.danger)),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.danger,
+                      ),
+                    ),
                   ),
                 ),
 
@@ -173,25 +183,27 @@ class _CollectionActionSheetState extends State<_CollectionActionSheet> {
     required String title,
     required String subtitle,
     required VoidCallback? onTap,
-  }) =>
-      ListTile(
-        enabled: onTap != null,
-        onTap: onTap,
-        leading: Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: colour.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child: Icon(icon, size: 19, color: colour),
-        ),
-        title: Text(title,
-            style:
-                const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle,
-            style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600)),
-      );
+  }) => ListTile(
+    enabled: onTap != null,
+    onTap: onTap,
+    leading: Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: colour.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: Icon(icon, size: 19, color: colour),
+    ),
+    title: Text(
+      title,
+      style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
+    ),
+    subtitle: Text(
+      subtitle,
+      style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600),
+    ),
+  );
 
   static const _modes = {
     'cash': 'Cash',
@@ -254,12 +266,14 @@ class _CollectionActionSheetState extends State<_CollectionActionSheet> {
     );
     if (!mounted) return;
 
-    await _run(() => _service.recordContact(
-          widget.item.paymentId,
-          channel: 'call',
-          reached: reached,
-          note: note ?? '',
-        ));
+    await _run(
+      () => _service.recordContact(
+        widget.item.paymentId,
+        channel: 'call',
+        reached: reached,
+        note: note ?? '',
+      ),
+    );
   }
 
   Future<void> _recordPromise() async {
@@ -278,11 +292,13 @@ class _CollectionActionSheetState extends State<_CollectionActionSheet> {
     final note = await _askText(title: 'Anything to note?', hint: 'optional');
     if (!mounted) return;
 
-    await _run(() => _service.recordPromise(
-          widget.item.paymentId,
-          date: date,
-          note: note ?? '',
-        ));
+    await _run(
+      () => _service.recordPromise(
+        widget.item.paymentId,
+        date: date,
+        note: note ?? '',
+      ),
+    );
   }
 
   Future<void> _writeOff() async {

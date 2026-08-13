@@ -19,7 +19,10 @@ class RhythmService {
   Future<RhythmScanResult> scan() async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.post(Uri.parse('$kBaseUrl/api/v1/rhythm/scan'), headers: headers),
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/rhythm/scan'),
+        headers: headers,
+      ),
     );
     return RhythmScanResult.fromJson(unwrapJson(response)['data']);
   }
@@ -27,7 +30,10 @@ class RhythmService {
   Future<List<RhythmBreak>> getBreaks() async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/rhythm/breaks'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/rhythm/breaks'),
+        headers: headers,
+      ),
     );
     final List list = unwrapJson(response)['data']['breaks'] as List? ?? [];
     return list.map((e) => RhythmBreak.fromJson(e)).toList();
@@ -38,8 +44,10 @@ class RhythmService {
   Future<RhythmProfile?> getProfile(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/rhythm/members/$memberId'),
-          headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/rhythm/members/$memberId'),
+        headers: headers,
+      ),
     );
     if (response.statusCode == 404) return null;
     return RhythmProfile.fromJson(unwrapJson(response)['data']);

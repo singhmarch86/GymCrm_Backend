@@ -47,19 +47,17 @@ class MemberTable extends StatelessWidget {
         AppColumn(
           label: 'NAME',
           flex: 4,
-          cell: (m) => TableText('${m.firstName} ${m.lastName}'.trim(),
-              bold: true),
+          cell: (m) =>
+              TableText('${m.firstName} ${m.lastName}'.trim(), bold: true),
         ),
-        AppColumn(
-          label: 'PHONE',
-          flex: 3,
-          cell: (m) => TableText(m.phone),
-        ),
+        AppColumn(label: 'PHONE', flex: 3, cell: (m) => TableText(m.phone)),
         AppColumn(
           label: 'PLAN',
           flex: 3,
-          cell: (m) => TableText(m.membershipPlanName ?? '—',
-              color: m.membershipPlanName == null ? Colors.grey.shade400 : null),
+          cell: (m) => TableText(
+            m.membershipPlanName ?? '—',
+            color: m.membershipPlanName == null ? Colors.grey.shade400 : null,
+          ),
         ),
         // Sortable: "who is expiring" is a question actually asked (FR-17 §4).
         AppColumn(
@@ -108,14 +106,13 @@ class MemberTable extends StatelessWidget {
     required IconData icon,
     required Color colour,
     required VoidCallback onTap,
-  }) =>
-      IconButton(
-        tooltip: tooltip,
-        icon: Icon(icon, size: 18),
-        color: colour,
-        visualDensity: VisualDensity.compact,
-        onPressed: onTap,
-      );
+  }) => IconButton(
+    tooltip: tooltip,
+    icon: Icon(icon, size: 18),
+    color: colour,
+    visualDensity: VisualDensity.compact,
+    onPressed: onTap,
+  );
 }
 
 /// Expiry with days-left colouring — the only colour on the row.
@@ -137,9 +134,11 @@ class _ExpiryCell extends StatelessWidget {
     if (date == null) return TableText('—', color: Colors.grey.shade400);
 
     final now = DateTime.now();
-    final days = DateTime(date.year, date.month, date.day)
-        .difference(DateTime(now.year, now.month, now.day))
-        .inDays;
+    final days = DateTime(
+      date.year,
+      date.month,
+      date.day,
+    ).difference(DateTime(now.year, now.month, now.day)).inDays;
 
     final (colour, suffix) = switch (days) {
       < 0 => (AppColors.danger, 'expired'),
@@ -154,17 +153,32 @@ class _ExpiryCell extends StatelessWidget {
       children: [
         TableText(_short(date), bold: colour != null, color: colour),
         if (suffix != null)
-          Text(suffix,
-              style: TextStyle(
-                  fontSize: 10.5, fontWeight: FontWeight.w600, color: colour)),
+          Text(
+            suffix,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+              color: colour,
+            ),
+          ),
       ],
     );
   }
 
   static String _short(DateTime d) {
     const m = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${d.day} ${m[d.month - 1]} ${d.year}';
   }
@@ -190,9 +204,14 @@ class _StatusCell extends StatelessWidget {
         color: colour.withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label,
-          style: TextStyle(
-              fontSize: 10.5, fontWeight: FontWeight.w600, color: colour)),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w600,
+          color: colour,
+        ),
+      ),
     );
   }
 }
@@ -224,8 +243,10 @@ class _LastVisitCell extends StatelessWidget {
 
     // Only a month of silence earns emphasis. Anything shorter is ordinary
     // life and colouring it would make the column noise.
-    return TableText(text,
-        color: days >= 30 ? AppColors.danger : Colors.grey.shade700,
-        bold: days >= 30);
+    return TableText(
+      text,
+      color: days >= 30 ? AppColors.danger : Colors.grey.shade700,
+      bold: days >= 30,
+    );
   }
 }

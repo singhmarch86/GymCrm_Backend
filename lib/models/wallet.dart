@@ -24,15 +24,16 @@ class WalletTransaction {
   bool get isCredit => amountInPaise > 0;
 
   String get label => switch (transactionType) {
-        'topup' => 'Top-up',
-        'spend' => 'Spent',
-        'refund' => 'Refund',
-        'adjustment' => 'Correction',
-        'expiry' => 'Expired',
-        _ => transactionType,
-      };
+    'topup' => 'Top-up',
+    'spend' => 'Spent',
+    'refund' => 'Refund',
+    'adjustment' => 'Correction',
+    'expiry' => 'Expired',
+    _ => transactionType,
+  };
 
-  factory WalletTransaction.fromJson(Map<String, dynamic> j) => WalletTransaction(
+  factory WalletTransaction.fromJson(Map<String, dynamic> j) =>
+      WalletTransaction(
         id: j['id'] ?? 0,
         amountInPaise: j['amount_in_paise'] ?? 0,
         balanceAfter: j['balance_after'] ?? 0,
@@ -58,11 +59,11 @@ class Wallet {
   bool get hasCredit => balanceInPaise > 0;
 
   factory Wallet.fromJson(Map<String, dynamic> j) => Wallet(
-        memberId: j['member_id'] ?? 0,
-        balanceInPaise: j['balance_in_paise'] ?? 0,
-        balanceInRupees: (j['balance_in_rupees'] as num?)?.toDouble() ?? 0,
-        transactions: ((j['transactions'] as List?) ?? [])
-            .map((e) => WalletTransaction.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    memberId: j['member_id'] ?? 0,
+    balanceInPaise: j['balance_in_paise'] ?? 0,
+    balanceInRupees: (j['balance_in_rupees'] as num?)?.toDouble() ?? 0,
+    transactions: ((j['transactions'] as List?) ?? [])
+        .map((e) => WalletTransaction.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }

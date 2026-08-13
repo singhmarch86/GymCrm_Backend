@@ -32,12 +32,12 @@ class CounterPrompt {
 
   /// A short label so staff can see at a glance what kind of moment this is.
   String get label => switch (kind) {
-        'first_visit' => 'First ever visit',
-        'welcome_back' => 'Back after a break',
-        'alert' => 'Needs attention',
-        'pt_low' => 'PT running out',
-        'restock' => 'Due a restock',
-        'wallet_low' => 'Wallet low',
-        _ => 'Note',
-      };
+    'first_visit' => 'First ever visit',
+    'welcome_back' => 'Back after a break',
+    'alert' => 'Needs attention',
+    'pt_low' => 'PT running out',
+    'restock' => 'Due a restock',
+    'wallet_low' => 'Wallet low',
+    _ => 'Note',
+  };
 }

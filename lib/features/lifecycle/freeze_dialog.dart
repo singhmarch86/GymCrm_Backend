@@ -28,7 +28,11 @@ class FreezeDialog extends StatefulWidget {
   final int memberId;
   final String memberName;
 
-  const FreezeDialog({super.key, required this.memberId, required this.memberName});
+  const FreezeDialog({
+    super.key,
+    required this.memberId,
+    required this.memberName,
+  });
 
   @override
   State<FreezeDialog> createState() => _FreezeDialogState();
@@ -67,7 +71,10 @@ class _FreezeDialogState extends State<FreezeDialog> {
         _eligibility = e;
         // Open on a sensible duration inside the permitted range rather than a
         // fixed 30, which may exceed what this member has left.
-        _days = _days.clamp(e.minDays, e.maxDays < e.minDays ? e.minDays : e.maxDays);
+        _days = _days.clamp(
+          e.minDays,
+          e.maxDays < e.minDays ? e.minDays : e.maxDays,
+        );
         _loading = false;
       });
     } on ApiException catch (err) {
@@ -133,12 +140,15 @@ class _FreezeDialogState extends State<FreezeDialog> {
               children: [
                 if (!e.eligible)
                   LifecycleNotice(
-                    text: e.reason.isEmpty ? 'This membership cannot be frozen.' : e.reason,
+                    text: e.reason.isEmpty
+                        ? 'This membership cannot be frozen.'
+                        : e.reason,
                     tone: LifecycleTone.blocked,
                   )
                 else ...[
                   LifecycleNotice(
-                    text: '${e.freezeDaysLeftYtd} of 90 freeze days left this membership year.',
+                    text:
+                        '${e.freezeDaysLeftYtd} of 90 freeze days left this membership year.',
                     tone: LifecycleTone.info,
                   ),
                   AppSpacing.gapLg,
@@ -151,7 +161,9 @@ class _FreezeDialogState extends State<FreezeDialog> {
                   ),
                   AppSpacing.gapLg,
 
-                  LifecycleFieldLabel('Duration — ${e.minDays} to ${e.maxDays} days'),
+                  LifecycleFieldLabel(
+                    'Duration — ${e.minDays} to ${e.maxDays} days',
+                  ),
                   AppSpacing.gapXs,
                   Row(
                     children: [
@@ -159,8 +171,11 @@ class _FreezeDialogState extends State<FreezeDialog> {
                         child: Slider(
                           value: _days.toDouble(),
                           min: e.minDays.toDouble(),
-                          max: (e.maxDays < e.minDays ? e.minDays : e.maxDays).toDouble(),
-                          divisions: (e.maxDays - e.minDays) > 0 ? (e.maxDays - e.minDays) : null,
+                          max: (e.maxDays < e.minDays ? e.minDays : e.maxDays)
+                              .toDouble(),
+                          divisions: (e.maxDays - e.minDays) > 0
+                              ? (e.maxDays - e.minDays)
+                              : null,
                           label: '$_days days',
                           onChanged: (v) => setState(() => _days = v.round()),
                         ),

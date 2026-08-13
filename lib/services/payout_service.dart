@@ -26,29 +26,28 @@ class PayoutService {
     required DateTime to,
   }) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/trainers/$trainerId/payout-preview')
-        .replace(queryParameters: {'from': _ymd(from), 'to': _ymd(to)});
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/trainers/$trainerId/payout-preview',
+    ).replace(queryParameters: {'from': _ymd(from), 'to': _ymd(to)});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return PayoutPreview.fromJson(unwrapJson(response)['data']);
   }
 
   Future<List<Payout>> list({String? status}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/payouts').replace(
-      queryParameters: status == null ? null : {'status': status},
-    );
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/payouts',
+    ).replace(queryParameters: status == null ? null : {'status': status});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final data = unwrapJson(response)['data'] as List? ?? [];
-    return data
-        .map((e) => Payout.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return data.map((e) => Payout.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<Payout> get(int id) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/payouts/$id'),
-          headers: headers),
+      () =>
+          http.get(Uri.parse('$kBaseUrl/api/v1/payouts/$id'), headers: headers),
     );
     return Payout.fromJson(unwrapJson(response)['data']);
   }
@@ -103,8 +102,10 @@ class PayoutService {
   Future<void> cancel(int id) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.post(Uri.parse('$kBaseUrl/api/v1/payouts/$id/cancel'),
-          headers: headers),
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/payouts/$id/cancel'),
+        headers: headers,
+      ),
     );
     unwrapJson(response);
   }

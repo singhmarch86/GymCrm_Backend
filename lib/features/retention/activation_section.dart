@@ -33,10 +33,12 @@ class ActivationSection extends StatelessWidget {
     final never = alerts
         .where((a) => a.alertType == 'activation_no_first_visit')
         .toList();
-    final quiet =
-        alerts.where((a) => a.alertType == 'activation_going_quiet').toList();
-    final slow =
-        alerts.where((a) => a.alertType == 'activation_slow_start').toList();
+    final quiet = alerts
+        .where((a) => a.alertType == 'activation_going_quiet')
+        .toList();
+    final slow = alerts
+        .where((a) => a.alertType == 'activation_slow_start')
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,17 +49,23 @@ class ActivationSection extends StatelessWidget {
             children: [
               const Icon(Icons.flag_rounded, size: 16, color: AppColors.danger),
               const SizedBox(width: 8),
-              const Text('First 90 days',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: AppColors.danger)),
+              const Text(
+                'First 90 days',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: AppColors.danger,
+                ),
+              ),
               const SizedBox(width: 8),
-              Text('${alerts.length}',
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade500)),
+              Text(
+                '${alerts.length}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade500,
+                ),
+              ),
             ],
           ),
         ),
@@ -91,26 +99,33 @@ class ActivationSection extends StatelessWidget {
                 decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
               const SizedBox(width: 8),
-              Text(title,
-                  style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: color)),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
               const SizedBox(width: 6),
-              Text('${items.length}',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+              Text(
+                '${items.length}',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+              ),
             ],
           ),
         ),
         CollapsibleGroup(
           noun: 'more to call',
           children: items
-              .map((a) => _ActivationCard(
-                    item: a,
-                    color: color,
-                    onResolve: () => onResolve(a),
-                    onCopy: () => onCopy(a),
-                  ))
+              .map(
+                (a) => _ActivationCard(
+                  item: a,
+                  color: color,
+                  onResolve: () => onResolve(a),
+                  onCopy: () => onCopy(a),
+                ),
+              )
               .toList(),
         ),
       ],
@@ -158,14 +173,20 @@ class _ActivationCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.memberName,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(
+                        item.memberName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(height: 2),
                       Text(
                         '${item.phone ?? 'no phone'} · joined ${item.daysSinceJoin} days ago',
                         style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600),
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -178,7 +199,10 @@ class _ActivationCard extends StatelessWidget {
                 ),
                 IconButton(
                   tooltip: 'Mark as handled',
-                  icon: const Icon(Icons.check_circle_outline_rounded, size: 20),
+                  icon: const Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 20,
+                  ),
                   color: AppColors.success,
                   onPressed: onResolve,
                 ),
@@ -211,7 +235,10 @@ class _ActivationCard extends StatelessWidget {
               child: Text(
                 item.message,
                 style: TextStyle(
-                    fontSize: 12, height: 1.45, color: Colors.grey.shade800),
+                  fontSize: 12,
+                  height: 1.45,
+                  color: Colors.grey.shade800,
+                ),
               ),
             ),
             if (item.callToAction.isNotEmpty) ...[
@@ -225,10 +252,11 @@ class _ActivationCard extends StatelessWidget {
                     child: Text(
                       item.callToAction,
                       style: TextStyle(
-                          fontSize: 11.5,
-                          height: 1.35,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700),
+                        fontSize: 11.5,
+                        height: 1.35,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
                     ),
                   ),
                 ],
@@ -241,17 +269,20 @@ class _ActivationCard extends StatelessWidget {
   }
 
   Widget _fact(String value, String label) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 1),
-            Text(label,
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-      );
+        const SizedBox(height: 1),
+        Text(
+          label,
+          style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+        ),
+      ],
+    ),
+  );
 
   Widget _factDivider() =>
       Container(width: 1, height: 24, color: Colors.grey.shade200);

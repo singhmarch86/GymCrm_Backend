@@ -42,19 +42,19 @@ class StockQueueItem {
   });
 
   factory StockQueueItem.fromJson(Map<String, dynamic> j) => StockQueueItem(
-        productId: j['product_id'] ?? 0,
-        name: j['name'] ?? '',
-        sku: j['sku'],
-        category: j['category'],
-        stockQty: j['stock_qty'] ?? 0,
-        reorderLevel: j['reorder_level'] ?? 0,
-        priceInPaise: j['price_in_paise'] ?? 0,
-        soldLast30: j['sold_last_30'] ?? 0,
-        lastRestockedAt: j['last_restocked_at'] == null
-            ? null
-            : DateTime.tryParse(j['last_restocked_at'])?.toLocal(),
-        daysOutOfStock: j['days_out_of_stock'],
-      );
+    productId: j['product_id'] ?? 0,
+    name: j['name'] ?? '',
+    sku: j['sku'],
+    category: j['category'],
+    stockQty: j['stock_qty'] ?? 0,
+    reorderLevel: j['reorder_level'] ?? 0,
+    priceInPaise: j['price_in_paise'] ?? 0,
+    soldLast30: j['sold_last_30'] ?? 0,
+    lastRestockedAt: j['last_restocked_at'] == null
+        ? null
+        : DateTime.tryParse(j['last_restocked_at'])?.toLocal(),
+    daysOutOfStock: j['days_out_of_stock'],
+  );
 
   bool get outOfStock => stockQty <= 0;
 
@@ -87,14 +87,14 @@ class StockQueueGroup {
   });
 
   factory StockQueueGroup.fromJson(Map<String, dynamic> j) => StockQueueGroup(
-        key: j['key'] ?? '',
-        label: j['label'] ?? '',
-        note: j['note'] ?? '',
-        severity: j['severity'] ?? 'normal',
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => StockQueueItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    key: j['key'] ?? '',
+    label: j['label'] ?? '',
+    note: j['note'] ?? '',
+    severity: j['severity'] ?? 'normal',
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => StockQueueItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class StockQueue {
@@ -111,13 +111,13 @@ class StockQueue {
   });
 
   factory StockQueue.fromJson(Map<String, dynamic> j) => StockQueue(
-        groups: ((j['groups'] as List?) ?? [])
-            .map((e) => StockQueueGroup.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalProducts: j['total_products'] ?? 0,
-        totalFlagged: j['total_flagged'] ?? 0,
-        totalOutOfStock: j['total_out_of_stock'] ?? 0,
-      );
+    groups: ((j['groups'] as List?) ?? [])
+        .map((e) => StockQueueGroup.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalProducts: j['total_products'] ?? 0,
+    totalFlagged: j['total_flagged'] ?? 0,
+    totalOutOfStock: j['total_out_of_stock'] ?? 0,
+  );
 
   /// The state worth celebrating: nothing owed. Distinct from "no products",
   /// which is a setup problem rather than a clear queue.

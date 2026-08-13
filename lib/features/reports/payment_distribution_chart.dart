@@ -26,15 +26,21 @@ class PaymentDistributionChart extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
-            _kpi('Collected',
-                '₹${report.collectedInRupees.toStringAsFixed(0)}',
-                AppColors.success),
-            _kpi('Pending',
-                '₹${report.pendingInRupees.toStringAsFixed(0)}',
-                AppColors.warning),
-            _kpi('Overdue',
-                '₹${report.overdueInRupees.toStringAsFixed(0)}',
-                AppColors.danger),
+            _kpi(
+              'Collected',
+              '₹${report.collectedInRupees.toStringAsFixed(0)}',
+              AppColors.success,
+            ),
+            _kpi(
+              'Pending',
+              '₹${report.pendingInRupees.toStringAsFixed(0)}',
+              AppColors.warning,
+            ),
+            _kpi(
+              'Overdue',
+              '₹${report.overdueInRupees.toStringAsFixed(0)}',
+              AppColors.danger,
+            ),
             _kpi('Count', '${report.collectedCount}', AppColors.primary),
           ],
         ),
@@ -54,8 +60,10 @@ class PaymentDistributionChart extends StatelessWidget {
           ),
         ] else
           Center(
-            child: Text('No payment data yet',
-                style: TextStyle(color: Colors.grey.shade400)),
+            child: Text(
+              'No payment data yet',
+              style: TextStyle(color: Colors.grey.shade400),
+            ),
           ),
       ],
     );
@@ -72,20 +80,29 @@ class PaymentDistributionChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 15, color: color)),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(label,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
         ],
       ),
     );
   }
 
   Widget _pieChart() {
-    final total = report.modeBreakdown
-        .fold(0.0, (sum, m) => sum + m.amountInRupees);
+    final total = report.modeBreakdown.fold(
+      0.0,
+      (sum, m) => sum + m.amountInRupees,
+    );
 
     return PieChart(
       PieChartData(
@@ -102,9 +119,10 @@ class PaymentDistributionChart extends StatelessWidget {
             radius: 40,
             title: '${pct.toStringAsFixed(0)}%',
             titleStyle: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: Colors.white),
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           );
         }).toList(),
       ),
@@ -124,10 +142,10 @@ class PaymentDistributionChart extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                      color: color, shape: BoxShape.circle)),
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

@@ -77,7 +77,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : 'Something went wrong. Please try again.';
+        _error = e is ApiException
+            ? e.message
+            : 'Something went wrong. Please try again.';
       });
     }
 
@@ -144,9 +146,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register Gym'),
-      ),
+      appBar: AppBar(title: const Text('Register Gym')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -190,8 +190,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 keyboardType: TextInputType.emailAddress,
                 validator: Validators.emailOptional,
               ),
-              field(cityController, 'City', focusNode: _cityFocus, nextFocus: _stateFocus),
-              field(stateController, 'State', focusNode: _stateFocus, nextFocus: _addressFocus),
+              field(
+                cityController,
+                'City',
+                focusNode: _cityFocus,
+                nextFocus: _stateFocus,
+              ),
+              field(
+                stateController,
+                'State',
+                focusNode: _stateFocus,
+                nextFocus: _addressFocus,
+              ),
               field(
                 addressController,
                 'Address',
@@ -211,12 +221,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: isLoading ? null : register,
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                  ),
                   child: isLoading
                       ? const SizedBox(
                           width: 22,
                           height: 22,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
                         )
                       : const Text('Register'),
                 ),

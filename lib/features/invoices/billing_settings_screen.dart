@@ -83,7 +83,8 @@ class _BillingSettingsScreenState extends State<BillingSettingsScreen> {
     _stateController.text = s.stateName ?? '';
     _prefixController.text = s.invoicePrefix;
     _taxRateController.text = s.defaultTaxRate.toStringAsFixed(
-        s.defaultTaxRate.truncateToDouble() == s.defaultTaxRate ? 0 : 2);
+      s.defaultTaxRate.truncateToDouble() == s.defaultTaxRate ? 0 : 2,
+    );
     _pricesIncludeTax = s.pricesIncludeTax;
   }
 
@@ -147,11 +148,18 @@ class _BillingSettingsScreenState extends State<BillingSettingsScreen> {
                   AppSpacing.gapMd,
                 ],
 
-                const Text('Your business',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Your business',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                ),
                 AppSpacing.gapXs,
-                const Text('Printed on every invoice you issue.',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                const Text(
+                  'Printed on every invoice you issue.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 AppSpacing.gapMd,
 
                 const LifecycleFieldLabel('Legal business name'),
@@ -159,7 +167,9 @@ class _BillingSettingsScreenState extends State<BillingSettingsScreen> {
                 TextField(
                   controller: _legalNameController,
                   autofillHints: const [],
-                  decoration: const InputDecoration(hintText: 'e.g. FitZone Gym Pvt Ltd'),
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. FitZone Gym Pvt Ltd',
+                  ),
                 ),
                 AppSpacing.gapLg,
 
@@ -169,16 +179,27 @@ class _BillingSettingsScreenState extends State<BillingSettingsScreen> {
                   controller: _gstinController,
                   autofillHints: const [],
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(hintText: 'e.g. 03ABCDE1234F1Z5'),
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. 03ABCDE1234F1Z5',
+                  ),
                 ),
                 AppSpacing.gapXs,
-                const Text('Leave blank if your gym is not GST-registered.',
-                    style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+                const Text(
+                  'Leave blank if your gym is not GST-registered.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 AppSpacing.gapLg,
 
                 const LifecycleFieldLabel('Address'),
                 AppSpacing.gapXs,
-                TextField(controller: _addressController, autofillHints: const [], maxLines: 2),
+                TextField(
+                  controller: _addressController,
+                  autofillHints: const [],
+                  maxLines: 2,
+                ),
                 AppSpacing.gapLg,
 
                 const LifecycleFieldLabel('State (place of supply)'),
@@ -190,19 +211,29 @@ class _BillingSettingsScreenState extends State<BillingSettingsScreen> {
                 ),
 
                 AppSpacing.gapXxl,
-                const Text('Tax', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Tax',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                ),
                 AppSpacing.gapMd,
 
                 const LifecycleFieldLabel('GST rate (%)'),
                 AppSpacing.gapXs,
                 TextField(
                   controller: _taxRateController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   autofillHints: const [],
                 ),
                 AppSpacing.gapXs,
-                const Text('18% is standard for gym and fitness services. Set 0 if you are not registered.',
-                    style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+                const Text(
+                  '18% is standard for gym and fitness services. Set 0 if you are not registered.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 AppSpacing.gapLg,
 
                 const LifecycleFieldLabel('How your prices are quoted'),
@@ -210,27 +241,35 @@ class _BillingSettingsScreenState extends State<BillingSettingsScreen> {
                 SegmentedButton<bool>(
                   segments: const [
                     ButtonSegment(value: true, label: Text('Tax included')),
-                    ButtonSegment(value: false, label: Text('Tax added on top')),
+                    ButtonSegment(
+                      value: false,
+                      label: Text('Tax added on top'),
+                    ),
                   ],
                   selected: {_pricesIncludeTax},
-                  onSelectionChanged: (s) => setState(() => _pricesIncludeTax = s.first),
+                  onSelectionChanged: (s) =>
+                      setState(() => _pricesIncludeTax = s.first),
                 ),
                 AppSpacing.gapSm,
                 // Worked example, because this is the setting most likely to be
                 // chosen wrongly and the consequence is every total in the system.
                 LifecycleNotice(
-                  tone: _pricesIncludeTax ? LifecycleTone.info : LifecycleTone.warning,
+                  tone: _pricesIncludeTax
+                      ? LifecycleTone.info
+                      : LifecycleTone.warning,
                   text: _pricesIncludeTax
                       ? 'A ₹12,000 plan means the member pays ₹12,000. The tax is calculated '
-                          'out of that (₹10,169.49 + ₹1,830.51 GST). This matches how most gyms quote.'
+                            'out of that (₹10,169.49 + ₹1,830.51 GST). This matches how most gyms quote.'
                       : 'A ₹12,000 plan means the member pays ₹14,160 — tax is added on top. '
-                          'Choose this only if you quote pre-tax prices, typically for corporate clients. '
-                          'If members pay the advertised ₹12,000, invoices will show a balance still owing.',
+                            'Choose this only if you quote pre-tax prices, typically for corporate clients. '
+                            'If members pay the advertised ₹12,000, invoices will show a balance still owing.',
                 ),
 
                 AppSpacing.gapXxl,
-                const Text('Invoice numbering',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Invoice numbering',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                ),
                 AppSpacing.gapMd,
 
                 const LifecycleFieldLabel('Prefix'),
@@ -244,15 +283,23 @@ class _BillingSettingsScreenState extends State<BillingSettingsScreen> {
                 Text(
                   'Invoices will be numbered ${_prefixController.text.trim().isEmpty ? 'INV' : _prefixController.text.trim()}/2026-27/0001, '
                   'restarting each financial year. Numbers already issued never change.',
-                  style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
 
                 AppSpacing.gapXxl,
-                AppButton(text: 'Save settings', loading: _saving, onPressed: _saving ? null : _save),
+                AppButton(
+                  text: 'Save settings',
+                  loading: _saving,
+                  onPressed: _saving ? null : _save,
+                ),
                 AppSpacing.gapMd,
                 const LifecycleNotice(
                   tone: LifecycleTone.info,
-                  text: 'Changing these affects invoices issued from now on. '
+                  text:
+                      'Changing these affects invoices issued from now on. '
                       'Invoices already issued keep the details they were issued with.',
                 ),
                 const SizedBox(height: 24),

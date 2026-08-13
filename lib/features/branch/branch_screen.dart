@@ -94,7 +94,9 @@ class _BranchScreenState extends State<BranchScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _switching = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -146,67 +148,91 @@ class _BranchScreenState extends State<BranchScreen> {
         body: _loading
             ? const LoadingView()
             : _error != null
-                ? ErrorBanner(message: _error!, onRetry: _load)
-                : ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                    children: [
-                      const Text('Your branches',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-                      AppSpacing.gapXs,
-                      const Text(
-                        'Switching changes everything you see — members, payments and reports '
-                        'all belong to one branch at a time.',
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                      AppSpacing.gapMd,
-
-                      for (final b in _branches) ...[
-                        _BranchCard(
-                          branch: b,
-                          isCurrent: b.id == _currentGymId,
-                          busy: _switching,
-                          onTap: () => _switch(b),
-                        ),
-                        AppSpacing.gapSm,
-                      ],
-
-                      if (_summary.length > 1) ...[
-                        AppSpacing.gapLg,
-                        const Text('Across your branches',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-                        AppSpacing.gapXs,
-                        const Text('Owner view. Read-only.',
-                            style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                        AppSpacing.gapMd,
-                        // Ranked by revenue — the league table's whole point is
-                        // that branches can see where they stand.
-                        for (final entry in _ranked().indexed) ...[
-                          _SummaryCard(
-                            summary: entry.$2,
-                            rank: entry.$1 + 1,
-                            showRank: _summary.length > 1,
-                            onSetTargets: () => _setTargets(entry.$2),
-                          ),
-                          AppSpacing.gapSm,
-                        ],
-                        AppSpacing.gapSm,
-                        LifecycleOutcome(
-                          emphasisColor: AppColors.primary,
-                          rows: [
-                            ('Active members',
-                                '${_summary.fold<int>(0, (a, s) => a + s.activeMembers)}'),
-                            ('Expiring in 30 days',
-                                '${_summary.fold<int>(0, (a, s) => a + s.expiringSoon)}'),
-                            (
-                              'Revenue this month',
-                              formatRupees(
-                                  _summary.fold<int>(0, (a, s) => a + s.revenueInPaise) / 100)
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
+            ? ErrorBanner(message: _error!, onRetry: _load)
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                children: [
+                  const Text(
+                    'Your branches',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
+                  AppSpacing.gapXs,
+                  const Text(
+                    'Switching changes everything you see — members, payments and reports '
+                    'all belong to one branch at a time.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  AppSpacing.gapMd,
+
+                  for (final b in _branches) ...[
+                    _BranchCard(
+                      branch: b,
+                      isCurrent: b.id == _currentGymId,
+                      busy: _switching,
+                      onTap: () => _switch(b),
+                    ),
+                    AppSpacing.gapSm,
+                  ],
+
+                  if (_summary.length > 1) ...[
+                    AppSpacing.gapLg,
+                    const Text(
+                      'Across your branches',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    AppSpacing.gapXs,
+                    const Text(
+                      'Owner view. Read-only.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    AppSpacing.gapMd,
+                    // Ranked by revenue — the league table's whole point is
+                    // that branches can see where they stand.
+                    for (final entry in _ranked().indexed) ...[
+                      _SummaryCard(
+                        summary: entry.$2,
+                        rank: entry.$1 + 1,
+                        showRank: _summary.length > 1,
+                        onSetTargets: () => _setTargets(entry.$2),
+                      ),
+                      AppSpacing.gapSm,
+                    ],
+                    AppSpacing.gapSm,
+                    LifecycleOutcome(
+                      emphasisColor: AppColors.primary,
+                      rows: [
+                        (
+                          'Active members',
+                          '${_summary.fold<int>(0, (a, s) => a + s.activeMembers)}',
+                        ),
+                        (
+                          'Expiring in 30 days',
+                          '${_summary.fold<int>(0, (a, s) => a + s.expiringSoon)}',
+                        ),
+                        (
+                          'Revenue this month',
+                          formatRupees(
+                            _summary.fold<int>(
+                                  0,
+                                  (a, s) => a + s.revenueInPaise,
+                                ) /
+                                100,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
       ),
     );
   }
@@ -252,25 +278,43 @@ class _BranchCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(branch.displayName,
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
+                  Text(
+                    branch.displayName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     [
-                      if (branch.city != null && branch.city!.isNotEmpty) branch.city!,
+                      if (branch.city != null && branch.city!.isNotEmpty)
+                        branch.city!,
                       branch.role,
                     ].join(' · '),
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
             ),
             if (isCurrent)
-              const Text('Current',
-                  style: TextStyle(
-                      fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.primary))
+              const Text(
+                'Current',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              )
             else
-              const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
+              const Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
           ],
         ),
       ),
@@ -323,28 +367,43 @@ class _SummaryCard extends StatelessWidget {
                     color: rank == 1 ? AppColors.success : AppColors.background,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text('$rank',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: rank == 1 ? Colors.white : AppColors.textSecondary,
-                      )),
+                  child: Text(
+                    '$rank',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: rank == 1 ? Colors.white : AppColors.textSecondary,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 8),
               ],
               Expanded(
-                child: Text(summary.displayName,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                child: Text(
+                  summary.displayName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
               ),
-              Text(formatRupees(summary.revenueInRupees),
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+              Text(
+                formatRupees(summary.revenueInRupees),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
           AppSpacing.gapXs,
           Text(
             '${summary.activeMembers} active · ${summary.newMembersThisMonth} joined · '
             '${summary.expiringSoon} expiring',
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
 
           if (summary.hasTarget) ...[
@@ -357,7 +416,10 @@ class _SummaryCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       // Capped at 1.0 so a branch at 140% doesn't render a bar
                       // that looks broken.
-                      value: (summary.revenueAttainmentPct / 100).clamp(0.0, 1.0),
+                      value: (summary.revenueAttainmentPct / 100).clamp(
+                        0.0,
+                        1.0,
+                      ),
                       minHeight: 6,
                       backgroundColor: AppColors.background,
                       valueColor: AlwaysStoppedAnimation(_attainmentColor),
@@ -365,9 +427,14 @@ class _SummaryCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text('${summary.revenueAttainmentPct.toStringAsFixed(0)}% of target',
-                    style: TextStyle(
-                        fontSize: 11.5, fontWeight: FontWeight.w600, color: _attainmentColor)),
+                Text(
+                  '${summary.revenueAttainmentPct.toStringAsFixed(0)}% of target',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: _attainmentColor,
+                  ),
+                ),
               ],
             ),
           ],
@@ -379,7 +446,10 @@ class _SummaryCard extends StatelessWidget {
                 summary.revenuePerMemberInPaise > 0
                     ? '${formatRupees(summary.revenuePerMemberInPaise / 100)} per member'
                     : '—',
-                style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const Spacer(),
               TextButton(
@@ -407,11 +477,15 @@ class _TargetsDialog extends StatefulWidget {
 class _TargetsDialogState extends State<_TargetsDialog> {
   final _service = BranchService();
   late final _revenueController = TextEditingController(
-      text: widget.summary.revenueTargetInPaise > 0
-          ? (widget.summary.revenueTargetInPaise / 100).toStringAsFixed(0)
-          : '');
+    text: widget.summary.revenueTargetInPaise > 0
+        ? (widget.summary.revenueTargetInPaise / 100).toStringAsFixed(0)
+        : '',
+  );
   late final _memberController = TextEditingController(
-      text: widget.summary.memberTarget > 0 ? '${widget.summary.memberTarget}' : '');
+    text: widget.summary.memberTarget > 0
+        ? '${widget.summary.memberTarget}'
+        : '',
+  );
 
   bool _saving = false;
   String? _error;
@@ -464,7 +538,11 @@ class _TargetsDialogState extends State<_TargetsDialog> {
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        AppButton(text: 'Save', loading: _saving, onPressed: _saving ? null : _submit),
+        AppButton(
+          text: 'Save',
+          loading: _saving,
+          onPressed: _saving ? null : _submit,
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,7 +569,8 @@ class _TargetsDialogState extends State<_TargetsDialog> {
 
           const LifecycleNotice(
             tone: LifecycleTone.info,
-            text: 'Leave at 0 to track a branch without judging it against a target.',
+            text:
+                'Leave at 0 to track a branch without judging it against a target.',
           ),
         ],
       ),
@@ -569,7 +648,11 @@ class _AddBranchDialogState extends State<_AddBranchDialog> {
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        AppButton(text: 'Create branch', loading: _saving, onPressed: _saving ? null : _submit),
+        AppButton(
+          text: 'Create branch',
+          loading: _saving,
+          onPressed: _saving ? null : _submit,
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -579,7 +662,9 @@ class _AddBranchDialogState extends State<_AddBranchDialog> {
           TextField(
             controller: _nameController,
             autofillHints: const [],
-            decoration: const InputDecoration(hintText: 'e.g. FitZone Model Town'),
+            decoration: const InputDecoration(
+              hintText: 'e.g. FitZone Model Town',
+            ),
           ),
           AppSpacing.gapLg,
 
@@ -600,7 +685,10 @@ class _AddBranchDialogState extends State<_AddBranchDialog> {
                   children: [
                     const LifecycleFieldLabel('City'),
                     AppSpacing.gapXs,
-                    TextField(controller: _cityController, autofillHints: const []),
+                    TextField(
+                      controller: _cityController,
+                      autofillHints: const [],
+                    ),
                   ],
                 ),
               ),
@@ -611,7 +699,10 @@ class _AddBranchDialogState extends State<_AddBranchDialog> {
                   children: [
                     const LifecycleFieldLabel('State'),
                     AppSpacing.gapXs,
-                    TextField(controller: _stateController, autofillHints: const []),
+                    TextField(
+                      controller: _stateController,
+                      autofillHints: const [],
+                    ),
                   ],
                 ),
               ),
@@ -630,7 +721,8 @@ class _AddBranchDialogState extends State<_AddBranchDialog> {
 
           const LifecycleNotice(
             tone: LifecycleTone.info,
-            text: 'A new branch starts empty — its own members, staff, plans and invoice '
+            text:
+                'A new branch starts empty — its own members, staff, plans and invoice '
                 'number series. Nothing is copied from your existing branches.',
           ),
         ],

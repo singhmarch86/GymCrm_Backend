@@ -28,12 +28,12 @@ class TrendPoint {
   });
 
   factory TrendPoint.fromJson(Map<String, dynamic> j) => TrendPoint(
-        key: j['key'] ?? '',
-        label: j['label'] ?? '',
-        count: j['count'] ?? 0,
-        amountInPaise: j['amount_in_paise'] ?? 0,
-        quiet: j['quiet'] ?? false,
-      );
+    key: j['key'] ?? '',
+    label: j['label'] ?? '',
+    count: j['count'] ?? 0,
+    amountInPaise: j['amount_in_paise'] ?? 0,
+    quiet: j['quiet'] ?? false,
+  );
 }
 
 class CategoryTotal {
@@ -52,12 +52,12 @@ class CategoryTotal {
   });
 
   factory CategoryTotal.fromJson(Map<String, dynamic> j) => CategoryTotal(
-        category: j['category'] ?? '',
-        label: j['label'] ?? '',
-        count: j['count'] ?? 0,
-        amountInPaise: j['amount_in_paise'] ?? 0,
-        sharePct: j['share_pct'] ?? 0,
-      );
+    category: j['category'] ?? '',
+    label: j['label'] ?? '',
+    count: j['count'] ?? 0,
+    amountInPaise: j['amount_in_paise'] ?? 0,
+    sharePct: j['share_pct'] ?? 0,
+  );
 }
 
 class PersonTrend {
@@ -85,14 +85,14 @@ class PersonTrend {
   });
 
   factory PersonTrend.fromJson(Map<String, dynamic> j) => PersonTrend(
-        userId: j['user_id'],
-        name: j['name'] ?? '',
-        role: j['role'] ?? '',
-        count: j['count'] ?? 0,
-        amountInPaise: j['amount_in_paise'] ?? 0,
-        previousCount: j['previous_count'] ?? 0,
-        changePct: j['change_pct'],
-      );
+    userId: j['user_id'],
+    name: j['name'] ?? '',
+    role: j['role'] ?? '',
+    count: j['count'] ?? 0,
+    amountInPaise: j['amount_in_paise'] ?? 0,
+    previousCount: j['previous_count'] ?? 0,
+    changePct: j['change_pct'],
+  );
 }
 
 class StaffAnalytics {
@@ -144,23 +144,23 @@ class StaffAnalytics {
   }
 
   factory StaffAnalytics.fromJson(Map<String, dynamic> j) => StaffAnalytics(
-        from: j['from'] ?? '',
-        to: j['to'] ?? '',
-        days: j['days'] ?? 0,
-        trendUnit: j['trend_unit'] ?? 'day',
-        trend: ((j['trend'] as List?) ?? [])
-            .map((e) => TrendPoint.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        categories: ((j['categories'] as List?) ?? [])
-            .map((e) => CategoryTotal.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        people: ((j['people'] as List?) ?? [])
-            .map((e) => PersonTrend.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalCount: j['total_count'] ?? 0,
-        totalAmountInPaise: j['total_amount_in_paise'] ?? 0,
-        unattributedCount: j['unattributed_count'] ?? 0,
-        unattributedPct: j['unattributed_pct'] ?? 0,
-        quietDays: j['quiet_days'] ?? 0,
-      );
+    from: j['from'] ?? '',
+    to: j['to'] ?? '',
+    days: j['days'] ?? 0,
+    trendUnit: j['trend_unit'] ?? 'day',
+    trend: ((j['trend'] as List?) ?? [])
+        .map((e) => TrendPoint.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    categories: ((j['categories'] as List?) ?? [])
+        .map((e) => CategoryTotal.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    people: ((j['people'] as List?) ?? [])
+        .map((e) => PersonTrend.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalCount: j['total_count'] ?? 0,
+    totalAmountInPaise: j['total_amount_in_paise'] ?? 0,
+    unattributedCount: j['unattributed_count'] ?? 0,
+    unattributedPct: j['unattributed_pct'] ?? 0,
+    quietDays: j['quiet_days'] ?? 0,
+  );
 }

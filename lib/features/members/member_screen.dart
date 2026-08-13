@@ -11,13 +11,10 @@ class MembersScreen extends StatefulWidget {
   const MembersScreen({super.key});
 
   @override
-  State<MembersScreen> createState() =>
-      _MembersScreenState();
+  State<MembersScreen> createState() => _MembersScreenState();
 }
 
-class _MembersScreenState
-    extends State<MembersScreen> {
-
+class _MembersScreenState extends State<MembersScreen> {
   bool isLoading = true;
 
   List<Member> members = [];
@@ -45,8 +42,7 @@ class _MembersScreenState
 
   Future<void> loadMembers() async {
     try {
-      final data =
-      await MemberService().getMembers();
+      final data = await MemberService().getMembers();
 
       if (!mounted) return;
 
@@ -54,12 +50,8 @@ class _MembersScreenState
         members = data;
         isLoading = false;
       });
-
     } catch (e) {
-
-      debugPrint(
-        "LOAD MEMBERS ERROR : $e",
-      );
+      debugPrint("LOAD MEMBERS ERROR : $e");
 
       if (!mounted) return;
 
@@ -70,7 +62,6 @@ class _MembersScreenState
   }
 
   Future<void> addMember() async {
-
     final result = await showAddMemberDialog(context);
 
     if (result == true) {
@@ -81,7 +72,6 @@ class _MembersScreenState
 
   @override
   Widget build(BuildContext context) {
-
     return PopScope(
       // Block the default pop ONLY once data has changed — that's the one
       // case where we need to supply a non-default result. Before any
@@ -94,15 +84,9 @@ class _MembersScreenState
         Navigator.pop(context, true);
       },
       child: Scaffold(
+        appBar: AppBar(title: const Text("Members")),
 
-        appBar: AppBar(
-          title: const Text(
-            "Members",
-          ),
-        ),
-
-        floatingActionButton:
-        FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: addMember,
           icon: const Icon(Icons.add),
           label: const Text("Add Member"),

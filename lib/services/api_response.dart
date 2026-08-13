@@ -38,7 +38,8 @@ Map<String, dynamic> unwrapJson(http.Response response) {
   try {
     final body = jsonDecode(response.body);
     message = (body is Map && body['error'] is Map)
-        ? (body['error']['message']?.toString() ?? _defaultMessage(response.statusCode))
+        ? (body['error']['message']?.toString() ??
+              _defaultMessage(response.statusCode))
         : _defaultMessage(response.statusCode);
   } catch (_) {
     message = _defaultMessage(response.statusCode);
@@ -50,11 +51,15 @@ Map<String, dynamic> unwrapJson(http.Response response) {
 /// Wraps a network call so connection failures (server down, DNS, timeout)
 /// also come back as a friendly [ApiException] instead of a raw
 /// [SocketException]/[http.ClientException].
-Future<http.Response> guardRequest(Future<http.Response> Function() request) async {
+Future<http.Response> guardRequest(
+  Future<http.Response> Function() request,
+) async {
   try {
     return await request();
   } on SocketException {
-    throw const ApiException('Could not reach the server. Check your connection and try again.');
+    throw const ApiException(
+      'Could not reach the server. Check your connection and try again.',
+    );
   } on HttpException {
     throw const ApiException('The server returned an unexpected response.');
   } on FormatException {

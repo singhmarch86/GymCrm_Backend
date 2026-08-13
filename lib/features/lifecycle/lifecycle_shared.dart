@@ -43,7 +43,12 @@ class LifecycleDialogShell extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Header(title: title, subtitle: subtitle, icon: icon, accent: accent),
+            _Header(
+              title: title,
+              subtitle: subtitle,
+              icon: icon,
+              accent: accent,
+            ),
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
@@ -58,7 +63,10 @@ class LifecycleDialogShell extends StatelessWidget {
             if (error != null && error!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: LifecycleNotice(text: error!, tone: LifecycleTone.blocked),
+                child: LifecycleNotice(
+                  text: error!,
+                  tone: LifecycleTone.blocked,
+                ),
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -74,7 +82,9 @@ class LifecycleDialogShell extends StatelessWidget {
                   // outside debug mode). Expanded gives it a real bound.
                   for (var i = 0; i < actions.length; i++) ...[
                     if (i > 0) const SizedBox(width: 8),
-                    i == actions.length - 1 ? Expanded(child: actions[i]) : actions[i],
+                    i == actions.length - 1
+                        ? Expanded(child: actions[i])
+                        : actions[i],
                   ],
                 ],
               ),
@@ -134,7 +144,10 @@ class _Header extends StatelessWidget {
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -158,16 +171,35 @@ class LifecycleNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (fg, bg, icon) = switch (tone) {
-      LifecycleTone.info => (AppColors.info, AppColors.infoLight, Icons.info_outline),
-      LifecycleTone.warning => (AppColors.warning, AppColors.warningLight, Icons.warning_amber_rounded),
-      LifecycleTone.blocked => (AppColors.danger, AppColors.dangerLight, Icons.block),
-      LifecycleTone.positive => (AppColors.success, AppColors.successLight, Icons.check_circle_outline),
+      LifecycleTone.info => (
+        AppColors.info,
+        AppColors.infoLight,
+        Icons.info_outline,
+      ),
+      LifecycleTone.warning => (
+        AppColors.warning,
+        AppColors.warningLight,
+        Icons.warning_amber_rounded,
+      ),
+      LifecycleTone.blocked => (
+        AppColors.danger,
+        AppColors.dangerLight,
+        Icons.block,
+      ),
+      LifecycleTone.positive => (
+        AppColors.success,
+        AppColors.successLight,
+        Icons.check_circle_outline,
+      ),
     };
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -232,7 +264,10 @@ class LifecycleOutcome extends StatelessWidget {
                 Flexible(
                   child: Text(
                     rows[i].$1,
-                    style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -260,8 +295,18 @@ class LifecycleOutcome extends StatelessWidget {
 /// dd MMM yyyy — unambiguous for Indian staff, who read 03/04 as either date.
 String formatDate(DateTime d) {
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}';
 }

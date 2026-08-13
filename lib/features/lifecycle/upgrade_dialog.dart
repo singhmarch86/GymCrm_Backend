@@ -192,12 +192,14 @@ class _UpgradeDialogState extends State<UpgradeDialog> {
           if (q != null) ...[
             AppSpacing.gapMd,
             LifecycleOutcome(
-              emphasisColor: q.isDowngrade ? AppColors.success : AppColors.primary,
+              emphasisColor: q.isDowngrade
+                  ? AppColors.success
+                  : AppColors.primary,
               rows: [
                 ('Days remaining', '${q.remainingDays}'),
                 (
                   'Rate change per day',
-                  '${formatRupees(q.oldDailyRatePaise / 100)} → ${formatRupees(q.newDailyRatePaise / 100)}'
+                  '${formatRupees(q.oldDailyRatePaise / 100)} → ${formatRupees(q.newDailyRatePaise / 100)}',
                 ),
                 if (q.isDowngrade)
                   ('Credit to member', formatRupees(q.amountCreditInRupees))
@@ -234,7 +236,11 @@ class _PlanOption extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _PlanOption({required this.plan, required this.selected, required this.onTap});
+  const _PlanOption({
+    required this.plan,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -254,7 +260,9 @@ class _PlanOption extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
               size: 18,
               color: selected ? AppColors.primary : AppColors.textSecondary,
             ),
@@ -271,7 +279,10 @@ class _PlanOption extends StatelessWidget {
             ),
             Text(
               '${formatRupees(plan.priceInRupees)} · ${plan.durationDays}d',
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

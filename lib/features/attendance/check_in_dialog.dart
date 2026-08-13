@@ -63,13 +63,19 @@ class _CheckInDialogState extends State<CheckInDialog> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded,
-                      color: AppColors.success),
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.success,
+                  ),
                   AppSpacing.hGapSm,
                   Expanded(
-                    child: Text('$name checked in',
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      '$name checked in',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -82,20 +88,26 @@ class _CheckInDialogState extends State<CheckInDialog> {
                   color: AppColors.primary.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.25)),
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(p.label.toUpperCase(),
-                        style: const TextStyle(
-                            fontSize: 10.5,
-                            letterSpacing: 0.8,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary)),
+                    Text(
+                      p.label.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        letterSpacing: 0.8,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    Text(p.text,
-                        style: const TextStyle(fontSize: 14, height: 1.45)),
+                    Text(
+                      p.text,
+                      style: const TextStyle(fontSize: 14, height: 1.45),
+                    ),
                   ],
                 ),
               ),
@@ -126,7 +138,9 @@ class _CheckInDialogState extends State<CheckInDialog> {
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Text('Did it'),
                     ),
@@ -151,10 +165,12 @@ class _CheckInDialogState extends State<CheckInDialog> {
       final q = query.toLowerCase();
       setState(() {
         _results = all
-            .where((m) =>
-                m.firstName.toLowerCase().contains(q) ||
-                m.lastName.toLowerCase().contains(q) ||
-                m.phone.contains(q))
+            .where(
+              (m) =>
+                  m.firstName.toLowerCase().contains(q) ||
+                  m.lastName.toLowerCase().contains(q) ||
+                  m.phone.contains(q),
+            )
             .take(8)
             .toList();
         _searching = false;
@@ -231,9 +247,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
   Widget build(BuildContext context) {
     if (_prompt != null) return _promptDialog(_prompt!);
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420, maxHeight: 500),
         child: Padding(
@@ -251,10 +265,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
                   AppSpacing.hGapSm,
                   const Text(
                     'Manual Check-In',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -288,10 +299,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
                 AppSpacing.gapSm,
                 Text(
                   _error!,
-                  style: const TextStyle(
-                    color: AppColors.danger,
-                    fontSize: 13,
-                  ),
+                  style: const TextStyle(color: AppColors.danger, fontSize: 13),
                 ),
               ],
 
@@ -309,8 +317,9 @@ class _CheckInDialogState extends State<CheckInDialog> {
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: CircleAvatar(
-                          backgroundColor:
-                              AppColors.primary.withValues(alpha: 0.1),
+                          backgroundColor: AppColors.primary.withValues(
+                            alpha: 0.1,
+                          ),
                           child: Text(
                             m.firstName[0].toUpperCase(),
                             style: const TextStyle(

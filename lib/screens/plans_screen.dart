@@ -49,7 +49,9 @@ class _PlansScreenState extends State<PlansScreen> {
       if (!mounted) return;
 
       setState(() {
-        error = e is ApiException ? e.message : "Couldn't load your plans. Please try again.";
+        error = e is ApiException
+            ? e.message
+            : "Couldn't load your plans. Please try again.";
         isLoading = false;
       });
     }
@@ -93,50 +95,61 @@ class _PlansScreenState extends State<PlansScreen> {
         body: isLoading
             ? const LoadingView()
             : error != null
-                ? ErrorBanner(message: error!, onRetry: loadPlans)
-                : plans.isEmpty
-                    ? const EmptyStateView(
-                        icon: Icons.workspace_premium_outlined,
-                        title: 'No Membership Plans Yet',
-                        body: 'Create your first plan to start enrolling members.',
-                      )
-                    : RefreshIndicator(
-                        onRefresh: loadPlans,
-                        child: ListView.builder(
-                          itemCount: plans.length,
-                          itemBuilder: (context, index) {
-                            final plan = plans[index];
+            ? ErrorBanner(message: error!, onRetry: loadPlans)
+            : plans.isEmpty
+            ? const EmptyStateView(
+                icon: Icons.workspace_premium_outlined,
+                title: 'No Membership Plans Yet',
+                body: 'Create your first plan to start enrolling members.',
+              )
+            : RefreshIndicator(
+                onRefresh: loadPlans,
+                child: ListView.builder(
+                  itemCount: plans.length,
+                  itemBuilder: (context, index) {
+                    final plan = plans[index];
 
-                            return Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              elevation: 2,
-                              child: ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundColor: AppColors.primaryLight,
-                                  child: Icon(Icons.workspace_premium, color: AppColors.primary),
-                                ),
-                                title: Text(
-                                  plan.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                                ),
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Price : ₹${plan.priceInRupees.toStringAsFixed(0)}'),
-                                      const SizedBox(height: 4),
-                                      Text('Duration : ${plan.durationDays} Days'),
-                                    ],
-                                  ),
-                                ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () => _editPlan(plan),
-                              ),
-                            );
-                          },
-                        ),
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
                       ),
+                      elevation: 2,
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: AppColors.primaryLight,
+                          child: Icon(
+                            Icons.workspace_premium,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        title: Text(
+                          plan.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Price : ₹${plan.priceInRupees.toStringAsFixed(0)}',
+                              ),
+                              const SizedBox(height: 4),
+                              Text('Duration : ${plan.durationDays} Days'),
+                            ],
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => _editPlan(plan),
+                      ),
+                    );
+                  },
+                ),
+              ),
       ),
     );
   }

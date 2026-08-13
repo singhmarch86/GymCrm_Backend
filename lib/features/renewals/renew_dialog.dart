@@ -14,9 +14,9 @@ import '../../widgets/app_spacing.dart';
 /// Shows the Renew Membership dialog for [renewal] and returns true via
 /// Navigator.pop if the renewal succeeded, so callers can refresh their list.
 Future<bool?> showRenewDialog(
-    BuildContext context, {
-      required RenewalDue renewal,
-    }) {
+  BuildContext context, {
+  required RenewalDue renewal,
+}) {
   return showDialog<bool>(
     context: context,
     builder: (_) => RenewDialog(renewal: renewal),
@@ -26,10 +26,7 @@ Future<bool?> showRenewDialog(
 class RenewDialog extends StatefulWidget {
   final RenewalDue renewal;
 
-  const RenewDialog({
-    super.key,
-    required this.renewal,
-  });
+  const RenewDialog({super.key, required this.renewal});
 
   @override
   State<RenewDialog> createState() => _RenewDialogState();
@@ -79,8 +76,9 @@ class _RenewDialogState extends State<RenewDialog> {
         // Pre-fill amount from the current/selected plan price, if known.
         final current = plans.where((p) => p.id == selectedPlanId);
         if (current.isNotEmpty) {
-          _amountController.text =
-              current.first.priceInRupees.toStringAsFixed(0);
+          _amountController.text = current.first.priceInRupees.toStringAsFixed(
+            0,
+          );
         }
       });
     } catch (e) {
@@ -98,8 +96,9 @@ class _RenewDialogState extends State<RenewDialog> {
 
       final selected = plans.where((p) => p.id == planId);
       if (selected.isNotEmpty) {
-        _amountController.text =
-            selected.first.priceInRupees.toStringAsFixed(0);
+        _amountController.text = selected.first.priceInRupees.toStringAsFixed(
+          0,
+        );
       }
     });
   }
@@ -180,7 +179,9 @@ class _RenewDialogState extends State<RenewDialog> {
       if (!mounted) return;
       setState(() {
         saving = false;
-        errorText = e is ApiException ? e.message : "Couldn't renew this membership. Please try again.";
+        errorText = e is ApiException
+            ? e.message
+            : "Couldn't renew this membership. Please try again.";
       });
     }
   }
@@ -196,9 +197,7 @@ class _RenewDialogState extends State<RenewDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Padding(
@@ -210,7 +209,6 @@ class _RenewDialogState extends State<RenewDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-
                   Row(
                     children: [
                       const Icon(
@@ -229,17 +227,12 @@ class _RenewDialogState extends State<RenewDialog> {
 
                   Text(
                     widget.renewal.memberName,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600),
                   ),
 
                   AppSpacing.gapXl,
 
-                  Text(
-                    "Current Plan",
-                    style: AppTextStyles.caption,
-                  ),
+                  Text("Current Plan", style: AppTextStyles.caption),
                   AppSpacing.gapXs,
                   Text(
                     widget.renewal.planName ?? "No Plan",
@@ -258,9 +251,7 @@ class _RenewDialogState extends State<RenewDialog> {
                   else
                     DropdownButtonFormField<int>(
                       initialValue: selectedPlanId,
-                      decoration: const InputDecoration(
-                        labelText: "New Plan",
-                      ),
+                      decoration: const InputDecoration(labelText: "New Plan"),
                       items: plans
                           .map(
                             (plan) => DropdownMenuItem<int>(
@@ -272,7 +263,8 @@ class _RenewDialogState extends State<RenewDialog> {
                           )
                           .toList(),
                       onChanged: onPlanChanged,
-                      validator: (v) => v == null ? "Please select a plan" : null,
+                      validator: (v) =>
+                          v == null ? "Please select a plan" : null,
                     ),
 
                   AppSpacing.gapLg,
@@ -291,8 +283,9 @@ class _RenewDialogState extends State<RenewDialog> {
 
                   TextFormField(
                     controller: _amountController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
                       labelText: "Amount Paid (₹)",
@@ -311,10 +304,8 @@ class _RenewDialogState extends State<RenewDialog> {
                     ),
                     items: _modes
                         .map(
-                          (m) => DropdownMenuItem(
-                            value: m.$1,
-                            child: Text(m.$2),
-                          ),
+                          (m) =>
+                              DropdownMenuItem(value: m.$1, child: Text(m.$2)),
                         )
                         .toList(),
                     onChanged: (v) {

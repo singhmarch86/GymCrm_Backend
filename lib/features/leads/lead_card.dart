@@ -11,12 +11,7 @@ class LeadCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Future<void> Function(String newStatus)? onAdvance;
 
-  const LeadCard({
-    super.key,
-    required this.lead,
-    this.onTap,
-    this.onAdvance,
-  });
+  const LeadCard({super.key, required this.lead, this.onTap, this.onAdvance});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +23,6 @@ class LeadCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           // ── Header: avatar + name + status badge ────────────────────────
           Row(
             children: [
@@ -105,17 +99,9 @@ class LeadCard extends StatelessWidget {
             spacing: 12,
             runSpacing: 6,
             children: [
-              _tag(
-                Icons.sensors_rounded,
-                lead.sourceLabel,
-                Colors.indigo,
-              ),
+              _tag(Icons.sensors_rounded, lead.sourceLabel, Colors.indigo),
               if (lead.goalLabel != null)
-                _tag(
-                  Icons.flag_rounded,
-                  lead.goalLabel!,
-                  Colors.teal,
-                ),
+                _tag(Icons.flag_rounded, lead.goalLabel!, Colors.teal),
               if (lead.followUpDate != null)
                 _tag(
                   Icons.event_rounded,
@@ -157,8 +143,9 @@ class LeadCard extends StatelessWidget {
 
   Widget _nextStageButton(BuildContext context, PipelineStage currentStage) {
     // Find next stage (skip 'lost')
-    final currentIndex =
-        kPipelineStages.indexWhere((s) => s.status == lead.status);
+    final currentIndex = kPipelineStages.indexWhere(
+      (s) => s.status == lead.status,
+    );
     if (currentIndex < 0 || currentIndex >= kPipelineStages.length - 2) {
       return const SizedBox.shrink();
     }
@@ -171,10 +158,7 @@ class LeadCard extends StatelessWidget {
         icon: Icon(nextStage.icon, size: 16, color: nextStage.color),
         label: Text(
           'Move to ${nextStage.label}',
-          style: TextStyle(
-            color: nextStage.color,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: nextStage.color, fontWeight: FontWeight.w600),
         ),
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: nextStage.color.withValues(alpha: 0.4)),

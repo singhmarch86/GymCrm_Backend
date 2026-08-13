@@ -38,13 +38,13 @@ class PaymentReport {
   });
 
   factory PaymentReport.fromJson(Map<String, dynamic> j) => PaymentReport(
-        collectedInRupees: (j['collected_in_rupees'] ?? 0).toDouble(),
-        pendingInRupees: (j['pending_in_rupees'] ?? 0).toDouble(),
-        overdueInRupees: (j['overdue_in_rupees'] ?? 0).toDouble(),
-        collectedCount: j['collected_count'] ?? 0,
-        pendingCount: j['pending_count'] ?? 0,
-        modeBreakdown: (j['mode_breakdown'] as List? ?? [])
-            .map((e) => PaymentModeBreakdown.fromJson(e))
-            .toList(),
-      );
+    collectedInRupees: (j['collected_in_rupees'] ?? 0).toDouble(),
+    pendingInRupees: (j['pending_in_rupees'] ?? 0).toDouble(),
+    overdueInRupees: (j['overdue_in_rupees'] ?? 0).toDouble(),
+    collectedCount: j['collected_count'] ?? 0,
+    pendingCount: j['pending_count'] ?? 0,
+    modeBreakdown: (j['mode_breakdown'] as List? ?? [])
+        .map((e) => PaymentModeBreakdown.fromJson(e))
+        .toList(),
+  );
 }

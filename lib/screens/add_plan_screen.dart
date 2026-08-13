@@ -54,7 +54,9 @@ class _AddPlanDialogState extends State<AddPlanDialog> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : "Couldn't create this plan. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't create this plan. Please try again.";
       });
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -87,9 +89,18 @@ class _AddPlanDialogState extends State<AddPlanDialog> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.workspace_premium_rounded, color: AppColors.primary),
+                      Icon(
+                        Icons.workspace_premium_rounded,
+                        color: AppColors.primary,
+                      ),
                       SizedBox(width: 8),
-                      Text('Add Membership Plan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      Text(
+                        'Add Membership Plan',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
 
@@ -105,7 +116,9 @@ class _AddPlanDialogState extends State<AddPlanDialog> {
 
                   TextFormField(
                     controller: priceController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(labelText: 'Price (₹)'),
                     validator: (v) => Validators.positiveNumber(v, 'Price'),
@@ -116,7 +129,9 @@ class _AddPlanDialogState extends State<AddPlanDialog> {
                     controller: durationController,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Duration (Days)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Duration (Days)',
+                    ),
                     validator: (v) => Validators.positiveInteger(v, 'Duration'),
                   ),
                   AppSpacing.gapMd,
@@ -125,7 +140,9 @@ class _AddPlanDialogState extends State<AddPlanDialog> {
                     controller: descriptionController,
                     maxLines: 3,
                     textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(labelText: 'Description (optional)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Description (optional)',
+                    ),
                   ),
 
                   if (_error != null) ...[
@@ -139,7 +156,9 @@ class _AddPlanDialogState extends State<AddPlanDialog> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: isLoading ? null : () => Navigator.pop(context),
+                        onPressed: isLoading
+                            ? null
+                            : () => Navigator.pop(context),
                         child: const Text('Cancel'),
                       ),
                       AppSpacing.hGapSm,
@@ -150,7 +169,10 @@ class _AddPlanDialogState extends State<AddPlanDialog> {
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               )
                             : const Text('Save Plan'),
                       ),

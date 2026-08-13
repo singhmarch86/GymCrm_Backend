@@ -9,11 +9,7 @@ class MemberCard extends StatelessWidget {
   final Member member;
   final VoidCallback? onTap;
 
-  const MemberCard({
-    super.key,
-    required this.member,
-    this.onTap,
-  });
+  const MemberCard({super.key, required this.member, this.onTap});
 
   /// Canonical application-wide status color mapping — must stay identical
   /// to StatusChip's internal mapping (lib/widgets/status_chip.dart).
@@ -47,8 +43,7 @@ class MemberCard extends StatelessWidget {
   }
 
   String expiryText() {
-    if (member.expiryDate == null ||
-        member.expiryDate!.isEmpty) {
+    if (member.expiryDate == null || member.expiryDate!.isEmpty) {
       return "--";
     }
 
@@ -81,27 +76,19 @@ class MemberCard extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
-
               CircleAvatar(
                 radius: 28,
-                backgroundColor:
-                AppColors.primary.withValues(
-                  alpha: 0.12,
-                ),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                 child: Text(
                   member.firstName.isNotEmpty
-                      ? member.firstName[0]
-                      .toUpperCase()
+                      ? member.firstName[0].toUpperCase()
                       : "?",
                   style: const TextStyle(
-                    fontWeight:
-                    FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                     fontSize: 22,
                     color: AppColors.primary,
                   ),
@@ -112,17 +99,13 @@ class MemberCard extends StatelessWidget {
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
                       "${member.firstName} ${member.lastName}",
-                      style:
-                      const TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
@@ -130,10 +113,7 @@ class MemberCard extends StatelessWidget {
 
                     Text(
                       member.phone,
-                      style: TextStyle(
-                        color:
-                        Colors.grey.shade700,
-                      ),
+                      style: TextStyle(color: Colors.grey.shade700),
                     ),
                   ],
                 ),
@@ -145,15 +125,12 @@ class MemberCard extends StatelessWidget {
 
           const SizedBox(height: 18),
 
-          Divider(
-            color: Colors.grey.shade200,
-          ),
+          Divider(color: Colors.grey.shade200),
 
           const SizedBox(height: 12),
 
           Row(
             children: [
-
               const Icon(
                 Icons.workspace_premium_rounded,
                 size: 18,
@@ -169,11 +146,7 @@ class MemberCard extends StatelessWidget {
                       : member.membershipPlanId != null
                       ? "Plan ID : ${member.membershipPlanId}"
                       : "No Plan Assigned",
-                  style:
-                  const TextStyle(
-                    fontWeight:
-                    FontWeight.w600,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -183,7 +156,6 @@ class MemberCard extends StatelessWidget {
 
           Row(
             children: [
-
               const Icon(
                 Icons.calendar_today_rounded,
                 size: 18,
@@ -193,9 +165,7 @@ class MemberCard extends StatelessWidget {
               const SizedBox(width: 8),
 
               Expanded(
-                child: Text(
-                  "Started : ${formatDate(member.startDate)}",
-                ),
+                child: Text("Started : ${formatDate(member.startDate)}"),
               ),
             ],
           ),
@@ -204,12 +174,7 @@ class MemberCard extends StatelessWidget {
 
           Row(
             children: [
-
-              Icon(
-                Icons.schedule_rounded,
-                size: 18,
-                color: getStatusColor(),
-              ),
+              Icon(Icons.schedule_rounded, size: 18, color: getStatusColor()),
 
               const SizedBox(width: 8),
 
@@ -217,10 +182,8 @@ class MemberCard extends StatelessWidget {
                 child: Text(
                   expiryText(),
                   style: TextStyle(
-                    fontWeight:
-                    FontWeight.w600,
-                    color:
-                    getStatusColor(),
+                    fontWeight: FontWeight.w600,
+                    color: getStatusColor(),
                   ),
                 ),
               ),
@@ -230,4 +193,4 @@ class MemberCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

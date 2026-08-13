@@ -24,7 +24,10 @@ class LifecycleService {
   Future<FreezeEligibility> freezeEligibility(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('${_base(memberId)}/freeze-eligibility'), headers: headers),
+      () => http.get(
+        Uri.parse('${_base(memberId)}/freeze-eligibility'),
+        headers: headers,
+      ),
     );
     return FreezeEligibility.fromJson(unwrapJson(response)['data']);
   }
@@ -32,17 +35,22 @@ class LifecycleService {
   /// Prorated cost of moving this member to [newPlanId].
   Future<UpgradeQuote> upgradeQuote(int memberId, int newPlanId) async {
     final headers = await _headers();
-    final uri = Uri.parse('${_base(memberId)}/upgrade-quote')
-        .replace(queryParameters: {'new_plan_id': '$newPlanId'});
+    final uri = Uri.parse(
+      '${_base(memberId)}/upgrade-quote',
+    ).replace(queryParameters: {'new_plan_id': '$newPlanId'});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return UpgradeQuote.fromJson(unwrapJson(response)['data']);
   }
 
   /// Refund owed if this membership were terminated today, net of [feeInPaise].
-  Future<TerminationQuote> terminationQuote(int memberId, {int feeInPaise = 0}) async {
+  Future<TerminationQuote> terminationQuote(
+    int memberId, {
+    int feeInPaise = 0,
+  }) async {
     final headers = await _headers();
-    final uri = Uri.parse('${_base(memberId)}/termination-quote')
-        .replace(queryParameters: {'fee_in_paise': '$feeInPaise'});
+    final uri = Uri.parse(
+      '${_base(memberId)}/termination-quote',
+    ).replace(queryParameters: {'fee_in_paise': '$feeInPaise'});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return TerminationQuote.fromJson(unwrapJson(response)['data']);
   }
@@ -130,7 +138,10 @@ class LifecycleService {
   Future<List<LifecycleEvent>> timeline(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('${_base(memberId)}/lifecycle-events'), headers: headers),
+      () => http.get(
+        Uri.parse('${_base(memberId)}/lifecycle-events'),
+        headers: headers,
+      ),
     );
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => LifecycleEvent.fromJson(e)).toList();

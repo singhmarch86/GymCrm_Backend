@@ -30,8 +30,9 @@ class RenewalService {
       if (search.isNotEmpty) 'search': search,
     };
 
-    final uri = Uri.parse('$baseUrl/api/v1/members/renewals')
-        .replace(queryParameters: query.isEmpty ? null : query);
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/members/renewals',
+    ).replace(queryParameters: query.isEmpty ? null : query);
 
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final json = unwrapJson(response);
@@ -52,19 +53,21 @@ class RenewalService {
   }) async {
     final headers = await _authHeaders();
 
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$baseUrl/api/v1/members/$memberId/renew'),
-          headers: headers,
-          body: jsonEncode({
-            'plan_id': planId,
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$baseUrl/api/v1/members/$memberId/renew'),
+        headers: headers,
+        body: jsonEncode({
+          'plan_id': planId,
 
-            // Backend expects paise
-            'amount_paid_in_paise': (amountPaidInRupees * 100).round(),
+          // Backend expects paise
+          'amount_paid_in_paise': (amountPaidInRupees * 100).round(),
 
-            if (startDate != null) 'start_date': startDate,
-            'notes': notes,
-          }),
-        ));
+          if (startDate != null) 'start_date': startDate,
+          'notes': notes,
+        }),
+      ),
+    );
 
     unwrapJson(response);
   }

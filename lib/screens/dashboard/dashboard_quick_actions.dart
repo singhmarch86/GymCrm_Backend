@@ -73,15 +73,19 @@ class _ActionSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(heading,
-                    style: const TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary)),
+                Text(
+                  heading,
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 1),
-                Text(blurb,
-                    style: TextStyle(
-                        fontSize: 11.5, color: Colors.grey.shade500)),
+                Text(
+                  blurb,
+                  style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
+                ),
               ],
             ),
           ),
@@ -89,19 +93,21 @@ class _ActionSection extends StatelessWidget {
             spacing: gap,
             runSpacing: gap,
             children: actions
-                .map((a) => SizedBox(
-                      width: tileWidth,
-                      child: prominent
-                          ? DashboardActionCard(
-                              title: a.title,
-                              subtitle: a.subtitle,
-                              icon: a.icon,
-                              color: a.color,
-                              badge: a.badge,
-                              onTap: () => onTap(a),
-                            )
-                          : _CompactTile(action: a, onTap: () => onTap(a)),
-                    ))
+                .map(
+                  (a) => SizedBox(
+                    width: tileWidth,
+                    child: prominent
+                        ? DashboardActionCard(
+                            title: a.title,
+                            subtitle: a.subtitle,
+                            icon: a.icon,
+                            color: a.color,
+                            badge: a.badge,
+                            onTap: () => onTap(a),
+                          )
+                        : _CompactTile(action: a, onTap: () => onTap(a)),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -154,16 +160,21 @@ class _CompactTile extends StatelessWidget {
                       top: -5,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1),
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.danger,
                           borderRadius: BorderRadius.circular(9),
                         ),
-                        child: Text(action.badge!,
-                            style: const TextStyle(
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
+                        child: Text(
+                          action.badge!,
+                          style: const TextStyle(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -175,7 +186,10 @@ class _CompactTile extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                    fontSize: 11.5, fontWeight: FontWeight.w600, height: 1.2),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  height: 1.2,
+                ),
               ),
             ],
           ),
@@ -229,10 +243,7 @@ class DashboardQuickActions extends StatelessWidget {
     this.atRiskHigh = 0,
   });
 
-  Future<void> _openAndMaybeRefresh(
-    BuildContext context,
-    Widget screen,
-  ) async {
+  Future<void> _openAndMaybeRefresh(BuildContext context, Widget screen) async {
     final changed = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => screen),
@@ -244,156 +255,156 @@ class DashboardQuickActions extends StatelessWidget {
   }
 
   List<_Action> get _actions => [
-        _Action(
-          title: 'Members',
-          subtitle: 'Manage all gym members',
-          icon: Icons.groups_rounded,
-          color: AppColors.primary,
-          screen: () => const MembersScreen(),
-        ),
-        _Action(
-          title: 'Leads',
-          subtitle: 'Pipeline, follow-ups, analytics',
-          icon: Icons.person_add_rounded,
-          color: AppColors.warning,
-          screen: () => const LeadsScreen(),
-        ),
-        _Action(
-          title: 'Renewals',
-          subtitle: 'Track expiring memberships',
-          icon: Icons.autorenew_rounded,
-          color: AppColors.danger,
-          screen: () => const RenewalsScreen(),
-          badge: renewalsToday > 0 ? '$renewalsToday today' : null,
-        ),
-        _Action(
-          title: 'At Risk',
-          subtitle: 'Members drifting or lapsing',
-          icon: Icons.health_and_safety_rounded,
-          color: AppColors.danger,
-          screen: () => const AtRiskScreen(),
-          badge: atRiskHigh > 0 ? '$atRiskHigh high' : null,
-        ),
-        _Action(
-          title: 'Payments',
-          subtitle: 'Collections and pending dues',
-          icon: Icons.payment_rounded,
-          color: AppColors.success,
-          screen: () => const PaymentsScreen(),
-        ),
-        _Action(
-          title: 'Money leaks',
-          subtitle: 'Given away, never billed',
-          icon: Icons.water_damage_rounded,
-          color: AppColors.danger,
-          screen: () => const LeakageScreen(),
-        ),
-        _Action(
-          title: 'Trainer pay',
-          subtitle: 'Salary, commission, sessions',
-          icon: Icons.account_balance_wallet_rounded,
-          color: AppColors.warning,
-          screen: () => const PayoutsScreen(),
-        ),
-        _Action(
-          title: 'Staff work',
-          subtitle: 'What each person did today',
-          icon: Icons.badge_rounded,
-          color: AppColors.info,
-          screen: () => const StaffWorkScreen(),
-        ),
-        _Action(
-          title: 'Shop',
-          subtitle: 'Sell products, track stock',
-          icon: Icons.storefront_rounded,
-          color: AppColors.success,
-          screen: () => const PosScreen(),
-        ),
-        _Action(
-          title: 'Invoices',
-          subtitle: 'GST invoices and discounts',
-          icon: Icons.receipt_long_rounded,
-          color: AppColors.primary,
-          screen: () => const InvoicesScreen(),
-        ),
-        _Action(
-          title: 'Attendance',
-          subtitle: 'Check in members, view history',
-          icon: Icons.how_to_reg_rounded,
-          color: AppColors.info,
-          screen: () => const AttendanceScreen(),
-        ),
-        _Action(
-          title: 'Classes',
-          subtitle: 'Schedules, sessions, bookings',
-          icon: Icons.self_improvement_rounded,
-          color: AppColors.success,
-          screen: () => const ClassesScreen(),
-        ),
-        _Action(
-          title: 'Plans',
-          subtitle: 'Create & update membership plans',
-          icon: Icons.workspace_premium_rounded,
-          color: AppColors.primary,
-          screen: () => const PlansScreen(),
-        ),
-        _Action(
-          title: 'Reports',
-          subtitle: 'Revenue, members, analytics',
-          icon: Icons.bar_chart_rounded,
-          color: AppColors.info,
-          screen: () => const ReportsScreen(),
-        ),
-        _Action(
-          title: 'Staff',
-          subtitle: 'Add trainers and manage access',
-          icon: Icons.badge_rounded,
-          color: AppColors.textSecondary,
-          screen: () => const StaffScreen(),
-        ),
-        _Action(
-          title: 'Visitors',
-          subtitle: 'Walk-ins, trials, tours',
-          icon: Icons.groups_2_rounded,
-          color: AppColors.info,
-          screen: () => const VisitorsScreen(),
-        ),
-        _Action(
-          title: 'Referrals',
-          subtitle: 'Member-to-member referrals',
-          icon: Icons.diversity_3_rounded,
-          color: AppColors.warning,
-          screen: () => const ReferralsScreen(),
-        ),
-        _Action(
-          title: 'Branches',
-          subtitle: 'Switch location, chain overview',
-          icon: Icons.store_rounded,
-          color: AppColors.primary,
-          screen: () => const BranchScreen(),
-        ),
-        _Action(
-          title: 'Import data',
-          subtitle: 'Bring members and history across',
-          icon: Icons.upload_file_rounded,
-          color: AppColors.info,
-          screen: () => const ImportScreen(),
-        ),
-        _Action(
-          title: 'Trainers',
-          subtitle: 'PT roster and specializations',
-          icon: Icons.sports_rounded,
-          color: AppColors.primary,
-          screen: () => const TrainersScreen(),
-        ),
-        _Action(
-          title: 'Personal Training',
-          subtitle: 'Packages and 1:1 appointments',
-          icon: Icons.fitness_center_rounded,
-          color: AppColors.success,
-          screen: () => const PersonalTrainingScreen(),
-        ),
-      ];
+    _Action(
+      title: 'Members',
+      subtitle: 'Manage all gym members',
+      icon: Icons.groups_rounded,
+      color: AppColors.primary,
+      screen: () => const MembersScreen(),
+    ),
+    _Action(
+      title: 'Leads',
+      subtitle: 'Pipeline, follow-ups, analytics',
+      icon: Icons.person_add_rounded,
+      color: AppColors.warning,
+      screen: () => const LeadsScreen(),
+    ),
+    _Action(
+      title: 'Renewals',
+      subtitle: 'Track expiring memberships',
+      icon: Icons.autorenew_rounded,
+      color: AppColors.danger,
+      screen: () => const RenewalsScreen(),
+      badge: renewalsToday > 0 ? '$renewalsToday today' : null,
+    ),
+    _Action(
+      title: 'At Risk',
+      subtitle: 'Members drifting or lapsing',
+      icon: Icons.health_and_safety_rounded,
+      color: AppColors.danger,
+      screen: () => const AtRiskScreen(),
+      badge: atRiskHigh > 0 ? '$atRiskHigh high' : null,
+    ),
+    _Action(
+      title: 'Payments',
+      subtitle: 'Collections and pending dues',
+      icon: Icons.payment_rounded,
+      color: AppColors.success,
+      screen: () => const PaymentsScreen(),
+    ),
+    _Action(
+      title: 'Money leaks',
+      subtitle: 'Given away, never billed',
+      icon: Icons.water_damage_rounded,
+      color: AppColors.danger,
+      screen: () => const LeakageScreen(),
+    ),
+    _Action(
+      title: 'Trainer pay',
+      subtitle: 'Salary, commission, sessions',
+      icon: Icons.account_balance_wallet_rounded,
+      color: AppColors.warning,
+      screen: () => const PayoutsScreen(),
+    ),
+    _Action(
+      title: 'Staff work',
+      subtitle: 'What each person did today',
+      icon: Icons.badge_rounded,
+      color: AppColors.info,
+      screen: () => const StaffWorkScreen(),
+    ),
+    _Action(
+      title: 'Shop',
+      subtitle: 'Sell products, track stock',
+      icon: Icons.storefront_rounded,
+      color: AppColors.success,
+      screen: () => const PosScreen(),
+    ),
+    _Action(
+      title: 'Invoices',
+      subtitle: 'GST invoices and discounts',
+      icon: Icons.receipt_long_rounded,
+      color: AppColors.primary,
+      screen: () => const InvoicesScreen(),
+    ),
+    _Action(
+      title: 'Attendance',
+      subtitle: 'Check in members, view history',
+      icon: Icons.how_to_reg_rounded,
+      color: AppColors.info,
+      screen: () => const AttendanceScreen(),
+    ),
+    _Action(
+      title: 'Classes',
+      subtitle: 'Schedules, sessions, bookings',
+      icon: Icons.self_improvement_rounded,
+      color: AppColors.success,
+      screen: () => const ClassesScreen(),
+    ),
+    _Action(
+      title: 'Plans',
+      subtitle: 'Create & update membership plans',
+      icon: Icons.workspace_premium_rounded,
+      color: AppColors.primary,
+      screen: () => const PlansScreen(),
+    ),
+    _Action(
+      title: 'Reports',
+      subtitle: 'Revenue, members, analytics',
+      icon: Icons.bar_chart_rounded,
+      color: AppColors.info,
+      screen: () => const ReportsScreen(),
+    ),
+    _Action(
+      title: 'Staff',
+      subtitle: 'Add trainers and manage access',
+      icon: Icons.badge_rounded,
+      color: AppColors.textSecondary,
+      screen: () => const StaffScreen(),
+    ),
+    _Action(
+      title: 'Visitors',
+      subtitle: 'Walk-ins, trials, tours',
+      icon: Icons.groups_2_rounded,
+      color: AppColors.info,
+      screen: () => const VisitorsScreen(),
+    ),
+    _Action(
+      title: 'Referrals',
+      subtitle: 'Member-to-member referrals',
+      icon: Icons.diversity_3_rounded,
+      color: AppColors.warning,
+      screen: () => const ReferralsScreen(),
+    ),
+    _Action(
+      title: 'Branches',
+      subtitle: 'Switch location, chain overview',
+      icon: Icons.store_rounded,
+      color: AppColors.primary,
+      screen: () => const BranchScreen(),
+    ),
+    _Action(
+      title: 'Import data',
+      subtitle: 'Bring members and history across',
+      icon: Icons.upload_file_rounded,
+      color: AppColors.info,
+      screen: () => const ImportScreen(),
+    ),
+    _Action(
+      title: 'Trainers',
+      subtitle: 'PT roster and specializations',
+      icon: Icons.sports_rounded,
+      color: AppColors.primary,
+      screen: () => const TrainersScreen(),
+    ),
+    _Action(
+      title: 'Personal Training',
+      subtitle: 'Packages and 1:1 appointments',
+      icon: Icons.fitness_center_rounded,
+      color: AppColors.success,
+      screen: () => const PersonalTrainingScreen(),
+    ),
+  ];
 
   /// The information architecture, in one place.
   ///

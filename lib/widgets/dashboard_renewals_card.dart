@@ -25,8 +25,7 @@ class DashboardRenewalsCard extends StatefulWidget {
   const DashboardRenewalsCard({super.key, this.onDataChanged});
 
   @override
-  State<DashboardRenewalsCard> createState() =>
-      _DashboardRenewalsCardState();
+  State<DashboardRenewalsCard> createState() => _DashboardRenewalsCardState();
 }
 
 class _DashboardRenewalsCardState extends State<DashboardRenewalsCard> {
@@ -71,9 +70,7 @@ class _DashboardRenewalsCardState extends State<DashboardRenewalsCard> {
   Future<void> openRenewals() async {
     final changed = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const RenewalsScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const RenewalsScreen()),
     );
 
     // This card's own counts can be stale even if `changed` isn't strictly
@@ -95,20 +92,13 @@ class _DashboardRenewalsCardState extends State<DashboardRenewalsCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
-              const Icon(
-                Icons.autorenew_rounded,
-                color: Colors.orange,
-              ),
+              const Icon(Icons.autorenew_rounded, color: Colors.orange),
               const SizedBox(width: 8),
               const Text(
                 "Renewals",
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               const Icon(

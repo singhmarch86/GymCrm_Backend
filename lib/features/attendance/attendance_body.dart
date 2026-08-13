@@ -92,10 +92,7 @@ class AttendanceBody extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 message,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
               ),
             ],
           ),

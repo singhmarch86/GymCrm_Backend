@@ -103,26 +103,26 @@ class _TrainersScreenState extends State<TrainersScreen> {
         body: _loading
             ? const LoadingView()
             : _error != null
-                ? ErrorBanner(message: _error!, onRetry: _load)
-                : _trainers.isEmpty
-                    ? const EmptyStateView(
-                        icon: Icons.sports_rounded,
-                        title: 'No trainers yet',
-                        body: 'Add trainers to sell PT packages and book appointments.',
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                          itemCount: _trainers.length,
-                          separatorBuilder: (_, __) => AppSpacing.gapSm,
-                          itemBuilder: (_, i) => _TrainerCard(
-                            trainer: _trainers[i],
-                            onTap: () => _edit(_trainers[i]),
-                            onMove: () => _move(_trainers[i]),
-                          ),
-                        ),
-                      ),
+            ? ErrorBanner(message: _error!, onRetry: _load)
+            : _trainers.isEmpty
+            ? const EmptyStateView(
+                icon: Icons.sports_rounded,
+                title: 'No trainers yet',
+                body: 'Add trainers to sell PT packages and book appointments.',
+              )
+            : RefreshIndicator(
+                onRefresh: _load,
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                  itemCount: _trainers.length,
+                  separatorBuilder: (_, __) => AppSpacing.gapSm,
+                  itemBuilder: (_, i) => _TrainerCard(
+                    trainer: _trainers[i],
+                    onTap: () => _edit(_trainers[i]),
+                    onMove: () => _move(_trainers[i]),
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -132,7 +132,11 @@ class _TrainerCard extends StatelessWidget {
   final Trainer trainer;
   final VoidCallback onTap;
   final VoidCallback onMove;
-  const _TrainerCard({required this.trainer, required this.onTap, required this.onMove});
+  const _TrainerCard({
+    required this.trainer,
+    required this.onTap,
+    required this.onMove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -152,16 +156,27 @@ class _TrainerCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(trainer.fullName, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
+                  Text(
+                    trainer.fullName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     [
                       trainer.phone,
-                      if (trainer.specialization != null && trainer.specialization!.isNotEmpty)
+                      if (trainer.specialization != null &&
+                          trainer.specialization!.isNotEmpty)
                         trainer.specialization!,
-                      if (trainer.commissionPct != null) '${trainer.commissionPct}% commission',
+                      if (trainer.commissionPct != null)
+                        '${trainer.commissionPct}% commission',
                     ].join(' · '),
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -175,7 +190,11 @@ class _TrainerCard extends StatelessWidget {
               icon: const Icon(Icons.swap_horiz, size: 18),
               onPressed: onMove,
             ),
-            const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
+            const Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: AppColors.textSecondary,
+            ),
           ],
         ),
       ),

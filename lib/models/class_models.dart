@@ -21,13 +21,13 @@ class ClassType {
   });
 
   factory ClassType.fromJson(Map<String, dynamic> j) => ClassType(
-        id: j['id'] as int,
-        name: (j['name'] ?? '') as String,
-        description: j['description'] as String?,
-        durationMinutes: (j['duration_minutes'] ?? 0) as int,
-        defaultCapacity: (j['default_capacity'] ?? 0) as int,
-        isActive: (j['is_active'] ?? true) as bool,
-      );
+    id: j['id'] as int,
+    name: (j['name'] ?? '') as String,
+    description: j['description'] as String?,
+    durationMinutes: (j['duration_minutes'] ?? 0) as int,
+    defaultCapacity: (j['default_capacity'] ?? 0) as int,
+    isActive: (j['is_active'] ?? true) as bool,
+  );
 }
 
 /// A recurring schedule — day/time/trainer/capacity. Editing this never
@@ -62,27 +62,33 @@ class ClassSchedule {
   });
 
   static const dayNames = [
-    'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
   ];
 
   String get dayName => dayNames[dayOfWeek % 7];
 
   factory ClassSchedule.fromJson(Map<String, dynamic> j) => ClassSchedule(
-        id: j['id'] as int,
-        classTypeId: j['class_type_id'] as int,
-        classTypeName: (j['class_type_name'] ?? '') as String,
-        dayOfWeek: (j['day_of_week'] ?? 0) as int,
-        startTime: (j['start_time'] ?? '') as String,
-        durationMinutes: (j['duration_minutes'] ?? 0) as int,
-        capacity: (j['capacity'] ?? 0) as int,
-        trainerUserId: j['trainer_user_id'] as int?,
-        trainerName: j['trainer_name'] as String?,
-        effectiveFrom: DateTime.parse(j['effective_from'] as String),
-        effectiveUntil: j['effective_until'] == null
-            ? null
-            : DateTime.parse(j['effective_until'] as String),
-        isActive: (j['is_active'] ?? true) as bool,
-      );
+    id: j['id'] as int,
+    classTypeId: j['class_type_id'] as int,
+    classTypeName: (j['class_type_name'] ?? '') as String,
+    dayOfWeek: (j['day_of_week'] ?? 0) as int,
+    startTime: (j['start_time'] ?? '') as String,
+    durationMinutes: (j['duration_minutes'] ?? 0) as int,
+    capacity: (j['capacity'] ?? 0) as int,
+    trainerUserId: j['trainer_user_id'] as int?,
+    trainerName: j['trainer_name'] as String?,
+    effectiveFrom: DateTime.parse(j['effective_from'] as String),
+    effectiveUntil: j['effective_until'] == null
+        ? null
+        : DateTime.parse(j['effective_until'] as String),
+    isActive: (j['is_active'] ?? true) as bool,
+  );
 }
 
 /// One bookable occurrence, with live booking counts so the sessions list
@@ -122,20 +128,20 @@ class ClassSession {
   int get spotsLeft => (capacity - bookedCount).clamp(0, capacity);
 
   factory ClassSession.fromJson(Map<String, dynamic> j) => ClassSession(
-        id: j['id'] as int,
-        scheduleId: j['schedule_id'] as int?,
-        classTypeId: j['class_type_id'] as int,
-        classTypeName: (j['class_type_name'] ?? '') as String,
-        sessionDate: DateTime.parse(j['session_date'] as String),
-        startTime: (j['start_time'] ?? '') as String,
-        durationMinutes: (j['duration_minutes'] ?? 0) as int,
-        capacity: (j['capacity'] ?? 0) as int,
-        trainerUserId: j['trainer_user_id'] as int?,
-        trainerName: j['trainer_name'] as String?,
-        status: (j['status'] ?? 'scheduled') as String,
-        bookedCount: (j['booked_count'] ?? 0) as int,
-        waitlistCount: (j['waitlist_count'] ?? 0) as int,
-      );
+    id: j['id'] as int,
+    scheduleId: j['schedule_id'] as int?,
+    classTypeId: j['class_type_id'] as int,
+    classTypeName: (j['class_type_name'] ?? '') as String,
+    sessionDate: DateTime.parse(j['session_date'] as String),
+    startTime: (j['start_time'] ?? '') as String,
+    durationMinutes: (j['duration_minutes'] ?? 0) as int,
+    capacity: (j['capacity'] ?? 0) as int,
+    trainerUserId: j['trainer_user_id'] as int?,
+    trainerName: j['trainer_name'] as String?,
+    status: (j['status'] ?? 'scheduled') as String,
+    bookedCount: (j['booked_count'] ?? 0) as int,
+    waitlistCount: (j['waitlist_count'] ?? 0) as int,
+  );
 }
 
 /// One member's claim on one session.
@@ -163,18 +169,18 @@ class Booking {
   });
 
   factory Booking.fromJson(Map<String, dynamic> j) => Booking(
-        id: j['id'] as int,
-        sessionId: j['session_id'] as int,
-        memberId: j['member_id'] as int,
-        memberName: (j['member_name'] ?? '') as String,
-        status: (j['status'] ?? '') as String,
-        waitlistPosition: j['waitlist_position'] as int?,
-        bookedAt: DateTime.parse(j['booked_at'] as String),
-        cancelledAt: j['cancelled_at'] == null
-            ? null
-            : DateTime.parse(j['cancelled_at'] as String),
-        cancelReason: j['cancel_reason'] as String?,
-      );
+    id: j['id'] as int,
+    sessionId: j['session_id'] as int,
+    memberId: j['member_id'] as int,
+    memberName: (j['member_name'] ?? '') as String,
+    status: (j['status'] ?? '') as String,
+    waitlistPosition: j['waitlist_position'] as int?,
+    bookedAt: DateTime.parse(j['booked_at'] as String),
+    cancelledAt: j['cancelled_at'] == null
+        ? null
+        : DateTime.parse(j['cancelled_at'] as String),
+    cancelReason: j['cancel_reason'] as String?,
+  );
 }
 
 /// Result of a booking operation — the affected booking, the session's fresh
@@ -191,10 +197,10 @@ class BookingResult {
   });
 
   factory BookingResult.fromJson(Map<String, dynamic> j) => BookingResult(
-        booking: Booking.fromJson(j['booking'] as Map<String, dynamic>),
-        session: ClassSession.fromJson(j['session'] as Map<String, dynamic>),
-        promoted: j['promoted'] == null
-            ? null
-            : Booking.fromJson(j['promoted'] as Map<String, dynamic>),
-      );
+    booking: Booking.fromJson(j['booking'] as Map<String, dynamic>),
+    session: ClassSession.fromJson(j['session'] as Map<String, dynamic>),
+    promoted: j['promoted'] == null
+        ? null
+        : Booking.fromJson(j['promoted'] as Map<String, dynamic>),
+  );
 }

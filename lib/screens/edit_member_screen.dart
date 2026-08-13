@@ -93,7 +93,9 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : "Couldn't update this member. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't update this member. Please try again.";
       });
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -127,7 +129,13 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
                     children: [
                       Icon(Icons.edit_rounded, color: AppColors.primary),
                       SizedBox(width: 8),
-                      Text('Edit Member', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      Text(
+                        'Edit Member',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
 
@@ -139,8 +147,11 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
                         child: TextFormField(
                           controller: firstNameController,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(labelText: 'First Name'),
-                          validator: (v) => Validators.required(v, 'First name'),
+                          decoration: const InputDecoration(
+                            labelText: 'First Name',
+                          ),
+                          validator: (v) =>
+                              Validators.required(v, 'First name'),
                         ),
                       ),
                       AppSpacing.hGapMd,
@@ -148,7 +159,9 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
                         child: TextFormField(
                           controller: lastNameController,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(labelText: 'Last Name'),
+                          decoration: const InputDecoration(
+                            labelText: 'Last Name',
+                          ),
                           validator: (v) => Validators.required(v, 'Last name'),
                         ),
                       ),
@@ -169,18 +182,31 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
                   _loadingPlans
                       ? const Padding(
                           padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
                         )
                       : DropdownButtonFormField<int>(
                           initialValue: selectedPlanId,
-                          decoration: const InputDecoration(labelText: 'Membership Plan'),
+                          decoration: const InputDecoration(
+                            labelText: 'Membership Plan',
+                          ),
                           items: plans
-                              .map((plan) => DropdownMenuItem(
-                                    value: plan.id,
-                                    child: Text('${plan.name} (₹${plan.priceInRupees.toStringAsFixed(0)})'),
-                                  ))
+                              .map(
+                                (plan) => DropdownMenuItem(
+                                  value: plan.id,
+                                  child: Text(
+                                    '${plan.name} (₹${plan.priceInRupees.toStringAsFixed(0)})',
+                                  ),
+                                ),
+                              )
                               .toList(),
-                          onChanged: (value) => setState(() => selectedPlanId = value),
+                          onChanged: (value) =>
+                              setState(() => selectedPlanId = value),
                         ),
 
                   AppSpacing.gapMd,
@@ -190,8 +216,14 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
                     decoration: const InputDecoration(labelText: 'Status'),
                     items: const [
                       DropdownMenuItem(value: 'active', child: Text('Active')),
-                      DropdownMenuItem(value: 'expired', child: Text('Expired')),
-                      DropdownMenuItem(value: 'inactive', child: Text('Inactive')),
+                      DropdownMenuItem(
+                        value: 'expired',
+                        child: Text('Expired'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'inactive',
+                        child: Text('Inactive'),
+                      ),
                     ],
                     onChanged: (value) {
                       if (value != null) setState(() => status = value);
@@ -209,7 +241,9 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: isLoading ? null : () => Navigator.pop(context),
+                        onPressed: isLoading
+                            ? null
+                            : () => Navigator.pop(context),
                         child: const Text('Cancel'),
                       ),
                       AppSpacing.hGapSm,
@@ -220,7 +254,10 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               )
                             : const Text('Update Member'),
                       ),

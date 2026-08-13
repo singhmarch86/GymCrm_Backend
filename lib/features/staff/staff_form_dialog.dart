@@ -119,13 +119,18 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
                   Row(
                     children: [
                       Icon(
-                        _isEdit ? Icons.edit_rounded : Icons.person_add_alt_1_rounded,
+                        _isEdit
+                            ? Icons.edit_rounded
+                            : Icons.person_add_alt_1_rounded,
                         color: AppColors.primary,
                       ),
                       AppSpacing.hGapSm,
                       Text(
                         _isEdit ? 'Edit Staff' : 'Add Staff',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -155,7 +160,9 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
                     controller: _email,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Email (optional)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Email (optional)',
+                    ),
                     validator: Validators.emailOptional,
                   ),
                   AppSpacing.gapMd,
@@ -164,8 +171,14 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
                     initialValue: _role,
                     decoration: const InputDecoration(labelText: 'Role'),
                     items: const [
-                      DropdownMenuItem(value: 'staff', child: Text('Staff — day-to-day access')),
-                      DropdownMenuItem(value: 'owner', child: Text('Owner — full access incl. staff admin')),
+                      DropdownMenuItem(
+                        value: 'staff',
+                        child: Text('Staff — day-to-day access'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'owner',
+                        child: Text('Owner — full access incl. staff admin'),
+                      ),
                     ],
                     onChanged: (v) {
                       if (v != null) setState(() => _role = v);
@@ -198,7 +211,9 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: _saving ? null : () => Navigator.pop(context),
+                        onPressed: _saving
+                            ? null
+                            : () => Navigator.pop(context),
                         child: const Text('Cancel'),
                       ),
                       AppSpacing.hGapSm,
@@ -210,7 +225,9 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white),
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               )
                             : Text(_isEdit ? 'Save Changes' : 'Add Staff'),
                       ),
@@ -232,7 +249,9 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
     if (value.isEmpty) return 'Password is required';
     if (value.length < 8) return 'Must be at least 8 characters';
     if (value.length > 72) return 'Must not exceed 72 characters';
-    if (!value.contains(RegExp(r'[0-9]'))) return 'Must contain at least one digit';
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'Must contain at least one digit';
+    }
     return null;
   }
 }

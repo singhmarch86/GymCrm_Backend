@@ -39,7 +39,10 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
       _error = null;
     });
     try {
-      final visitors = await _service.list(from: DateTime.now(), to: DateTime.now());
+      final visitors = await _service.list(
+        from: DateTime.now(),
+        to: DateTime.now(),
+      );
       if (!mounted) return;
       setState(() {
         _visitors = visitors;
@@ -65,7 +68,9 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -79,7 +84,9 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -96,26 +103,26 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
       body: _loading
           ? const LoadingView()
           : _error != null
-              ? ErrorBanner(message: _error!, onRetry: _load)
-              : _visitors.isEmpty
-                  ? const EmptyStateView(
-                      icon: Icons.groups_2_outlined,
-                      title: 'No visits today',
-                      body: 'Walk-ins and trial visitors will show up here.',
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                        itemCount: _visitors.length,
-                        separatorBuilder: (_, __) => AppSpacing.gapSm,
-                        itemBuilder: (_, i) => _VisitorCard(
-                          visitor: _visitors[i],
-                          onCheckOut: () => _checkOut(_visitors[i]),
-                          onConvert: () => _convertToLead(_visitors[i]),
-                        ),
-                      ),
-                    ),
+          ? ErrorBanner(message: _error!, onRetry: _load)
+          : _visitors.isEmpty
+          ? const EmptyStateView(
+              icon: Icons.groups_2_outlined,
+              title: 'No visits today',
+              body: 'Walk-ins and trial visitors will show up here.',
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                itemCount: _visitors.length,
+                separatorBuilder: (_, __) => AppSpacing.gapSm,
+                itemBuilder: (_, i) => _VisitorCard(
+                  visitor: _visitors[i],
+                  onCheckOut: () => _checkOut(_visitors[i]),
+                  onConvert: () => _convertToLead(_visitors[i]),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -125,7 +132,11 @@ class _VisitorCard extends StatelessWidget {
   final VoidCallback onCheckOut;
   final VoidCallback onConvert;
 
-  const _VisitorCard({required this.visitor, required this.onCheckOut, required this.onConvert});
+  const _VisitorCard({
+    required this.visitor,
+    required this.onCheckOut,
+    required this.onConvert,
+  });
 
   static const _purposeLabels = {
     'trial': 'Trial',
@@ -137,7 +148,9 @@ class _VisitorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timeIn = _fmtTime(visitor.checkedInAt);
-    final timeOut = visitor.checkedOutAt != null ? _fmtTime(visitor.checkedOutAt!) : null;
+    final timeOut = visitor.checkedOutAt != null
+        ? _fmtTime(visitor.checkedOutAt!)
+        : null;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -152,12 +165,20 @@ class _VisitorCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(visitor.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
+                child: Text(
+                  visitor.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14.5,
+                  ),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: visitor.stillInBuilding ? AppColors.successLight : AppColors.background,
+                  color: visitor.stillInBuilding
+                      ? AppColors.successLight
+                      : AppColors.background,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -165,7 +186,9 @@ class _VisitorCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: visitor.stillInBuilding ? AppColors.success : AppColors.textSecondary,
+                    color: visitor.stillInBuilding
+                        ? AppColors.success
+                        : AppColors.textSecondary,
                   ),
                 ),
               ),
@@ -175,15 +198,24 @@ class _VisitorCard extends StatelessWidget {
           Text(
             [
               _purposeLabels[visitor.purpose] ?? visitor.purpose,
-              if (visitor.phone != null && visitor.phone!.isNotEmpty) visitor.phone!,
+              if (visitor.phone != null && visitor.phone!.isNotEmpty)
+                visitor.phone!,
               timeOut != null ? '$timeIn – $timeOut' : 'In at $timeIn',
             ].join(' · '),
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
           if (visitor.hostStaffName != null) ...[
             AppSpacing.gapXs,
-            Text('Hosted by ${visitor.hostStaffName}',
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text(
+              'Hosted by ${visitor.hostStaffName}',
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
           AppSpacing.gapMd,
           Row(
@@ -197,11 +229,17 @@ class _VisitorCard extends StatelessWidget {
               else
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: Text('Converted to lead', style: TextStyle(fontSize: 12, color: AppColors.success)),
+                  child: Text(
+                    'Converted to lead',
+                    style: TextStyle(fontSize: 12, color: AppColors.success),
+                  ),
                 ),
               const Spacer(),
               if (visitor.stillInBuilding)
-                TextButton(onPressed: onCheckOut, child: const Text('Check out')),
+                TextButton(
+                  onPressed: onCheckOut,
+                  child: const Text('Check out'),
+                ),
             ],
           ),
         ],
@@ -221,7 +259,10 @@ class _VisitorCard extends StatelessWidget {
 // ─── Check-in dialog ────────────────────────────────────────────────────────
 
 Future<Visitor?> showCheckInDialog(BuildContext context) {
-  return showDialog<Visitor>(context: context, builder: (_) => const _CheckInDialog());
+  return showDialog<Visitor>(
+    context: context,
+    builder: (_) => const _CheckInDialog(),
+  );
 }
 
 class _CheckInDialog extends StatefulWidget {
@@ -294,7 +335,11 @@ class _CheckInDialogState extends State<_CheckInDialog> {
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        AppButton(text: 'Check in', loading: _saving, onPressed: _saving ? null : _submit),
+        AppButton(
+          text: 'Check in',
+          loading: _saving,
+          onPressed: _saving ? null : _submit,
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

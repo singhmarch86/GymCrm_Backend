@@ -7,13 +7,10 @@ class EmptyRenewals extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding:
-        const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(40),
         child: Column(
-          mainAxisAlignment:
-          MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             Icon(
               Icons.autorenew_rounded,
               size: 80,
@@ -24,10 +21,7 @@ class EmptyRenewals extends StatelessWidget {
 
             const Text(
               "No Renewals Due",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 12),
@@ -35,10 +29,7 @@ class EmptyRenewals extends StatelessWidget {
             Text(
               "Members with upcoming or expired memberships will show up here.",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                height: 1.5,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, height: 1.5),
             ),
           ],
         ),

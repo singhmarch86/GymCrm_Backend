@@ -30,45 +30,60 @@ class ReferralService {
     String notes = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/referrals'),
-          headers: headers,
-          body: jsonEncode({
-            'referrer_member_id': referrerMemberId,
-            'referred_name': referredName,
-            'referred_phone': referredPhone,
-            'notes': notes,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/referrals'),
+        headers: headers,
+        body: jsonEncode({
+          'referrer_member_id': referrerMemberId,
+          'referred_name': referredName,
+          'referred_phone': referredPhone,
+          'notes': notes,
+        }),
+      ),
+    );
     return Referral.fromJson(unwrapJson(response)['data']);
   }
 
-  Future<Referral> markJoined(int referralId, {required int referredMemberId}) async {
+  Future<Referral> markJoined(
+    int referralId, {
+    required int referredMemberId,
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/referrals/$referralId/mark-joined'),
-          headers: headers,
-          body: jsonEncode({'referred_member_id': referredMemberId}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/referrals/$referralId/mark-joined'),
+        headers: headers,
+        body: jsonEncode({'referred_member_id': referredMemberId}),
+      ),
+    );
     return Referral.fromJson(unwrapJson(response)['data']);
   }
 
   /// Rewards a joined referral — extends the referrer's expiry by
   /// [rewardDays]. Requires the referral to already be 'joined'.
-  Future<Referral> rewardReferrer(int referralId, {required int rewardDays}) async {
+  Future<Referral> rewardReferrer(
+    int referralId, {
+    required int rewardDays,
+  }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/referrals/$referralId/reward'),
-          headers: headers,
-          body: jsonEncode({'reward_days': rewardDays}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/referrals/$referralId/reward'),
+        headers: headers,
+        body: jsonEncode({'reward_days': rewardDays}),
+      ),
+    );
     return Referral.fromJson(unwrapJson(response)['data']);
   }
 
   Future<Referral> expire(int referralId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.post(Uri.parse('$kBaseUrl/api/v1/referrals/$referralId/expire'), headers: headers),
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/referrals/$referralId/expire'),
+        headers: headers,
+      ),
     );
     return Referral.fromJson(unwrapJson(response)['data']);
   }

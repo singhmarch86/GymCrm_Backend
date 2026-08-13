@@ -19,19 +19,13 @@ class EmptyPayments extends StatelessWidget {
             const SizedBox(height: 20),
             const Text(
               'No Payments Found',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'Collected payments and pending dues will appear here.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                height: 1.5,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, height: 1.5),
             ),
           ],
         ),

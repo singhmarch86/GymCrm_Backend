@@ -90,8 +90,10 @@ void main() {
       expect(DateSpan.month(DateTime.now()).workedSuffix, 'this month');
       expect(DateSpan.month(DateTime(2026, 3, 4)).workedSuffix, 'in March');
       expect(
-        DateSpan.custom(DateTime(2026, 7, 26), DateTime(2026, 8, 5))
-            .workedSuffix,
+        DateSpan.custom(
+          DateTime(2026, 7, 26),
+          DateTime(2026, 8, 5),
+        ).workedSuffix,
         'over these 11 days',
       );
     });

@@ -50,7 +50,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                 icon: const Icon(Icons.settings_outlined),
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const BillingSettingsScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const BillingSettingsScreen(),
+                  ),
                 ),
               ),
             ],
@@ -102,7 +104,9 @@ class _InvoicesTabState extends State<_InvoicesTab> {
       _error = null;
     });
     try {
-      final list = await _service.getInvoices(status: _filter.isEmpty ? null : _filter);
+      final list = await _service.getInvoices(
+        status: _filter.isEmpty ? null : _filter,
+      );
       if (!mounted) return;
       setState(() {
         _invoices = list;
@@ -130,7 +134,9 @@ class _InvoicesTabState extends State<_InvoicesTab> {
       await _open(draft.id);
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -158,7 +164,12 @@ class _InvoicesTabState extends State<_InvoicesTab> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Row(
               children: [
-                for (final f in const [('', 'All'), ('draft', 'Drafts'), ('issued', 'Issued'), ('cancelled', 'Cancelled')])
+                for (final f in const [
+                  ('', 'All'),
+                  ('draft', 'Drafts'),
+                  ('issued', 'Issued'),
+                  ('cancelled', 'Cancelled'),
+                ])
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
@@ -177,25 +188,26 @@ class _InvoicesTabState extends State<_InvoicesTab> {
             child: _loading
                 ? const LoadingView()
                 : _error != null
-                    ? ErrorBanner(message: _error!, onRetry: _load)
-                    : _invoices.isEmpty
-                        ? const EmptyStateView(
-                            icon: Icons.receipt_long_rounded,
-                            title: 'No invoices yet',
-                            body: 'Create an invoice for a member — it stays a draft until you issue it.',
-                          )
-                        : RefreshIndicator(
-                            onRefresh: _load,
-                            child: ListView.separated(
-                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
-                              itemCount: _invoices.length,
-                              separatorBuilder: (_, __) => AppSpacing.gapSm,
-                              itemBuilder: (_, i) => _InvoiceCard(
-                                invoice: _invoices[i],
-                                onTap: () => _open(_invoices[i].id),
-                              ),
-                            ),
-                          ),
+                ? ErrorBanner(message: _error!, onRetry: _load)
+                : _invoices.isEmpty
+                ? const EmptyStateView(
+                    icon: Icons.receipt_long_rounded,
+                    title: 'No invoices yet',
+                    body:
+                        'Create an invoice for a member — it stays a draft until you issue it.',
+                  )
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
+                      itemCount: _invoices.length,
+                      separatorBuilder: (_, __) => AppSpacing.gapSm,
+                      itemBuilder: (_, i) => _InvoiceCard(
+                        invoice: _invoices[i],
+                        onTap: () => _open(_invoices[i].id),
+                      ),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -246,13 +258,21 @@ class _InvoiceCard extends StatelessWidget {
                   Text(
                     '${invoice.memberName}'
                     '${invoice.invoiceDate != null ? ' · ${invoice.invoiceDate!.substring(0, 10)}' : ''}',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   if (invoice.dueInPaise > 0 && invoice.status == 'issued') ...[
                     const SizedBox(height: 2),
-                    Text('Balance ${formatRupees(invoice.dueInPaise / 100)}',
-                        style: const TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.danger)),
+                    Text(
+                      'Balance ${formatRupees(invoice.dueInPaise / 100)}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.danger,
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -260,8 +280,13 @@ class _InvoiceCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(formatRupees(invoice.totalInRupees),
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                Text(
+                  formatRupees(invoice.totalInRupees),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 StatusChip(status: invoice.displayState),
               ],
@@ -333,7 +358,9 @@ class _DiscountsTabState extends State<_DiscountsTab> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -349,25 +376,26 @@ class _DiscountsTabState extends State<_DiscountsTab> {
       body: _loading
           ? const LoadingView()
           : _error != null
-              ? ErrorBanner(message: _error!, onRetry: _load)
-              : _discounts.isEmpty
-                  ? const EmptyStateView(
-                      icon: Icons.local_offer_outlined,
-                      title: 'No discount codes',
-                      body: 'Create reusable codes so a discounted price always has a reason attached.',
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                        itemCount: _discounts.length,
-                        separatorBuilder: (_, __) => AppSpacing.gapSm,
-                        itemBuilder: (_, i) => _DiscountCard(
-                          discount: _discounts[i],
-                          onToggle: () => _toggle(_discounts[i]),
-                        ),
-                      ),
-                    ),
+          ? ErrorBanner(message: _error!, onRetry: _load)
+          : _discounts.isEmpty
+          ? const EmptyStateView(
+              icon: Icons.local_offer_outlined,
+              title: 'No discount codes',
+              body:
+                  'Create reusable codes so a discounted price always has a reason attached.',
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+                itemCount: _discounts.length,
+                separatorBuilder: (_, __) => AppSpacing.gapSm,
+                itemBuilder: (_, i) => _DiscountCard(
+                  discount: _discounts[i],
+                  onToggle: () => _toggle(_discounts[i]),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -398,12 +426,22 @@ class _DiscountCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(discount.code,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                    Text(
+                      discount.code,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Text(discount.valueLabel,
-                        style: const TextStyle(
-                            fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.success)),
+                    Text(
+                      discount.valueLabel,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.success,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -411,14 +449,21 @@ class _DiscountCard extends StatelessWidget {
                   [
                     discount.name,
                     usage,
-                    if (discount.validUntil != null) 'until ${discount.validUntil!.substring(0, 10)}',
+                    if (discount.validUntil != null)
+                      'until ${discount.validUntil!.substring(0, 10)}',
                   ].join(' · '),
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
-          Switch.adaptive(value: discount.isActive, onChanged: (_) => onToggle()),
+          Switch.adaptive(
+            value: discount.isActive,
+            onChanged: (_) => onToggle(),
+          ),
         ],
       ),
     );
@@ -512,7 +557,11 @@ class _CreateDiscountDialogState extends State<_CreateDiscountDialog> {
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        AppButton(text: 'Create', loading: _saving, onPressed: _saving ? null : _submit),
+        AppButton(
+          text: 'Create',
+          loading: _saving,
+          onPressed: _saving ? null : _submit,
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -532,7 +581,9 @@ class _CreateDiscountDialogState extends State<_CreateDiscountDialog> {
           TextField(
             controller: _nameController,
             autofillHints: const [],
-            decoration: const InputDecoration(hintText: 'e.g. New Year 25% off'),
+            decoration: const InputDecoration(
+              hintText: 'e.g. New Year 25% off',
+            ),
           ),
           AppSpacing.gapLg,
 
@@ -554,11 +605,15 @@ class _CreateDiscountDialogState extends State<_CreateDiscountDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LifecycleFieldLabel(_type == 'percent' ? 'Percentage' : 'Amount (₹)'),
+                    LifecycleFieldLabel(
+                      _type == 'percent' ? 'Percentage' : 'Amount (₹)',
+                    ),
                     AppSpacing.gapXs,
                     TextField(
                       controller: _valueController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       autofillHints: const [],
                     ),
                   ],
@@ -622,7 +677,10 @@ class _PickMemberDialogState extends State<_PickMemberDialog> {
       });
       return;
     }
-    _debounce = Timer(const Duration(milliseconds: 350), () => _search(q.trim()));
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _search(q.trim()),
+    );
   }
 
   Future<void> _search(String q) async {
@@ -653,7 +711,10 @@ class _PickMemberDialogState extends State<_PickMemberDialog> {
       accent: AppColors.primary,
       error: _error,
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,7 +729,11 @@ class _PickMemberDialogState extends State<_PickMemberDialog> {
               suffixIcon: _searching
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                      child: SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
                     )
                   : null,
             ),
@@ -677,20 +742,27 @@ class _PickMemberDialogState extends State<_PickMemberDialog> {
           if (!_searching && _searched && _results.isEmpty)
             const LifecycleNotice(
               tone: LifecycleTone.info,
-              text: 'No matching member found. Add them from the Members screen first.',
+              text:
+                  'No matching member found. Add them from the Members screen first.',
             ),
           for (final m in _results) ...[
             InkWell(
               onTap: () => Navigator.pop(context, m.id),
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.card,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: Text('${m.firstName} ${m.lastName}', style: const TextStyle(fontSize: 13.5)),
+                child: Text(
+                  '${m.firstName} ${m.lastName}',
+                  style: const TextStyle(fontSize: 13.5),
+                ),
               ),
             ),
             AppSpacing.gapXs,

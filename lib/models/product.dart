@@ -36,17 +36,17 @@ class Product {
   int get marginInPaise => priceInPaise - costInPaise;
 
   factory Product.fromJson(Map<String, dynamic> j) => Product(
-        id: j['id'] ?? 0,
-        sku: j['sku'],
-        name: j['name'] ?? '',
-        category: j['category'],
-        priceInPaise: j['price_in_paise'] ?? 0,
-        costInPaise: j['cost_in_paise'] ?? 0,
-        taxRatePct: (j['tax_rate_pct'] as num?)?.toDouble() ?? 18,
-        stockQty: j['stock_qty'] ?? 0,
-        reorderLevel: j['reorder_level'] ?? 0,
-        isActive: j['is_active'] ?? true,
-      );
+    id: j['id'] ?? 0,
+    sku: j['sku'],
+    name: j['name'] ?? '',
+    category: j['category'],
+    priceInPaise: j['price_in_paise'] ?? 0,
+    costInPaise: j['cost_in_paise'] ?? 0,
+    taxRatePct: (j['tax_rate_pct'] as num?)?.toDouble() ?? 18,
+    stockQty: j['stock_qty'] ?? 0,
+    reorderLevel: j['reorder_level'] ?? 0,
+    isActive: j['is_active'] ?? true,
+  );
 }
 
 class SaleLine {
@@ -65,12 +65,12 @@ class SaleLine {
   });
 
   factory SaleLine.fromJson(Map<String, dynamic> j) => SaleLine(
-        productId: j['product_id'] ?? 0,
-        productName: j['product_name'] ?? '',
-        quantity: j['quantity'] ?? 0,
-        unitPriceInPaise: j['unit_price_in_paise'] ?? 0,
-        lineTotalInPaise: j['line_total_in_paise'] ?? 0,
-      );
+    productId: j['product_id'] ?? 0,
+    productName: j['product_name'] ?? '',
+    quantity: j['quantity'] ?? 0,
+    unitPriceInPaise: j['unit_price_in_paise'] ?? 0,
+    lineTotalInPaise: j['line_total_in_paise'] ?? 0,
+  );
 }
 
 class Sale {
@@ -107,23 +107,23 @@ class Sale {
   });
 
   factory Sale.fromJson(Map<String, dynamic> j) => Sale(
-        id: j['id'] ?? 0,
-        memberId: j['member_id'],
-        memberName: j['member_name'],
-        subtotalInPaise: j['subtotal_in_paise'] ?? 0,
-        taxInPaise: j['tax_in_paise'] ?? 0,
-        discountInPaise: j['discount_in_paise'] ?? 0,
-        totalInPaise: j['total_in_paise'] ?? 0,
-        totalInRupees: (j['total_in_rupees'] as num?)?.toDouble() ?? 0,
-        paymentMode: j['payment_mode'] ?? 'cash',
-        isRefund: j['is_refund'] ?? false,
-        refundOfSaleId: j['refund_of_sale_id'],
-        reason: j['reason'],
-        createdAt: j['created_at'] ?? '',
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => SaleLine.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    id: j['id'] ?? 0,
+    memberId: j['member_id'],
+    memberName: j['member_name'],
+    subtotalInPaise: j['subtotal_in_paise'] ?? 0,
+    taxInPaise: j['tax_in_paise'] ?? 0,
+    discountInPaise: j['discount_in_paise'] ?? 0,
+    totalInPaise: j['total_in_paise'] ?? 0,
+    totalInRupees: (j['total_in_rupees'] as num?)?.toDouble() ?? 0,
+    paymentMode: j['payment_mode'] ?? 'cash',
+    isRefund: j['is_refund'] ?? false,
+    refundOfSaleId: j['refund_of_sale_id'],
+    reason: j['reason'],
+    createdAt: j['created_at'] ?? '',
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => SaleLine.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class StockMovement {
@@ -144,13 +144,13 @@ class StockMovement {
   });
 
   factory StockMovement.fromJson(Map<String, dynamic> j) => StockMovement(
-        id: j['id'] ?? 0,
-        movementType: j['movement_type'] ?? 'adjustment',
-        quantity: j['quantity'] ?? 0,
-        qtyAfter: j['qty_after'] ?? 0,
-        reason: j['reason'],
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    movementType: j['movement_type'] ?? 'adjustment',
+    quantity: j['quantity'] ?? 0,
+    qtyAfter: j['qty_after'] ?? 0,
+    reason: j['reason'],
+    createdAt: j['created_at'] ?? '',
+  );
 }
 
 class RetailSummary {
@@ -173,14 +173,14 @@ class RetailSummary {
   });
 
   factory RetailSummary.fromJson(Map<String, dynamic> j) => RetailSummary(
-        saleCount: j['sale_count'] ?? 0,
-        unitsSold: j['units_sold'] ?? 0,
-        revenueInPaise: j['revenue_in_paise'] ?? 0,
-        costInPaise: j['cost_in_paise'] ?? 0,
-        marginInPaise: j['margin_in_paise'] ?? 0,
-        stockValueInPaise: j['stock_value_in_paise'] ?? 0,
-        lowStockCount: j['low_stock_count'] ?? 0,
-      );
+    saleCount: j['sale_count'] ?? 0,
+    unitsSold: j['units_sold'] ?? 0,
+    revenueInPaise: j['revenue_in_paise'] ?? 0,
+    costInPaise: j['cost_in_paise'] ?? 0,
+    marginInPaise: j['margin_in_paise'] ?? 0,
+    stockValueInPaise: j['stock_value_in_paise'] ?? 0,
+    lowStockCount: j['low_stock_count'] ?? 0,
+  );
 }
 
 /// A line in the counter cart, before the sale is recorded. Local only —

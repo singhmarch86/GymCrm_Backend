@@ -37,7 +37,9 @@ class PaymentService {
       if (dateTo.isNotEmpty) 'date_to': dateTo,
     };
 
-    final uri = Uri.parse('$baseUrl/api/v1/payments').replace(queryParameters: query);
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/payments',
+    ).replace(queryParameters: query);
 
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final json = unwrapJson(response);
@@ -51,7 +53,10 @@ class PaymentService {
     final headers = await _authHeaders();
 
     final response = await guardRequest(
-      () => http.get(Uri.parse('$baseUrl/api/v1/members/$memberId/payments'), headers: headers),
+      () => http.get(
+        Uri.parse('$baseUrl/api/v1/members/$memberId/payments'),
+        headers: headers,
+      ),
     );
     final json = unwrapJson(response);
     final List list = json['data']['payments'] as List;
@@ -82,11 +87,13 @@ class PaymentService {
       if (notes.isNotEmpty) 'notes': notes,
     };
 
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$baseUrl/api/v1/payments'),
-          headers: headers,
-          body: jsonEncode(body),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$baseUrl/api/v1/payments'),
+        headers: headers,
+        body: jsonEncode(body),
+      ),
+    );
 
     final json = unwrapJson(response);
     return Payment.fromJson(json['data']);
@@ -98,7 +105,10 @@ class PaymentService {
     final headers = await _authHeaders();
 
     final response = await guardRequest(
-      () => http.get(Uri.parse('$baseUrl/api/v1/payments/summary'), headers: headers),
+      () => http.get(
+        Uri.parse('$baseUrl/api/v1/payments/summary'),
+        headers: headers,
+      ),
     );
     final json = unwrapJson(response);
     return json['data'] as Map<String, dynamic>;

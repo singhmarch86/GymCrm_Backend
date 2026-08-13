@@ -12,16 +12,13 @@ class AuthService {
     required String phone,
     required String password,
   }) async {
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$baseUrl/api/v1/auth/login'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'phone': phone,
-            'password': password,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$baseUrl/api/v1/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone': phone, 'password': password}),
+      ),
+    );
 
     return unwrapJson(response);
   }
@@ -36,22 +33,22 @@ class AuthService {
     required String address,
     required String email,
   }) async {
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$baseUrl/api/v1/auth/register'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'gym_name': gymName,
-            'owner_name': ownerName,
-            'phone': phone,
-            'password': password,
-            'city': city,
-            'state': state,
-            'address': address,
-            'email': email,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$baseUrl/api/v1/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'gym_name': gymName,
+          'owner_name': ownerName,
+          'phone': phone,
+          'password': password,
+          'city': city,
+          'state': state,
+          'address': address,
+          'email': email,
+        }),
+      ),
+    );
 
     return unwrapJson(response);
   }

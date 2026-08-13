@@ -20,14 +20,17 @@ class LeadAnalyticsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topCount =
-        analytics.funnel.isNotEmpty ? analytics.funnel.first.count : 0;
+    final topCount = analytics.funnel.isNotEmpty
+        ? analytics.funnel.first.count
+        : 0;
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 100),
       children: [
         _sectionTitle('Conversion Funnel'),
-        _hint('How many leads reached each stage, and the drop-off between them.'),
+        _hint(
+          'How many leads reached each stage, and the drop-off between them.',
+        ),
         const SizedBox(height: 10),
         AppCard(
           child: Column(
@@ -37,8 +40,11 @@ class LeadAnalyticsView extends StatelessWidget {
                 Divider(color: Colors.grey.shade200, height: 24),
                 Row(
                   children: [
-                    const Icon(Icons.cancel_rounded,
-                        size: 16, color: Color(0xFF6B7280)),
+                    const Icon(
+                      Icons.cancel_rounded,
+                      size: 16,
+                      color: Color(0xFF6B7280),
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       '${analytics.lostCount} lost',
@@ -52,7 +58,10 @@ class LeadAnalyticsView extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '— exited the pipeline without joining',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ),
                   ],
@@ -126,7 +135,10 @@ class LeadAnalyticsView extends StatelessWidget {
               Expanded(
                 child: Text(
                   stage.label,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               Text(
@@ -141,7 +153,10 @@ class LeadAnalyticsView extends StatelessWidget {
               if (stage.stepConversion > 0) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: cfg.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -180,8 +195,8 @@ class LeadAnalyticsView extends StatelessWidget {
     final rateColor = s.conversionRate >= 25
         ? AppColors.success
         : s.conversionRate >= 15
-            ? AppColors.warning
-            : AppColors.danger;
+        ? AppColors.warning
+        : AppColors.danger;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -243,12 +258,13 @@ class LeadAnalyticsView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
         children: [
-          const Icon(Icons.remove_circle_outline_rounded,
-              size: 14, color: Color(0xFF9CA3AF)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(label, style: const TextStyle(fontSize: 13)),
+          const Icon(
+            Icons.remove_circle_outline_rounded,
+            size: 14,
+            color: Color(0xFF9CA3AF),
           ),
+          const SizedBox(width: 10),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
@@ -290,28 +306,28 @@ class LeadAnalyticsView extends StatelessWidget {
   // ─── Chrome ─────────────────────────────────────────────────────────────────
 
   Widget _sectionTitle(String text) => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      );
+    padding: const EdgeInsets.only(top: 8),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    ),
+  );
 
   Widget _hint(String text) => Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          text,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-        ),
-      );
+    padding: const EdgeInsets.only(top: 4),
+    child: Text(
+      text,
+      style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+    ),
+  );
 
   Widget _emptyRow(String text) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: Center(
-          child: Text(
-            text,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 14),
+    child: Center(
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+      ),
+    ),
+  );
 }

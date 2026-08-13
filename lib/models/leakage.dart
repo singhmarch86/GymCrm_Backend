@@ -50,19 +50,19 @@ class LeakItem {
   });
 
   factory LeakItem.fromJson(Map<String, dynamic> j) => LeakItem(
-        kind: j['kind'] ?? '',
-        memberId: j['member_id'] ?? 0,
-        member: j['member'] ?? '',
-        phone: j['phone'] ?? '',
-        trainerId: j['trainer_id'],
-        trainer: j['trainer'],
-        detail: j['detail'] ?? '',
-        valueInPaise: j['value_in_paise'] ?? 0,
-        basis: j['basis'] ?? '',
-        count: j['count'] ?? 0,
-        since: _date(j['since']),
-        packageId: j['package_id'],
-      );
+    kind: j['kind'] ?? '',
+    memberId: j['member_id'] ?? 0,
+    member: j['member'] ?? '',
+    phone: j['phone'] ?? '',
+    trainerId: j['trainer_id'],
+    trainer: j['trainer'],
+    detail: j['detail'] ?? '',
+    valueInPaise: j['value_in_paise'] ?? 0,
+    basis: j['basis'] ?? '',
+    count: j['count'] ?? 0,
+    since: _date(j['since']),
+    packageId: j['package_id'],
+  );
 
   static DateTime? _date(dynamic v) {
     if (v is! String || v.isEmpty) return null;
@@ -88,15 +88,15 @@ class LeakGroup {
   });
 
   factory LeakGroup.fromJson(Map<String, dynamic> j) => LeakGroup(
-        kind: j['kind'] ?? '',
-        label: j['label'] ?? '',
-        note: j['note'] ?? '',
-        severity: j['severity'] ?? 'normal',
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => LeakItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        valueInPaise: j['value_in_paise'] ?? 0,
-      );
+    kind: j['kind'] ?? '',
+    label: j['label'] ?? '',
+    note: j['note'] ?? '',
+    severity: j['severity'] ?? 'normal',
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => LeakItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    valueInPaise: j['value_in_paise'] ?? 0,
+  );
 }
 
 class LeakageReport {
@@ -119,11 +119,11 @@ class LeakageReport {
   bool get isClear => totalCount == 0;
 
   factory LeakageReport.fromJson(Map<String, dynamic> j) => LeakageReport(
-        groups: ((j['groups'] as List?) ?? [])
-            .map((e) => LeakGroup.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalCount: j['total_count'] ?? 0,
-        valuedInPaise: j['valued_in_paise'] ?? 0,
-        unvaluedCount: j['unvalued_count'] ?? 0,
-      );
+    groups: ((j['groups'] as List?) ?? [])
+        .map((e) => LeakGroup.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalCount: j['total_count'] ?? 0,
+    valuedInPaise: j['valued_in_paise'] ?? 0,
+    unvaluedCount: j['unvalued_count'] ?? 0,
+  );
 }

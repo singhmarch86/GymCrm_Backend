@@ -35,21 +35,21 @@ class PtPackage {
   });
 
   factory PtPackage.fromJson(Map<String, dynamic> j) => PtPackage(
-        id: j['id'] ?? 0,
-        memberId: j['member_id'] ?? 0,
-        memberName: j['member_name'] ?? '',
-        trainerId: j['trainer_id'] ?? 0,
-        trainerName: j['trainer_name'] ?? '',
-        packageName: j['package_name'] ?? '',
-        totalSessions: j['total_sessions'] ?? 0,
-        sessionsUsed: j['sessions_used'] ?? 0,
-        sessionsRemaining: j['sessions_remaining'] ?? 0,
-        amountInPaise: j['amount_in_paise'] ?? 0,
-        amountInRupees: (j['amount_in_rupees'] as num?)?.toDouble() ?? 0,
-        expiryDate: j['expiry_date'],
-        status: j['status'] ?? 'active',
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    memberId: j['member_id'] ?? 0,
+    memberName: j['member_name'] ?? '',
+    trainerId: j['trainer_id'] ?? 0,
+    trainerName: j['trainer_name'] ?? '',
+    packageName: j['package_name'] ?? '',
+    totalSessions: j['total_sessions'] ?? 0,
+    sessionsUsed: j['sessions_used'] ?? 0,
+    sessionsRemaining: j['sessions_remaining'] ?? 0,
+    amountInPaise: j['amount_in_paise'] ?? 0,
+    amountInRupees: (j['amount_in_rupees'] as num?)?.toDouble() ?? 0,
+    expiryDate: j['expiry_date'],
+    status: j['status'] ?? 'active',
+    createdAt: j['created_at'] ?? '',
+  );
 }
 
 /// PtAppointment — a booked 1:1 session against a package. Booking never
@@ -84,16 +84,16 @@ class PtAppointment {
   DateTime get scheduledAtDate => DateTime.parse(scheduledAt);
 
   factory PtAppointment.fromJson(Map<String, dynamic> j) => PtAppointment(
-        id: j['id'] ?? 0,
-        ptPackageId: j['pt_package_id'] ?? 0,
-        trainerId: j['trainer_id'] ?? 0,
-        trainerName: j['trainer_name'] ?? '',
-        memberId: j['member_id'] ?? 0,
-        memberName: j['member_name'] ?? '',
-        scheduledAt: j['scheduled_at'] ?? '',
-        durationMinutes: j['duration_minutes'] ?? 60,
-        status: j['status'] ?? 'scheduled',
-        notes: j['notes'],
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    ptPackageId: j['pt_package_id'] ?? 0,
+    trainerId: j['trainer_id'] ?? 0,
+    trainerName: j['trainer_name'] ?? '',
+    memberId: j['member_id'] ?? 0,
+    memberName: j['member_name'] ?? '',
+    scheduledAt: j['scheduled_at'] ?? '',
+    durationMinutes: j['duration_minutes'] ?? 60,
+    status: j['status'] ?? 'scheduled',
+    notes: j['notes'],
+    createdAt: j['created_at'] ?? '',
+  );
 }

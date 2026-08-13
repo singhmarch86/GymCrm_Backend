@@ -51,21 +51,21 @@ class CollectionItem {
   });
 
   factory CollectionItem.fromJson(Map<String, dynamic> j) => CollectionItem(
-        paymentId: j['payment_id'] ?? 0,
-        memberId: j['member_id'] ?? 0,
-        member: j['member'] ?? '',
-        phone: j['phone'] ?? '',
-        amountInPaise: j['amount_in_paise'] ?? 0,
-        dueDate: _date(j['due_date']),
-        daysOverdue: j['days_overdue'],
-        memberTotalInPaise: j['member_total_in_paise'] ?? 0,
-        lastContactAt: _date(j['last_contact_at']),
-        lastContactBy: j['last_contact_by'],
-        lastContactNote: j['last_contact_note'],
-        lastReached: j['last_reached'],
-        promisedOn: _date(j['promised_on']),
-        memberInactive: j['member_inactive'] ?? false,
-      );
+    paymentId: j['payment_id'] ?? 0,
+    memberId: j['member_id'] ?? 0,
+    member: j['member'] ?? '',
+    phone: j['phone'] ?? '',
+    amountInPaise: j['amount_in_paise'] ?? 0,
+    dueDate: _date(j['due_date']),
+    daysOverdue: j['days_overdue'],
+    memberTotalInPaise: j['member_total_in_paise'] ?? 0,
+    lastContactAt: _date(j['last_contact_at']),
+    lastContactBy: j['last_contact_by'],
+    lastContactNote: j['last_contact_note'],
+    lastReached: j['last_reached'],
+    promisedOn: _date(j['promised_on']),
+    memberInactive: j['member_inactive'] ?? false,
+  );
 
   /// True when this due is not the whole story for this member.
   bool get owesMore => memberTotalInPaise > amountInPaise;
@@ -94,15 +94,15 @@ class CollectionGroup {
   });
 
   factory CollectionGroup.fromJson(Map<String, dynamic> j) => CollectionGroup(
-        key: j['key'] ?? '',
-        label: j['label'] ?? '',
-        note: j['note'] ?? '',
-        severity: j['severity'] ?? 'normal',
-        items: ((j['items'] as List?) ?? [])
-            .map((e) => CollectionItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalInPaise: j['total_in_paise'] ?? 0,
-      );
+    key: j['key'] ?? '',
+    label: j['label'] ?? '',
+    note: j['note'] ?? '',
+    severity: j['severity'] ?? 'normal',
+    items: ((j['items'] as List?) ?? [])
+        .map((e) => CollectionItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalInPaise: j['total_in_paise'] ?? 0,
+  );
 }
 
 class CollectionQueue {
@@ -129,16 +129,16 @@ class CollectionQueue {
   });
 
   factory CollectionQueue.fromJson(Map<String, dynamic> j) => CollectionQueue(
-        groups: ((j['groups'] as List?) ?? [])
-            .map((e) => CollectionGroup.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalCount: j['total_count'] ?? 0,
-        totalInPaise: j['total_in_paise'] ?? 0,
-        unchasedCount: j['unchased_count'] ?? 0,
-        membersInvolved: j['members_involved'] ?? 0,
-        outsideCount: j['outside_count'] ?? 0,
-        outsideInPaise: j['outside_in_paise'] ?? 0,
-      );
+    groups: ((j['groups'] as List?) ?? [])
+        .map((e) => CollectionGroup.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalCount: j['total_count'] ?? 0,
+    totalInPaise: j['total_in_paise'] ?? 0,
+    unchasedCount: j['unchased_count'] ?? 0,
+    membersInvolved: j['members_involved'] ?? 0,
+    outsideCount: j['outside_count'] ?? 0,
+    outsideInPaise: j['outside_in_paise'] ?? 0,
+  );
 
   bool get isClear => totalCount == 0;
 }

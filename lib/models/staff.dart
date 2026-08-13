@@ -4,7 +4,7 @@ class Staff {
   final String name;
   final String phone;
   final String email;
-  final String role;   // owner | staff
+  final String role; // owner | staff
   final String status; // active | inactive
 
   /// Open leads currently assigned — the workload figure shown in the list.
@@ -24,15 +24,15 @@ class Staff {
   });
 
   factory Staff.fromJson(Map<String, dynamic> j) => Staff(
-        id: j['id'] ?? 0,
-        name: j['name'] ?? '',
-        phone: j['phone'] ?? '',
-        email: j['email'] ?? '',
-        role: j['role'] ?? 'staff',
-        status: j['status'] ?? 'active',
-        leadCount: j['lead_count'] ?? 0,
-        createdAt: j['created_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    name: j['name'] ?? '',
+    phone: j['phone'] ?? '',
+    email: j['email'] ?? '',
+    role: j['role'] ?? 'staff',
+    status: j['status'] ?? 'active',
+    leadCount: j['lead_count'] ?? 0,
+    createdAt: j['created_at'] ?? '',
+  );
 
   bool get isOwner => role == 'owner';
   bool get isActive => status == 'active';

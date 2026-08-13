@@ -18,8 +18,10 @@ class CounterService {
   Future<CounterPrompt?> forCheckIn(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.post(Uri.parse('$kBaseUrl/api/v1/counter/checkin/$memberId'),
-          headers: headers),
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/counter/checkin/$memberId'),
+        headers: headers,
+      ),
     );
     return CounterPrompt.fromResult(unwrapJson(response)['data'] ?? {});
   }
@@ -29,8 +31,10 @@ class CounterService {
   Future<CounterPrompt?> peek(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/counter/prompt/$memberId'),
-          headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/counter/prompt/$memberId'),
+        headers: headers,
+      ),
     );
     return CounterPrompt.fromResult(unwrapJson(response)['data'] ?? {});
   }
@@ -39,13 +43,15 @@ class CounterService {
   /// — mandatory logging at a busy counter gets clicked through meaninglessly.
   Future<void> markActed(int promptId, {String actionNote = ''}) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.patch(
-          Uri.parse('$kBaseUrl/api/v1/counter/prompts/$promptId/acted'),
-          headers: headers,
-          body: jsonEncode({
-            if (actionNote.trim().isNotEmpty) 'action_note': actionNote.trim(),
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.patch(
+        Uri.parse('$kBaseUrl/api/v1/counter/prompts/$promptId/acted'),
+        headers: headers,
+        body: jsonEncode({
+          if (actionNote.trim().isNotEmpty) 'action_note': actionNote.trim(),
+        }),
+      ),
+    );
     // 204 No Content on success.
     if (response.statusCode < 200 || response.statusCode >= 300) {
       unwrapJson(response);

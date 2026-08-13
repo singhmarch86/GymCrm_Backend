@@ -18,14 +18,18 @@ class PosService {
 
   // ── Products ───────────────────────────────────────────────────────────────
 
-  Future<List<Product>> getProducts({String search = '', bool lowStockOnly = false}) async {
+  Future<List<Product>> getProducts({
+    String search = '',
+    bool lowStockOnly = false,
+  }) async {
     final headers = await _headers();
     final params = <String, String>{};
     if (search.isNotEmpty) params['search'] = search;
     if (lowStockOnly) params['low_stock'] = 'true';
 
-    final uri = Uri.parse('$kBaseUrl/api/v1/products')
-        .replace(queryParameters: params.isEmpty ? null : params);
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/products',
+    ).replace(queryParameters: params.isEmpty ? null : params);
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => Product.fromJson(e)).toList();
@@ -41,19 +45,21 @@ class PosService {
     int openingStock = 0,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/products'),
-          headers: headers,
-          body: jsonEncode({
-            'name': name,
-            'price_in_paise': priceInPaise,
-            'cost_in_paise': costInPaise,
-            'sku': sku,
-            'category': category,
-            'reorder_level': reorderLevel,
-            'opening_stock': openingStock,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/products'),
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'price_in_paise': priceInPaise,
+          'cost_in_paise': costInPaise,
+          'sku': sku,
+          'category': category,
+          'reorder_level': reorderLevel,
+          'opening_stock': openingStock,
+        }),
+      ),
+    );
     return Product.fromJson(unwrapJson(response)['data']);
   }
 
@@ -66,17 +72,19 @@ class PosService {
     bool? isActive,
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.put(
-          Uri.parse('$kBaseUrl/api/v1/products/$id'),
-          headers: headers,
-          body: jsonEncode({
-            if (name != null) 'name': name,
-            if (priceInPaise != null) 'price_in_paise': priceInPaise,
-            if (costInPaise != null) 'cost_in_paise': costInPaise,
-            if (reorderLevel != null) 'reorder_level': reorderLevel,
-            if (isActive != null) 'is_active': isActive,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.put(
+        Uri.parse('$kBaseUrl/api/v1/products/$id'),
+        headers: headers,
+        body: jsonEncode({
+          if (name != null) 'name': name,
+          if (priceInPaise != null) 'price_in_paise': priceInPaise,
+          if (costInPaise != null) 'cost_in_paise': costInPaise,
+          if (reorderLevel != null) 'reorder_level': reorderLevel,
+          if (isActive != null) 'is_active': isActive,
+        }),
+      ),
+    );
     return Product.fromJson(unwrapJson(response)['data']);
   }
 
@@ -88,22 +96,27 @@ class PosService {
     String reason = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/products/$productId/stock'),
-          headers: headers,
-          body: jsonEncode({
-            'quantity': quantity,
-            'movement_type': movementType,
-            'reason': reason,
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/products/$productId/stock'),
+        headers: headers,
+        body: jsonEncode({
+          'quantity': quantity,
+          'movement_type': movementType,
+          'reason': reason,
+        }),
+      ),
+    );
     return Product.fromJson(unwrapJson(response)['data']);
   }
 
   Future<List<StockMovement>> stockHistory(int productId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/products/$productId/stock-history'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/products/$productId/stock-history'),
+        headers: headers,
+      ),
     );
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => StockMovement.fromJson(e)).toList();
@@ -121,19 +134,21 @@ class PosService {
     String notes = '',
   }) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/sales'),
-          headers: headers,
-          body: jsonEncode({
-            if (memberId != null) 'member_id': memberId,
-            'payment_mode': paymentMode,
-            'discount_in_paise': discountInPaise,
-            'notes': notes,
-            'items': lines
-                .map((l) => {'product_id': l.product.id, 'quantity': l.quantity})
-                .toList(),
-          }),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/sales'),
+        headers: headers,
+        body: jsonEncode({
+          if (memberId != null) 'member_id': memberId,
+          'payment_mode': paymentMode,
+          'discount_in_paise': discountInPaise,
+          'notes': notes,
+          'items': lines
+              .map((l) => {'product_id': l.product.id, 'quantity': l.quantity})
+              .toList(),
+        }),
+      ),
+    );
     return Sale.fromJson(unwrapJson(response)['data']);
   }
 
@@ -143,8 +158,9 @@ class PosService {
     if (from != null) params['from'] = _ymd(from);
     if (to != null) params['to'] = _ymd(to);
 
-    final uri = Uri.parse('$kBaseUrl/api/v1/sales')
-        .replace(queryParameters: params.isEmpty ? null : params);
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/sales',
+    ).replace(queryParameters: params.isEmpty ? null : params);
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final List list = unwrapJson(response)['data'] as List? ?? [];
     return list.map((e) => Sale.fromJson(e)).toList();
@@ -154,11 +170,13 @@ class PosService {
   /// original is never edited.
   Future<Sale> refund(int saleId, {required String reason}) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/sales/$saleId/refund'),
-          headers: headers,
-          body: jsonEncode({'reason': reason}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/sales/$saleId/refund'),
+        headers: headers,
+        body: jsonEncode({'reason': reason}),
+      ),
+    );
     return Sale.fromJson(unwrapJson(response)['data']);
   }
 
@@ -168,8 +186,9 @@ class PosService {
     if (from != null) params['from'] = _ymd(from);
     if (to != null) params['to'] = _ymd(to);
 
-    final uri = Uri.parse('$kBaseUrl/api/v1/retail/summary')
-        .replace(queryParameters: params.isEmpty ? null : params);
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/retail/summary',
+    ).replace(queryParameters: params.isEmpty ? null : params);
     final response = await guardRequest(() => http.get(uri, headers: headers));
     return RetailSummary.fromJson(unwrapJson(response)['data']);
   }

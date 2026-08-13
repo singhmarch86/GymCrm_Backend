@@ -78,33 +78,33 @@ class LifecycleEvent {
   bool get hasMoney => amountDueInPaise > 0 || amountCreditInPaise > 0;
 
   factory LifecycleEvent.fromJson(Map<String, dynamic> j) => LifecycleEvent(
-        id: j['id'] as int,
-        memberId: j['member_id'] as int,
-        memberName: (j['member_name'] ?? '') as String,
-        eventType: (j['event_type'] ?? '') as String,
-        label: (j['label'] ?? '') as String,
-        effectiveDate: DateTime.parse(j['effective_date'] as String),
-        oldPlanName: j['old_plan_name'] as String?,
-        newPlanName: j['new_plan_name'] as String?,
-        oldExpiryDate: _date(j['old_expiry_date']),
-        newExpiryDate: _date(j['new_expiry_date']),
-        oldStatus: j['old_status'] as String?,
-        newStatus: j['new_status'] as String?,
-        freezeStart: _date(j['freeze_start']),
-        freezeEnd: _date(j['freeze_end']),
-        freezeDays: j['freeze_days'] as int?,
-        amountDueInPaise: (j['amount_due_in_paise'] ?? 0) as int,
-        amountDueInRupees: _double(j['amount_due_in_rupees']),
-        amountCreditInPaise: (j['amount_credit_in_paise'] ?? 0) as int,
-        amountCreditInRupees: _double(j['amount_credit_in_rupees']),
-        feeInPaise: (j['fee_in_paise'] ?? 0) as int,
-        relatedMemberId: j['related_member_id'] as int?,
-        relatedMemberName: j['related_member_name'] as String?,
-        reason: j['reason'] as String?,
-        notes: j['notes'] as String?,
-        performedByUserName: (j['performed_by_user_name'] ?? 'Unknown') as String,
-        createdAt: DateTime.parse(j['created_at'] as String),
-      );
+    id: j['id'] as int,
+    memberId: j['member_id'] as int,
+    memberName: (j['member_name'] ?? '') as String,
+    eventType: (j['event_type'] ?? '') as String,
+    label: (j['label'] ?? '') as String,
+    effectiveDate: DateTime.parse(j['effective_date'] as String),
+    oldPlanName: j['old_plan_name'] as String?,
+    newPlanName: j['new_plan_name'] as String?,
+    oldExpiryDate: _date(j['old_expiry_date']),
+    newExpiryDate: _date(j['new_expiry_date']),
+    oldStatus: j['old_status'] as String?,
+    newStatus: j['new_status'] as String?,
+    freezeStart: _date(j['freeze_start']),
+    freezeEnd: _date(j['freeze_end']),
+    freezeDays: j['freeze_days'] as int?,
+    amountDueInPaise: (j['amount_due_in_paise'] ?? 0) as int,
+    amountDueInRupees: _double(j['amount_due_in_rupees']),
+    amountCreditInPaise: (j['amount_credit_in_paise'] ?? 0) as int,
+    amountCreditInRupees: _double(j['amount_credit_in_rupees']),
+    feeInPaise: (j['fee_in_paise'] ?? 0) as int,
+    relatedMemberId: j['related_member_id'] as int?,
+    relatedMemberName: j['related_member_name'] as String?,
+    reason: j['reason'] as String?,
+    notes: j['notes'] as String?,
+    performedByUserName: (j['performed_by_user_name'] ?? 'Unknown') as String,
+    createdAt: DateTime.parse(j['created_at'] as String),
+  );
 }
 
 /// Resulting member state after a lifecycle operation, plus the event that
@@ -170,7 +170,8 @@ class FreezeEligibility {
     required this.currentlyFrozen,
   });
 
-  factory FreezeEligibility.fromJson(Map<String, dynamic> j) => FreezeEligibility(
+  factory FreezeEligibility.fromJson(Map<String, dynamic> j) =>
+      FreezeEligibility(
         eligible: (j['eligible'] ?? false) as bool,
         reason: (j['reason'] ?? '') as String,
         minDays: (j['min_days'] ?? 0) as int,
@@ -212,19 +213,19 @@ class UpgradeQuote {
   });
 
   factory UpgradeQuote.fromJson(Map<String, dynamic> j) => UpgradeQuote(
-        memberId: j['member_id'] as int,
-        currentPlanName: j['current_plan_name'] as String?,
-        newPlanId: j['new_plan_id'] as int,
-        newPlanName: (j['new_plan_name'] ?? '') as String,
-        remainingDays: (j['remaining_days'] ?? 0) as int,
-        oldDailyRatePaise: (j['old_daily_rate_paise'] ?? 0) as int,
-        newDailyRatePaise: (j['new_daily_rate_paise'] ?? 0) as int,
-        amountDueInPaise: (j['amount_due_in_paise'] ?? 0) as int,
-        amountDueInRupees: _double(j['amount_due_in_rupees']),
-        amountCreditInPaise: (j['amount_credit_in_paise'] ?? 0) as int,
-        amountCreditInRupees: _double(j['amount_credit_in_rupees']),
-        isDowngrade: (j['is_downgrade'] ?? false) as bool,
-      );
+    memberId: j['member_id'] as int,
+    currentPlanName: j['current_plan_name'] as String?,
+    newPlanId: j['new_plan_id'] as int,
+    newPlanName: (j['new_plan_name'] ?? '') as String,
+    remainingDays: (j['remaining_days'] ?? 0) as int,
+    oldDailyRatePaise: (j['old_daily_rate_paise'] ?? 0) as int,
+    newDailyRatePaise: (j['new_daily_rate_paise'] ?? 0) as int,
+    amountDueInPaise: (j['amount_due_in_paise'] ?? 0) as int,
+    amountDueInRupees: _double(j['amount_due_in_rupees']),
+    amountCreditInPaise: (j['amount_credit_in_paise'] ?? 0) as int,
+    amountCreditInRupees: _double(j['amount_credit_in_rupees']),
+    isDowngrade: (j['is_downgrade'] ?? false) as bool,
+  );
 }
 
 /// Refund owed if a membership were terminated today.
@@ -248,14 +249,14 @@ class TerminationQuote {
   });
 
   factory TerminationQuote.fromJson(Map<String, dynamic> j) => TerminationQuote(
-        memberId: j['member_id'] as int,
-        remainingDays: (j['remaining_days'] ?? 0) as int,
-        dailyRatePaise: (j['daily_rate_paise'] ?? 0) as int,
-        grossRefundInPaise: (j['gross_refund_in_paise'] ?? 0) as int,
-        terminationFeeInPaise: (j['termination_fee_in_paise'] ?? 0) as int,
-        netRefundInPaise: (j['net_refund_in_paise'] ?? 0) as int,
-        netRefundInRupees: _double(j['net_refund_in_rupees']),
-      );
+    memberId: j['member_id'] as int,
+    remainingDays: (j['remaining_days'] ?? 0) as int,
+    dailyRatePaise: (j['daily_rate_paise'] ?? 0) as int,
+    grossRefundInPaise: (j['gross_refund_in_paise'] ?? 0) as int,
+    terminationFeeInPaise: (j['termination_fee_in_paise'] ?? 0) as int,
+    netRefundInPaise: (j['net_refund_in_paise'] ?? 0) as int,
+    netRefundInRupees: _double(j['net_refund_in_rupees']),
+  );
 }
 
 DateTime? _date(dynamic v) =>

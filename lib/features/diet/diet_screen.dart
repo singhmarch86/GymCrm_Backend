@@ -15,9 +15,7 @@ class _DietScreenState extends State<DietScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Diet Plans'),
-      ),
+      appBar: AppBar(title: const Text('Diet Plans')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -30,18 +28,12 @@ class _DietScreenState extends State<DietScreen> {
             const SizedBox(height: 24),
             const Text(
               'Diet Plans',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'Coming soon',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
             ),
           ],
         ),

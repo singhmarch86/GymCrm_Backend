@@ -77,9 +77,6 @@ class AttendanceStatsRow extends StatelessWidget {
     );
   }
 
-  Widget _divider() => Container(
-        width: 1,
-        height: 50,
-        color: Colors.grey.shade200,
-      );
+  Widget _divider() =>
+      Container(width: 1, height: 50, color: Colors.grey.shade200);
 }

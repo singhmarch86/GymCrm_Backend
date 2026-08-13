@@ -92,10 +92,7 @@ class _LifecycleTimelineState extends State<LifecycleTimeline> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var i = 0; i < _events.length; i++)
-          _TimelineRow(
-            event: _events[i],
-            isLast: i == _events.length - 1,
-          ),
+          _TimelineRow(event: _events[i], isLast: i == _events.length - 1),
       ],
     );
   }
@@ -110,14 +107,14 @@ class _TimelineRow extends StatelessWidget {
   /// Icon and colour per event type. Colour is semantic, not decorative:
   /// terminations and transfers read as consequential at a glance.
   (IconData, Color) get _marker => switch (event.eventType) {
-        'freeze' => (Icons.ac_unit, AppColors.info),
-        'unfreeze' => (Icons.play_arrow_rounded, AppColors.success),
-        'upgrade' => (Icons.swap_horiz, AppColors.primary),
-        'transfer_out' => (Icons.call_made, AppColors.warning),
-        'transfer_in' => (Icons.call_received, AppColors.warning),
-        'terminate' => (Icons.cancel_outlined, AppColors.danger),
-        _ => (Icons.circle, AppColors.textSecondary),
-      };
+    'freeze' => (Icons.ac_unit, AppColors.info),
+    'unfreeze' => (Icons.play_arrow_rounded, AppColors.success),
+    'upgrade' => (Icons.swap_horiz, AppColors.primary),
+    'transfer_out' => (Icons.call_made, AppColors.warning),
+    'transfer_in' => (Icons.call_received, AppColors.warning),
+    'terminate' => (Icons.cancel_outlined, AppColors.danger),
+    _ => (Icons.circle, AppColors.textSecondary),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -140,9 +137,7 @@ class _TimelineRow extends StatelessWidget {
                 child: Icon(icon, size: 15, color: color),
               ),
               if (!isLast)
-                Expanded(
-                  child: Container(width: 1.5, color: AppColors.border),
-                ),
+                Expanded(child: Container(width: 1.5, color: AppColors.border)),
             ],
           ),
           const SizedBox(width: 12),
@@ -169,7 +164,10 @@ class _TimelineRow extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         formatDate(event.effectiveDate),
-                        style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -196,7 +194,10 @@ class _TimelineRow extends StatelessWidget {
                       event.eventType == 'transfer_out'
                           ? 'to ${event.relatedMemberName}'
                           : 'from ${event.relatedMemberName}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
 
@@ -216,7 +217,10 @@ class _TimelineRow extends StatelessWidget {
                   AppSpacing.gapXs,
                   Text(
                     event.performedByUserName,
-                    style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),

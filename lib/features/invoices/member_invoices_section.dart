@@ -97,8 +97,14 @@ class _MemberInvoicesSectionState extends State<MemberInvoicesSection> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Invoices',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            const Text(
+              'Invoices',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
             TextButton.icon(
               onPressed: _raise,
               icon: const Icon(Icons.add, size: 16),
@@ -111,20 +117,34 @@ class _MemberInvoicesSectionState extends State<MemberInvoicesSection> {
         if (_loading)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))),
+            child: Center(
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
           )
         else if (_error != null)
-          Text(_error!, style: const TextStyle(fontSize: 12.5, color: AppColors.danger))
+          Text(
+            _error!,
+            style: const TextStyle(fontSize: 12.5, color: AppColors.danger),
+          )
         else if (_invoices.isEmpty)
-          const Text('No invoices for this member yet.',
-              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary))
+          const Text(
+            'No invoices for this member yet.',
+            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+          )
         else
           for (final inv in _invoices) ...[
             InkWell(
               onTap: () => _open(inv.id),
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 margin: const EdgeInsets.only(bottom: 6),
                 decoration: BoxDecoration(
                   color: AppColors.card,
@@ -145,8 +165,13 @@ class _MemberInvoicesSectionState extends State<MemberInvoicesSection> {
                         ),
                       ),
                     ),
-                    Text(formatRupees(inv.totalInRupees),
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                    Text(
+                      formatRupees(inv.totalInRupees),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     StatusChip(status: inv.displayState),
                   ],

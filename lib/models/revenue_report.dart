@@ -9,7 +9,8 @@ class RevenueTrendPoint {
     required this.revenueInRupees,
   });
 
-  factory RevenueTrendPoint.fromJson(Map<String, dynamic> j) => RevenueTrendPoint(
+  factory RevenueTrendPoint.fromJson(Map<String, dynamic> j) =>
+      RevenueTrendPoint(
         month: j['month'] ?? '',
         revenueInPaise: j['revenue_in_paise'] ?? 0,
         revenueInRupees: (j['revenue_in_rupees'] ?? 0).toDouble(),
@@ -34,13 +35,13 @@ class RevenueReport {
   });
 
   factory RevenueReport.fromJson(Map<String, dynamic> j) => RevenueReport(
-        todayInRupees: (j['today_in_rupees'] ?? 0).toDouble(),
-        yesterdayInRupees: (j['yesterday_in_rupees'] ?? 0).toDouble(),
-        weekInRupees: (j['week_in_rupees'] ?? 0).toDouble(),
-        monthInRupees: (j['month_in_rupees'] ?? 0).toDouble(),
-        lastMonthInRupees: (j['last_month_in_rupees'] ?? 0).toDouble(),
-        trend: (j['trend'] as List? ?? [])
-            .map((e) => RevenueTrendPoint.fromJson(e))
-            .toList(),
-      );
+    todayInRupees: (j['today_in_rupees'] ?? 0).toDouble(),
+    yesterdayInRupees: (j['yesterday_in_rupees'] ?? 0).toDouble(),
+    weekInRupees: (j['week_in_rupees'] ?? 0).toDouble(),
+    monthInRupees: (j['month_in_rupees'] ?? 0).toDouble(),
+    lastMonthInRupees: (j['last_month_in_rupees'] ?? 0).toDouble(),
+    trend: (j['trend'] as List? ?? [])
+        .map((e) => RevenueTrendPoint.fromJson(e))
+        .toList(),
+  );
 }

@@ -17,11 +17,13 @@ class AttendanceService {
   // POST /api/v1/attendance/checkin
   Future<AttendanceRecord> checkIn(int memberId) async {
     final headers = await _headers();
-    final response = await guardRequest(() => http.post(
-          Uri.parse('$kBaseUrl/api/v1/attendance/checkin'),
-          headers: headers,
-          body: jsonEncode({'member_id': memberId}),
-        ));
+    final response = await guardRequest(
+      () => http.post(
+        Uri.parse('$kBaseUrl/api/v1/attendance/checkin'),
+        headers: headers,
+        body: jsonEncode({'member_id': memberId}),
+      ),
+    );
 
     // Friendlier, situation-specific messages than unwrapJson's generic
     // 409/404 defaults.
@@ -37,10 +39,14 @@ class AttendanceService {
   }
 
   // GET /api/v1/attendance/today
-  Future<List<AttendanceRecord>> getToday({int page = 1, int perPage = 50}) async {
+  Future<List<AttendanceRecord>> getToday({
+    int page = 1,
+    int perPage = 50,
+  }) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/attendance/today')
-        .replace(queryParameters: {'page': '$page', 'per_page': '$perPage'});
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/attendance/today',
+    ).replace(queryParameters: {'page': '$page', 'per_page': '$perPage'});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final json = unwrapJson(response);
     final List list = json['data']['attendance'] as List;
@@ -51,7 +57,10 @@ class AttendanceService {
   Future<List<AttendanceRecord>> getByDate(String date) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/attendance/date/$date'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/attendance/date/$date'),
+        headers: headers,
+      ),
     );
     final json = unwrapJson(response);
     final List list = json['data']['attendance'] as List;
@@ -62,7 +71,10 @@ class AttendanceService {
   Future<List<AttendanceRecord>> getMemberHistory(int memberId) async {
     final headers = await _headers();
     final response = await guardRequest(
-      () => http.get(Uri.parse('$kBaseUrl/api/v1/attendance/member/$memberId'), headers: headers),
+      () => http.get(
+        Uri.parse('$kBaseUrl/api/v1/attendance/member/$memberId'),
+        headers: headers,
+      ),
     );
     final json = unwrapJson(response);
     final List list = json['data']['attendance'] as List;
@@ -72,8 +84,9 @@ class AttendanceService {
   // GET /api/v1/attendance/recent?limit=N
   Future<List<AttendanceRecord>> getRecent({int limit = 20}) async {
     final headers = await _headers();
-    final uri = Uri.parse('$kBaseUrl/api/v1/attendance/recent')
-        .replace(queryParameters: {'limit': '$limit'});
+    final uri = Uri.parse(
+      '$kBaseUrl/api/v1/attendance/recent',
+    ).replace(queryParameters: {'limit': '$limit'});
     final response = await guardRequest(() => http.get(uri, headers: headers));
     final json = unwrapJson(response);
     final List list = json['data']['attendance'] as List;

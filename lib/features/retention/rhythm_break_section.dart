@@ -35,20 +35,29 @@ class RhythmBreakSection extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(4, 20, 4, 4),
           child: Row(
             children: [
-              const Icon(Icons.schedule_rounded,
-                  size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.schedule_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
-              const Text('Routine has broken',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: AppColors.primary)),
+              const Text(
+                'Routine has broken',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(width: 8),
-              Text('${breaks.length}',
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade500)),
+              Text(
+                '${breaks.length}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade500,
+                ),
+              ),
             ],
           ),
         ),
@@ -63,11 +72,13 @@ class RhythmBreakSection extends StatelessWidget {
         CollapsibleGroup(
           noun: 'more with a broken routine',
           children: breaks
-              .map((b) => _RhythmBreakCard(
-                    item: b,
-                    onResolve: () => onResolve(b),
-                    onCopy: () => onCopy(b),
-                  ))
+              .map(
+                (b) => _RhythmBreakCard(
+                  item: b,
+                  onResolve: () => onResolve(b),
+                  onCopy: () => onCopy(b),
+                ),
+              )
               .toList(),
         ),
       ],
@@ -87,10 +98,10 @@ class _RhythmBreakCard extends StatelessWidget {
   });
 
   Color get _severityColor => switch (item.severity) {
-        'high' => AppColors.danger,
-        'medium' => AppColors.warning,
-        _ => AppColors.info,
-      };
+    'high' => AppColors.danger,
+    'medium' => AppColors.warning,
+    _ => AppColors.info,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -108,22 +119,31 @@ class _RhythmBreakCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: _severityColor.withValues(alpha: 0.12),
-                  child: Icon(Icons.schedule_rounded,
-                      size: 17, color: _severityColor),
+                  child: Icon(
+                    Icons.schedule_rounded,
+                    size: 17,
+                    color: _severityColor,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.memberName,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(
+                        item.memberName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(height: 2),
                       Text(
                         '${item.phone ?? 'no phone'} · used to train at ${s.usualTime}',
                         style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600),
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -136,7 +156,10 @@ class _RhythmBreakCard extends StatelessWidget {
                 ),
                 IconButton(
                   tooltip: 'Mark as handled',
-                  icon: const Icon(Icons.check_circle_outline_rounded, size: 20),
+                  icon: const Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 20,
+                  ),
                   color: AppColors.success,
                   onPressed: onResolve,
                 ),
@@ -187,12 +210,13 @@ class _RhythmBreakCard extends StatelessWidget {
                     child: Text(
                       s.attendanceHolding
                           ? 'They are coming just as often — ${s.rateLine}. '
-                              'Nothing else on this screen would catch them.'
+                                'Nothing else on this screen would catch them.'
                           : 'Coming ${s.rateLine}.',
                       style: TextStyle(
-                          fontSize: 11.5,
-                          height: 1.35,
-                          color: Colors.grey.shade800),
+                        fontSize: 11.5,
+                        height: 1.35,
+                        color: Colors.grey.shade800,
+                      ),
                     ),
                   ),
                 ],
@@ -204,8 +228,11 @@ class _RhythmBreakCard extends StatelessWidget {
               children: [
                 _WeekdayStrip(label: 'Was', pattern: s.baselineWeekdays),
                 const SizedBox(width: 8),
-                Icon(Icons.arrow_forward_rounded,
-                    size: 13, color: Colors.grey.shade400),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 13,
+                  color: Colors.grey.shade400,
+                ),
                 const SizedBox(width: 8),
                 _WeekdayStrip(label: 'Now', pattern: s.recentWeekdays),
               ],
@@ -240,17 +267,22 @@ class _ConsistencyBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade700,
+          ),
+        ),
         const SizedBox(height: 2),
         // Spelling out the two periods: "Before" and "Now" on their own are
         // ambiguous, and a staff member who has to guess the window will not
         // trust the number.
-        Text('Before = 12 to 4 weeks ago · Now = the last 4 weeks',
-            style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+        Text(
+          'Before = 12 to 4 weeks ago · Now = the last 4 weeks',
+          style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+        ),
         const SizedBox(height: 6),
         _bar('Before', before, beforeLabel, AppColors.success),
         const SizedBox(height: 4),
@@ -264,8 +296,10 @@ class _ConsistencyBar extends StatelessWidget {
       children: [
         SizedBox(
           width: 44,
-          child: Text(tag,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+          child: Text(
+            tag,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+          ),
         ),
         Expanded(
           child: ClipRRect(
@@ -284,9 +318,10 @@ class _ConsistencyBar extends StatelessWidget {
           child: Text(
             '${(value * 100).round()}%  ($detail)',
             style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
           ),
         ),
       ],
@@ -309,8 +344,10 @@ class _WeekdayStrip extends StatelessWidget {
     final safe = pattern.length == 7 ? pattern : '.......';
     return Row(
       children: [
-        Text('$label ',
-            style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500)),
+        Text(
+          '$label ',
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500),
+        ),
         ...List.generate(7, (i) {
           final active = safe[i] != '.';
           return Container(

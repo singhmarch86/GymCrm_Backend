@@ -33,7 +33,7 @@ extension ResponsiveContext on BuildContext {
 
   /// Page padding — phones cannot afford 24px of gutter on each side.
   EdgeInsets get pagePadding => EdgeInsets.symmetric(
-        horizontal: isMobile ? 12 : 24,
-        vertical: isMobile ? 12 : 20,
-      );
+    horizontal: isMobile ? 12 : 24,
+    vertical: isMobile ? 12 : 20,
+  );
 }

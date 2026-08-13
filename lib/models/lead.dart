@@ -53,28 +53,28 @@ class Lead {
   });
 
   factory Lead.fromJson(Map<String, dynamic> j) => Lead(
-        id: j['id'] ?? 0,
-        gymId: j['gym_id'] ?? 0,
-        name: j['name'] ?? '',
-        phone: j['phone'] ?? '',
-        email: j['email'],
-        gender: j['gender'],
-        source: j['source'] ?? 'walk_in',
-        sourceLabel: j['source_label'] ?? '',
-        goal: j['goal'],
-        goalLabel: j['goal_label'],
-        notes: j['notes'],
-        status: j['status'] ?? 'new_lead',
-        statusLabel: j['status_label'] ?? '',
-        trialDate: j['trial_date'],
-        followUpDate: j['follow_up_date'],
-        lostReason: j['lost_reason'],
-        assignedUserId: j['assigned_user_id'],
-        assignedUserName: j['assigned_user_name'],
-        convertedMemberId: j['converted_member_id'],
-        createdAt: j['created_at'] ?? '',
-        updatedAt: j['updated_at'] ?? '',
-      );
+    id: j['id'] ?? 0,
+    gymId: j['gym_id'] ?? 0,
+    name: j['name'] ?? '',
+    phone: j['phone'] ?? '',
+    email: j['email'],
+    gender: j['gender'],
+    source: j['source'] ?? 'walk_in',
+    sourceLabel: j['source_label'] ?? '',
+    goal: j['goal'],
+    goalLabel: j['goal_label'],
+    notes: j['notes'],
+    status: j['status'] ?? 'new_lead',
+    statusLabel: j['status_label'] ?? '',
+    trialDate: j['trial_date'],
+    followUpDate: j['follow_up_date'],
+    lostReason: j['lost_reason'],
+    assignedUserId: j['assigned_user_id'],
+    assignedUserName: j['assigned_user_name'],
+    convertedMemberId: j['converted_member_id'],
+    createdAt: j['created_at'] ?? '',
+    updatedAt: j['updated_at'] ?? '',
+  );
 
   /// Display-friendly follow-up date, e.g. "Today", "Tomorrow", "15 Jul"
   String get followUpLabel {
@@ -89,8 +89,19 @@ class Lead {
       if (diff == -1) return 'Yesterday';
       if (diff < 0) return 'Overdue (${diff.abs()}d)';
       const months = [
-        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        '',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       return '${d.day} ${months[d.month]}';
     } catch (_) {
@@ -154,20 +165,20 @@ class LeadSummary {
   });
 
   factory LeadSummary.fromJson(Map<String, dynamic> j) => LeadSummary(
-        totalLeads: j['total_leads'] ?? 0,
-        todayLeads: j['today_leads'] ?? 0,
-        pendingFollowUps: j['pending_follow_ups'] ?? 0,
-        trialsScheduled: j['trials_scheduled'] ?? 0,
-        conversionRate: (j['conversion_rate'] ?? 0.0).toDouble(),
-        byStatus: Map<String, int>.from(
-          (j['by_status'] as Map? ?? {}).map(
-            (k, v) => MapEntry(k.toString(), (v as num).toInt()),
-          ),
-        ),
-        bySource: Map<String, int>.from(
-          (j['by_source'] as Map? ?? {}).map(
-            (k, v) => MapEntry(k.toString(), (v as num).toInt()),
-          ),
-        ),
-      );
+    totalLeads: j['total_leads'] ?? 0,
+    todayLeads: j['today_leads'] ?? 0,
+    pendingFollowUps: j['pending_follow_ups'] ?? 0,
+    trialsScheduled: j['trials_scheduled'] ?? 0,
+    conversionRate: (j['conversion_rate'] ?? 0.0).toDouble(),
+    byStatus: Map<String, int>.from(
+      (j['by_status'] as Map? ?? {}).map(
+        (k, v) => MapEntry(k.toString(), (v as num).toInt()),
+      ),
+    ),
+    bySource: Map<String, int>.from(
+      (j['by_source'] as Map? ?? {}).map(
+        (k, v) => MapEntry(k.toString(), (v as num).toInt()),
+      ),
+    ),
+  );
 }

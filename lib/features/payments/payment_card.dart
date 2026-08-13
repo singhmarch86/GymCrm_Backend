@@ -9,6 +9,7 @@ class PaymentCard extends StatelessWidget {
   final Payment payment;
   final VoidCallback? onCollect;
   final VoidCallback? onTap;
+
   /// Raises a GST invoice for this payment. Money and documents are separate
   /// records (FR-04 §0.1), so a payment can exist without an invoice — this is
   /// how staff produce one after the fact.
@@ -48,14 +49,12 @@ class PaymentCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           // ── Header row: avatar + name/phone + status badge ──────────────
           Row(
             children: [
               CircleAvatar(
                 radius: 26,
-                backgroundColor:
-                    AppColors.primary.withValues(alpha: 0.12),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                 child: Text(
                   initial,
                   style: const TextStyle(
@@ -125,11 +124,7 @@ class PaymentCard extends StatelessWidget {
           // ── Amount + payment mode ────────────────────────────────────────
           Row(
             children: [
-              Icon(
-                Icons.currency_rupee_rounded,
-                size: 17,
-                color: _statusColor,
-              ),
+              Icon(Icons.currency_rupee_rounded, size: 17, color: _statusColor),
               const SizedBox(width: 8),
               Text(
                 '₹${payment.amountInRupees.toStringAsFixed(0)}',
@@ -176,10 +171,7 @@ class PaymentCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 _dateLabel,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
               ),
             ],
           ),
@@ -203,10 +195,7 @@ class PaymentCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: onCollect,
-                icon: const Icon(
-                  Icons.payment_rounded,
-                  size: 18,
-                ),
+                icon: const Icon(Icons.payment_rounded, size: 18),
                 label: const Text('Collect Payment'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,

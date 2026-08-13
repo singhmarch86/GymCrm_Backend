@@ -100,8 +100,11 @@ class _ErrorState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded,
-              color: AppColors.danger, size: 20),
+          const Icon(
+            Icons.error_outline_rounded,
+            color: AppColors.danger,
+            size: 20,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

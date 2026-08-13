@@ -17,17 +17,11 @@ class ErrorBanner extends StatelessWidget {
   final VoidCallback? onRetry;
   final bool compact;
 
-  const ErrorBanner({
-    super.key,
-    required this.message,
-    this.onRetry,
-  }) : compact = false;
+  const ErrorBanner({super.key, required this.message, this.onRetry})
+    : compact = false;
 
-  const ErrorBanner.inline({
-    super.key,
-    required this.message,
-    this.onRetry,
-  }) : compact = true;
+  const ErrorBanner.inline({super.key, required this.message, this.onRetry})
+    : compact = true;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +32,11 @@ class ErrorBanner extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 20),
+            const Icon(
+              Icons.error_outline_rounded,
+              color: AppColors.danger,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -47,10 +45,7 @@ class ErrorBanner extends StatelessWidget {
               ),
             ),
             if (onRetry != null)
-              TextButton(
-                onPressed: onRetry,
-                child: const Text('Retry'),
-              ),
+              TextButton(onPressed: onRetry, child: const Text('Retry')),
           ],
         ),
       );
@@ -62,12 +57,18 @@ class ErrorBanner extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 56),
+            const Icon(
+              Icons.error_outline_rounded,
+              color: AppColors.danger,
+              size: 56,
+            ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 20),

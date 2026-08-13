@@ -14,10 +14,9 @@ class DashboardService {
     // refreshed before the request goes out, instead of failing with a 401.
     final headers = await TokenManager.authHeaders();
 
-    final response = await guardRequest(() => http.get(
-          Uri.parse('$baseUrl/api/v1/dashboard'),
-          headers: headers,
-        ));
+    final response = await guardRequest(
+      () => http.get(Uri.parse('$baseUrl/api/v1/dashboard'), headers: headers),
+    );
 
     final json = unwrapJson(response);
     return DashboardResponse.fromJson(json['data']);

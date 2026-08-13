@@ -129,7 +129,9 @@ class _LeadsScreenState extends State<LeadsScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is ApiException ? e.message : "Couldn't load your leads. Please try again.";
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't load your leads. Please try again.";
         _isLoading = false;
       });
     }
@@ -160,8 +162,9 @@ class _LeadsScreenState extends State<LeadsScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _followUpsError =
-            e is ApiException ? e.message : "Couldn't load follow-ups.";
+        _followUpsError = e is ApiException
+            ? e.message
+            : "Couldn't load follow-ups.";
         _followUpsLoading = false;
       });
     }
@@ -188,8 +191,9 @@ class _LeadsScreenState extends State<LeadsScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _workflowError =
-            e is ApiException ? e.message : "Couldn't load the workflow.";
+        _workflowError = e is ApiException
+            ? e.message
+            : "Couldn't load the workflow.";
         _workflowLoading = false;
       });
     }
@@ -210,8 +214,9 @@ class _LeadsScreenState extends State<LeadsScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _analyticsError =
-            e is ApiException ? e.message : "Couldn't load analytics.";
+        _analyticsError = e is ApiException
+            ? e.message
+            : "Couldn't load analytics.";
         _analyticsLoading = false;
       });
     }
@@ -320,10 +325,16 @@ class _LeadsScreenState extends State<LeadsScreen>
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirm', style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Confirm',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -339,7 +350,11 @@ class _LeadsScreenState extends State<LeadsScreen>
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e is ApiException ? e.message : "Couldn't mark this lead as lost.")),
+        SnackBar(
+          content: Text(
+            e is ApiException ? e.message : "Couldn't mark this lead as lost.",
+          ),
+        ),
       );
     }
   }
@@ -351,10 +366,16 @@ class _LeadsScreenState extends State<LeadsScreen>
         title: const Text('Delete Lead'),
         content: Text('Delete ${lead.name}? This cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -367,7 +388,11 @@ class _LeadsScreenState extends State<LeadsScreen>
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e is ApiException ? e.message : "Couldn't delete this lead.")),
+        SnackBar(
+          content: Text(
+            e is ApiException ? e.message : "Couldn't delete this lead.",
+          ),
+        ),
       );
     }
   }
@@ -385,14 +410,17 @@ class _LeadsScreenState extends State<LeadsScreen>
     if (result == null || !mounted) return;
 
     try {
-      await LeadService()
-          .advanceStatus(lead.id, newStatus, note: result.note);
+      await LeadService().advanceStatus(lead.id, newStatus, note: result.note);
       await _refreshAll();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e is ApiException ? e.message : "Couldn't update this lead's status."),
+          content: Text(
+            e is ApiException
+                ? e.message
+                : "Couldn't update this lead's status.",
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -417,11 +445,14 @@ class _LeadsScreenState extends State<LeadsScreen>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('What happened?',
-                  style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700)),
+              Text(
+                'What happened?',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 6,
@@ -429,7 +460,10 @@ class _LeadsScreenState extends State<LeadsScreen>
                 children: [
                   for (final o in FollowUpOutcome.all)
                     ChoiceChip(
-                      label: Text(o.label, style: const TextStyle(fontSize: 12)),
+                      label: Text(
+                        o.label,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       selected: outcome == o.value,
                       onSelected: (sel) =>
                           setLocal(() => outcome = sel ? o.value : null),
@@ -449,10 +483,16 @@ class _LeadsScreenState extends State<LeadsScreen>
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
             // Deliberately enabled with no outcome selected: a staff member
             // mid-shift must never be blocked by a dropdown (FR-16 §3).
-            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Save')),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Save'),
+            ),
           ],
         ),
       ),
@@ -477,7 +517,11 @@ class _LeadsScreenState extends State<LeadsScreen>
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e is ApiException ? e.message : "Couldn't log the call.")),
+        SnackBar(
+          content: Text(
+            e is ApiException ? e.message : "Couldn't log the call.",
+          ),
+        ),
       );
     }
   }
@@ -492,7 +536,8 @@ class _LeadsScreenState extends State<LeadsScreen>
     );
     if (picked == null || !mounted) return;
 
-    final iso = '${picked.year.toString().padLeft(4, '0')}-'
+    final iso =
+        '${picked.year.toString().padLeft(4, '0')}-'
         '${picked.month.toString().padLeft(2, '0')}-'
         '${picked.day.toString().padLeft(2, '0')}';
 
@@ -515,7 +560,9 @@ class _LeadsScreenState extends State<LeadsScreen>
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e is ApiException ? e.message : "Couldn't reschedule.")),
+        SnackBar(
+          content: Text(e is ApiException ? e.message : "Couldn't reschedule."),
+        ),
       );
     }
   }
@@ -552,7 +599,10 @@ class _LeadsScreenState extends State<LeadsScreen>
             indicatorColor: AppColors.primary,
             tabs: [
               const Tab(icon: Icon(Icons.list_rounded, size: 18), text: 'List'),
-              const Tab(icon: Icon(Icons.view_kanban_rounded, size: 18), text: 'Board'),
+              const Tab(
+                icon: Icon(Icons.view_kanban_rounded, size: 18),
+                text: 'Board',
+              ),
               Tab(
                 icon: const Icon(Icons.checklist_rounded, size: 18),
                 // The unattended count rides on the tab because it is the one
@@ -567,7 +617,10 @@ class _LeadsScreenState extends State<LeadsScreen>
                     ? 'Follow-ups (${_followUps!.actionableCount})'
                     : 'Follow-ups',
               ),
-              const Tab(icon: Icon(Icons.insights_rounded, size: 18), text: 'Analytics'),
+              const Tab(
+                icon: Icon(Icons.insights_rounded, size: 18),
+                text: 'Analytics',
+              ),
             ],
           ),
         ),
@@ -718,8 +771,12 @@ class _LeadsScreenState extends State<LeadsScreen>
       stageLabel: item.stageLabel,
       currentStep: item.nextStep,
       currentDue: item.nextStepDue,
-      onSave: (step, due, note) => LeadService()
-          .setNextStep(item.leadId, step: step, due: due, note: note),
+      onSave: (step, due, note) => LeadService().setNextStep(
+        item.leadId,
+        step: step,
+        due: due,
+        note: note,
+      ),
       // Clearing is deliberate, not a mistake to be prevented: a lead that
       // genuinely needs no next step should be closable back to Unattended
       // rather than carrying a fake date somebody stops believing.

@@ -23,12 +23,12 @@ class PayoutLine {
   });
 
   factory PayoutLine.fromJson(Map<String, dynamic> j) => PayoutLine(
-        id: j['id'] ?? 0,
-        kind: j['kind'] ?? '',
-        referenceId: j['reference_id'],
-        description: j['description'] ?? '',
-        amountInPaise: j['amount_in_paise'] ?? 0,
-      );
+    id: j['id'] ?? 0,
+    kind: j['kind'] ?? '',
+    referenceId: j['reference_id'],
+    description: j['description'] ?? '',
+    amountInPaise: j['amount_in_paise'] ?? 0,
+  );
 }
 
 class Payout {
@@ -87,27 +87,27 @@ class Payout {
   bool get isPaid => status == 'paid';
 
   factory Payout.fromJson(Map<String, dynamic> j) => Payout(
-        id: j['id'] ?? 0,
-        trainerId: j['trainer_id'] ?? 0,
-        trainer: j['trainer'] ?? '',
-        periodStart: _date(j['period_start']) ?? DateTime.now(),
-        periodEnd: _date(j['period_end']) ?? DateTime.now(),
-        salaryInPaise: j['salary_in_paise'] ?? 0,
-        commissionInPaise: j['commission_in_paise'] ?? 0,
-        sessionsInPaise: j['sessions_in_paise'] ?? 0,
-        adjustmentInPaise: j['adjustment_in_paise'] ?? 0,
-        adjustmentReason: j['adjustment_reason'],
-        totalInPaise: j['total_in_paise'] ?? 0,
-        status: j['status'] ?? 'draft',
-        notes: j['notes'],
-        paidAt: _date(j['paid_at']),
-        paidBy: j['paid_by'],
-        paymentMode: j['payment_mode'],
-        referenceNumber: j['reference_number'],
-        lines: ((j['lines'] as List?) ?? [])
-            .map((e) => PayoutLine.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    id: j['id'] ?? 0,
+    trainerId: j['trainer_id'] ?? 0,
+    trainer: j['trainer'] ?? '',
+    periodStart: _date(j['period_start']) ?? DateTime.now(),
+    periodEnd: _date(j['period_end']) ?? DateTime.now(),
+    salaryInPaise: j['salary_in_paise'] ?? 0,
+    commissionInPaise: j['commission_in_paise'] ?? 0,
+    sessionsInPaise: j['sessions_in_paise'] ?? 0,
+    adjustmentInPaise: j['adjustment_in_paise'] ?? 0,
+    adjustmentReason: j['adjustment_reason'],
+    totalInPaise: j['total_in_paise'] ?? 0,
+    status: j['status'] ?? 'draft',
+    notes: j['notes'],
+    paidAt: _date(j['paid_at']),
+    paidBy: j['paid_by'],
+    paymentMode: j['payment_mode'],
+    referenceNumber: j['reference_number'],
+    lines: ((j['lines'] as List?) ?? [])
+        .map((e) => PayoutLine.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 
   static DateTime? _date(dynamic v) {
     if (v is! String || v.isEmpty) return null;
@@ -154,19 +154,19 @@ class PayoutPreview {
   bool get isEmpty => totalInPaise == 0;
 
   factory PayoutPreview.fromJson(Map<String, dynamic> j) => PayoutPreview(
-        trainerId: j['trainer_id'] ?? 0,
-        trainer: j['trainer'] ?? '',
-        periodStart: j['period_start'] ?? '',
-        periodEnd: j['period_end'] ?? '',
-        salaryInPaise: j['salary_in_paise'] ?? 0,
-        commissionInPaise: j['commission_in_paise'] ?? 0,
-        sessionsInPaise: j['sessions_in_paise'] ?? 0,
-        totalInPaise: j['total_in_paise'] ?? 0,
-        lines: ((j['lines'] as List?) ?? [])
-            .map((e) => PayoutLine.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        alreadyPaid: j['already_paid'] ?? false,
-        uncollectedInPaise: j['uncollected_in_paise'] ?? 0,
-        uncollectedCount: j['uncollected_count'] ?? 0,
-      );
+    trainerId: j['trainer_id'] ?? 0,
+    trainer: j['trainer'] ?? '',
+    periodStart: j['period_start'] ?? '',
+    periodEnd: j['period_end'] ?? '',
+    salaryInPaise: j['salary_in_paise'] ?? 0,
+    commissionInPaise: j['commission_in_paise'] ?? 0,
+    sessionsInPaise: j['sessions_in_paise'] ?? 0,
+    totalInPaise: j['total_in_paise'] ?? 0,
+    lines: ((j['lines'] as List?) ?? [])
+        .map((e) => PayoutLine.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    alreadyPaid: j['already_paid'] ?? false,
+    uncollectedInPaise: j['uncollected_in_paise'] ?? 0,
+    uncollectedCount: j['uncollected_count'] ?? 0,
+  );
 }

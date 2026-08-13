@@ -35,11 +35,31 @@ class RevenueChart extends StatelessWidget {
       spacing: 12,
       runSpacing: 12,
       children: [
-        _kpi('Today', '₹${report.todayInRupees.toStringAsFixed(0)}', AppColors.success),
-        _kpi('Yesterday', '₹${report.yesterdayInRupees.toStringAsFixed(0)}', Colors.blueGrey),
-        _kpi('This Week', '₹${report.weekInRupees.toStringAsFixed(0)}', AppColors.primary),
-        _kpi('This Month', '₹${report.monthInRupees.toStringAsFixed(0)}', Colors.deepPurple),
-        _kpi('Last Month', '₹${report.lastMonthInRupees.toStringAsFixed(0)}', Colors.teal),
+        _kpi(
+          'Today',
+          '₹${report.todayInRupees.toStringAsFixed(0)}',
+          AppColors.success,
+        ),
+        _kpi(
+          'Yesterday',
+          '₹${report.yesterdayInRupees.toStringAsFixed(0)}',
+          Colors.blueGrey,
+        ),
+        _kpi(
+          'This Week',
+          '₹${report.weekInRupees.toStringAsFixed(0)}',
+          AppColors.primary,
+        ),
+        _kpi(
+          'This Month',
+          '₹${report.monthInRupees.toStringAsFixed(0)}',
+          Colors.deepPurple,
+        ),
+        _kpi(
+          'Last Month',
+          '₹${report.lastMonthInRupees.toStringAsFixed(0)}',
+          Colors.teal,
+        ),
       ],
     );
   }
@@ -55,12 +75,19 @@ class RevenueChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 15, color: color)),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(label,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
         ],
       ),
     );
@@ -71,7 +98,8 @@ class RevenueChart extends StatelessWidget {
       return FlSpot(e.key.toDouble(), e.value.revenueInRupees);
     }).toList();
 
-    final maxY = report.trend
+    final maxY =
+        report.trend
             .map((t) => t.revenueInRupees)
             .fold(0.0, (a, b) => a > b ? a : b) *
         1.2;
@@ -88,9 +116,15 @@ class RevenueChart extends StatelessWidget {
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -103,9 +137,10 @@ class RevenueChart extends StatelessWidget {
                 // Show only every 3rd label to avoid crowding
                 if (i % 3 != 0) return const SizedBox.shrink();
                 final label = report.trend[i].month.split(' ')[0]; // "Jan"
-                return Text(label,
-                    style: TextStyle(
-                        fontSize: 10, color: Colors.grey.shade500));
+                return Text(
+                  label,
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                );
               },
             ),
           ),
