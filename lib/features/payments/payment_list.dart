@@ -56,11 +56,11 @@ class PaymentList extends StatelessWidget {
           LedgerCell(p.planName ?? 'Membership fee',
               colour: Colors.grey.shade700),
           LedgerTag(p.status, _statusColour(p.status)),
-          LedgerCell(p.paidDate ?? p.dueDate ?? '—',
+          LedgerCell(_date(p.paidDate ?? p.dueDate),
               colour: Colors.grey.shade700),
           // Right-aligned so digits line up by place value and a bigger
           // number is visibly bigger — the whole reason this is a table.
-          LedgerCell('₹${p.amountInRupees.toStringAsFixed(0)}',
+          LedgerCell(_money(p.amountInRupees),
               bold: true,
               colour: p.status == 'paid'
                   ? AppColors.textPrimary
@@ -88,6 +88,40 @@ class PaymentList extends StatelessWidget {
         },
       ),
     );
+  }
+
+  /// The API sends dates as raw strings -- sometimes a full ISO timestamp.
+  /// Printing those verbatim put "2026-08-19T00:00:00Z" in the Date column,
+  /// which is a machine's answer to a human's question.
+  static String _date(String? raw) {
+    if (raw == null || raw.isEmpty) return '—';
+    final d = DateTime.tryParse(raw);
+    if (d == null) return raw;
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${d.day} ${months[d.month - 1]} ${d.year}';
+  }
+
+  /// Indian grouping: 1,500 then 13,000 then 1,50,000. Without separators a
+  /// right-aligned money column loses the one thing it is for -- 13000 and
+  /// 1300 are the same width to a glancing eye.
+  static String _money(double rupees) {
+    final s = rupees.round().abs().toString();
+    if (s.length <= 3) return '₹$s';
+
+    // Last three digits, then pairs -- the Indian convention, not groups of
+    // three all the way up.
+    final last3 = s.substring(s.length - 3);
+    var rest = s.substring(0, s.length - 3);
+    final parts = <String>[];
+    while (rest.length > 2) {
+      parts.insert(0, rest.substring(rest.length - 2));
+      rest = rest.substring(0, rest.length - 2);
+    }
+    if (rest.isNotEmpty) parts.insert(0, rest);
+    return '₹${parts.join(',')},$last3';
   }
 
   static Color _statusColour(String status) {

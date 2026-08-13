@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/collection_queue.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/readable_width.dart';
 
 /// The collections worklist (FR-19 §3).
 ///
@@ -16,11 +17,7 @@ class CollectionsView extends StatelessWidget {
   final CollectionQueue queue;
   final void Function(CollectionItem) onAct;
 
-  const CollectionsView({
-    super.key,
-    required this.queue,
-    required this.onAct,
-  });
+  const CollectionsView({super.key, required this.queue, required this.onAct});
 
   /// The queue as a plain list of widgets, so Staff work can splice it into
   /// its own scroll view — the same arrangement the lead workflow uses.
@@ -31,10 +28,7 @@ class CollectionsView extends StatelessWidget {
   List<Widget> sections({bool showHeadline = true}) {
     if (queue.isClear) return const [];
     return [
-      if (showHeadline) ...[
-        _Headline(queue: queue),
-        const SizedBox(height: 6),
-      ],
+      if (showHeadline) ...[_Headline(queue: queue), const SizedBox(height: 6)],
       for (final g in queue.groups) ..._group(g),
     ];
   }
@@ -48,88 +42,110 @@ class CollectionsView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.verified_rounded,
-                  size: 60, color: AppColors.success),
+              const Icon(
+                Icons.verified_rounded,
+                size: 60,
+                color: AppColors.success,
+              ),
               const SizedBox(height: 16),
-              const Text('Nothing outstanding',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'Nothing outstanding',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 6),
-              Text('Every due has been collected or settled.',
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontSize: 12.5, color: Colors.grey.shade600)),
+              Text(
+                'Every due has been collected or settled.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
+              ),
             ],
           ),
         ),
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
-      children: [
-        // Said above the list, not below it. A filter that hides Rs 1.45L of
-        // older debt must be visible before the reader starts working the
-        // rows, not after they have finished.
-        if (queue.outsideCount > 0)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Container(
-              width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                    color: AppColors.warning.withValues(alpha: 0.35)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.filter_alt_off_rounded,
-                      size: 16, color: AppColors.warning),
-                  const SizedBox(width: 9),
-                  Expanded(
-                    child: Text(
-                      'These dates hide ${queue.outsideCount} other '
-                      '${queue.outsideCount == 1 ? 'due' : 'dues'} worth '
-                      '${_rupees(queue.outsideInPaise)}. Older debt is usually '
-                      'the worse debt — switch to All before deciding nothing '
-                      'is outstanding.',
-                      style: const TextStyle(fontSize: 11.5, height: 1.35),
-                    ),
+    // Capped rather than full-bleed. Across a wide monitor a name and its
+    // amount end up a hand's width apart, which is the exact scanning problem
+    // tables solve — reintroduced into the cards.
+    return ReadableWidth(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
+        children: [
+          // Said above the list, not below it. A filter that hides Rs 1.45L of
+          // older debt must be visible before the reader starts working the
+          // rows, not after they have finished.
+          if (queue.outsideCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.warning.withValues(alpha: 0.35),
                   ),
-                ],
-              ),
-            ),
-          ),
-        _Headline(queue: queue),
-        const SizedBox(height: 6),
-        for (final g in queue.groups) ..._group(g),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.info_outline_rounded,
-                  size: 14, color: Colors.grey.shade500),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Recording a call moves a due out of the first group whether '
-                  'or not anybody answered — somebody tried, and the next '
-                  'person should not repeat it. Nothing here sends a message; '
-                  'it records that you made contact.',
-                  style: TextStyle(
-                      fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.filter_alt_off_rounded,
+                      size: 16,
+                      color: AppColors.warning,
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Text(
+                        'These dates hide ${queue.outsideCount} other '
+                        '${queue.outsideCount == 1 ? 'due' : 'dues'} worth '
+                        '${_rupees(queue.outsideInPaise)}. Older debt is usually '
+                        'the worse debt — switch to All before deciding nothing '
+                        'is outstanding.',
+                        style: const TextStyle(fontSize: 11.5, height: 1.35),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
+          _Headline(queue: queue),
+          const SizedBox(height: 6),
+          for (final g in queue.groups) ..._group(g),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 14,
+                  color: Colors.grey.shade500,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Recording a call moves a due out of the first group whether '
+                    'or not anybody answered — somebody tried, and the next '
+                    'person should not repeat it. Nothing here sends a message; '
+                    'it records that you made contact.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      height: 1.4,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -142,8 +158,10 @@ class CollectionsView extends StatelessWidget {
             children: [
               Icon(Icons.check_rounded, size: 14, color: Colors.grey.shade400),
               const SizedBox(width: 8),
-              Text('${g.label} — none',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              Text(
+                '${g.label} — none',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
             ],
           ),
         ),
@@ -163,30 +181,39 @@ class CollectionsView extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration:
-                      BoxDecoration(color: colour, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: colour,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const SizedBox(width: 9),
                 Expanded(
-                  child: Text(g.label,
-                      style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.bold,
-                          color: colour)),
-                ),
-                Text('${g.items.length} · ${_rupees(g.totalInPaise)}',
+                  child: Text(
+                    g.label,
                     style: TextStyle(
-                        fontSize: 12, color: Colors.grey.shade600)),
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.bold,
+                      color: colour,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${g.items.length} · ${_rupees(g.totalInPaise)}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
               ],
             ),
             const SizedBox(height: 3),
             Padding(
               padding: const EdgeInsets.only(left: 17),
-              child: Text(g.note,
-                  style: TextStyle(
-                      fontSize: 11.5,
-                      height: 1.35,
-                      color: Colors.grey.shade600)),
+              child: Text(
+                g.note,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  height: 1.35,
+                  color: Colors.grey.shade600,
+                ),
+              ),
             ),
           ],
         ),
@@ -222,35 +249,45 @@ class _Headline extends StatelessWidget {
             children: [
               _figure(_rupees(queue.totalInPaise), 'outstanding', null),
               Container(width: 1, height: 30, color: Colors.grey.shade200),
-              _figure('${queue.unchasedCount}', 'nobody on them',
-                  queue.unchasedCount > 0 ? AppColors.danger : null),
+              _figure(
+                '${queue.unchasedCount}',
+                'nobody on them',
+                queue.unchasedCount > 0 ? AppColors.danger : null,
+              ),
               Container(width: 1, height: 30, color: Colors.grey.shade200),
               _figure('${queue.membersInvolved}', 'members', null),
             ],
           ),
           const SizedBox(height: 8),
-          Text('${queue.totalCount} dues in total',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+          Text(
+            '${queue.totalCount} dues in total',
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+          ),
         ],
       ),
     );
   }
 
   Widget _figure(String value, String label, Color? colour) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colour ?? AppColors.textPrimary)),
-            const SizedBox(height: 2),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: colour ?? AppColors.textPrimary,
+          ),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+        ),
+      ],
+    ),
+  );
 }
 
 class _DueRow extends StatelessWidget {
@@ -286,10 +323,13 @@ class _DueRow extends StatelessWidget {
                         Row(
                           children: [
                             Flexible(
-                              child: Text(item.member,
-                                  style: const TextStyle(
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.w600)),
+                              child: Text(
+                                item.member,
+                                style: const TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                             if (item.memberInactive) ...[
                               const SizedBox(width: 6),
@@ -299,9 +339,13 @@ class _DueRow extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 2),
-                        Text(_due(),
-                            style: TextStyle(
-                                fontSize: 11.5, color: Colors.grey.shade600)),
+                        Text(
+                          _due(),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -309,17 +353,24 @@ class _DueRow extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(_rupees(item.amountInPaise),
-                          style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: colour)),
+                      Text(
+                        _rupees(item.amountInPaise),
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: colour,
+                        ),
+                      ),
                       // Chasing ₹1,500 when the same person owes ₹9,000
                       // wastes the call.
                       if (item.owesMore)
-                        Text('of ${_rupees(item.memberTotalInPaise)}',
-                            style: TextStyle(
-                                fontSize: 10.5, color: Colors.grey.shade500)),
+                        Text(
+                          'of ${_rupees(item.memberTotalInPaise)}',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
                     ],
                   ),
                 ],
@@ -329,15 +380,21 @@ class _DueRow extends StatelessWidget {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 9, vertical: 7),
+                    horizontal: 9,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(7),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
-                  child: Text(_lastLine()!,
-                      style: TextStyle(
-                          fontSize: 11.5, color: Colors.grey.shade700)),
+                  child: Text(
+                    _lastLine()!,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
                 ),
               ],
             ],
@@ -384,19 +441,34 @@ class _DueRow extends StatelessWidget {
   }
 
   static Widget _tag(String text, Color colour) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: colour.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(text,
-            style: TextStyle(
-                fontSize: 10, fontWeight: FontWeight.w700, color: colour)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: colour.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(4),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: colour,
+      ),
+    ),
+  );
 
   static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   static String _date(DateTime d) => '${d.day} ${_months[d.month - 1]}';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'readable_width.dart';
 
 /// A ledger rendered as a table on wide screens and as cards on narrow ones.
 ///
@@ -55,10 +56,15 @@ class LedgerTable<T> extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < breakpoint) {
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
-            itemCount: rows.length,
-            itemBuilder: (_, i) => card(rows[i]),
+          // Only reachable below the breakpoint, so the cap rarely bites --
+          // but a tablet in portrait sits just under it and stretches the
+          // same way a monitor does.
+          return ReadableWidth(
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+              itemCount: rows.length,
+              itemBuilder: (_, i) => card(rows[i]),
+            ),
           );
         }
         return _table(context);
@@ -209,15 +215,15 @@ class LedgerCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: size,
-          fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
-          color: colour ?? AppColors.textPrimary,
-        ),
-      );
+    text,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: TextStyle(
+      fontSize: size,
+      fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
+      color: colour ?? AppColors.textPrimary,
+    ),
+  );
 }
 
 /// A status word, coloured. Same vocabulary as the cards use, so a reader
@@ -230,21 +236,21 @@ class LedgerTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-          decoration: BoxDecoration(
-            color: colour.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-              color: colour,
-            ),
-          ),
+    alignment: Alignment.centerLeft,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: colour.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: colour,
         ),
-      );
+      ),
+    ),
+  );
 }
