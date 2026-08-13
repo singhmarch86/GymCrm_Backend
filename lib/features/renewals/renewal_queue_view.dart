@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/renewal_queue.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../utils/money.dart';
 
 /// Renewals due (FR-19 §4).
 ///
@@ -38,12 +39,16 @@ class RenewalQueueView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.verified_rounded,
-                  size: 60, color: AppColors.success),
+              const Icon(
+                Icons.verified_rounded,
+                size: 60,
+                color: AppColors.success,
+              ),
               const SizedBox(height: 16),
-              const Text('Nothing expiring',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'Nothing expiring',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 6),
               Text(
                 'No memberships expire in the next ${queue.windowDays} days, '
@@ -78,8 +83,10 @@ class RenewalQueueView extends StatelessWidget {
             children: [
               Icon(Icons.check_rounded, size: 14, color: Colors.grey.shade400),
               const SizedBox(width: 8),
-              Text('${g.label} — none',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              Text(
+                '${g.label} — none',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
             ],
           ),
         ),
@@ -99,30 +106,39 @@ class RenewalQueueView extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration:
-                      BoxDecoration(color: colour, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: colour,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const SizedBox(width: 9),
                 Expanded(
-                  child: Text(g.label,
-                      style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.bold,
-                          color: colour)),
+                  child: Text(
+                    g.label,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.bold,
+                      color: colour,
+                    ),
+                  ),
                 ),
-                Text('${g.items.length} · ~${_rupees(g.valueInPaise)}',
-                    style:
-                        TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                Text(
+                  '${g.items.length} · ~${moneyShort(g.valueInPaise)}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
               ],
             ),
             const SizedBox(height: 3),
             Padding(
               padding: const EdgeInsets.only(left: 17),
-              child: Text(g.note,
-                  style: TextStyle(
-                      fontSize: 11.5,
-                      height: 1.35,
-                      color: Colors.grey.shade600)),
+              child: Text(
+                g.note,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  height: 1.35,
+                  color: Colors.grey.shade600,
+                ),
+              ),
             ),
           ],
         ),
@@ -161,32 +177,43 @@ class _Headline extends StatelessWidget {
               // "worth" and not "revenue": these are memberships that might be
               // renewed, at today's plan prices. It is an estimate and it says
               // so.
-              _figure('~${_rupees(queue.valueInPaise)}', 'if all renew', null),
+              _figure(
+                '~${moneyShort(queue.valueInPaise)}',
+                'if all renew',
+                null,
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          Text('within ${queue.windowDays} days, either side of today',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+          Text(
+            'within ${queue.windowDays} days, either side of today',
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+          ),
         ],
       ),
     );
   }
 
   Widget _figure(String value, String label, Color? colour) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: colour ?? AppColors.textPrimary)),
-            const SizedBox(height: 2),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+            color: colour ?? AppColors.textPrimary,
+          ),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Says where the window ends, because a queue that silently truncates is
@@ -207,20 +234,26 @@ class _Footnote extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline_rounded,
-                  size: 14, color: Colors.grey.shade500),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 14,
+                color: Colors.grey.shade500,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   queue.beyondWindow == 0
                       ? 'Showing everything that lapsed in the last '
-                          '${queue.windowDays} days. Nothing is hidden.'
+                            '${queue.windowDays} days. Nothing is hidden.'
                       : '${queue.beyondWindow} more lapsed over '
-                          '${queue.windowDays} days ago — past the point where '
-                          'a renewal call usually works, so they are kept off '
-                          'the working list rather than dropped.',
+                            '${queue.windowDays} days ago — past the point where '
+                            'a renewal call usually works, so they are kept off '
+                            'the working list rather than dropped.',
                   style: TextStyle(
-                      fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+                    fontSize: 11,
+                    height: 1.4,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ),
             ],
@@ -234,14 +267,19 @@ class _Footnote extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                 ),
-                child: Text('Show them anyway',
-                    style: TextStyle(
-                        fontSize: 11.5,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600)),
+                child: Text(
+                  'Show them anyway',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
-          if (queue.beyondWindow == 0 && queue.windowDays > 30 && onWiden != null)
+          if (queue.beyondWindow == 0 &&
+              queue.windowDays > 30 &&
+              onWiden != null)
             Padding(
               padding: const EdgeInsets.only(left: 22, top: 2),
               child: TextButton(
@@ -250,11 +288,14 @@ class _Footnote extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                 ),
-                child: Text('Back to the last 30 days',
-                    style: TextStyle(
-                        fontSize: 11.5,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600)),
+                child: Text(
+                  'Back to the last 30 days',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
         ],
@@ -293,13 +334,21 @@ class _RenewalRow extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.member,
-                            style: const TextStyle(
-                                fontSize: 14.5, fontWeight: FontWeight.w600)),
+                        Text(
+                          item.member,
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text(_subtitle(),
-                            style: TextStyle(
-                                fontSize: 11.5, color: Colors.grey.shade600)),
+                        Text(
+                          _subtitle(),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -307,26 +356,29 @@ class _RenewalRow extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(_when(),
-                          style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.bold,
-                              color: colour)),
+                      Text(
+                        _when(),
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.bold,
+                          color: colour,
+                        ),
+                      ),
                       if (item.planInPaise != null)
-                        Text(_rupees(item.planInPaise!),
-                            style: TextStyle(
-                                fontSize: 11, color: Colors.grey.shade500)),
+                        Text(
+                          moneyShort(item.planInPaise!),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
                     ],
                   ),
                 ],
               ),
               if (_signals().isNotEmpty) ...[
                 const SizedBox(height: 9),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: _signals(),
-                ),
+                Wrap(spacing: 6, runSpacing: 6, children: _signals()),
               ],
             ],
           ),
@@ -363,7 +415,7 @@ class _RenewalRow extends StatelessWidget {
     }
 
     if (item.owesMoney) {
-      out.add(_tag('owes ${_rupees(item.owedInPaise)}', AppColors.danger));
+      out.add(_tag('owes ${moneyShort(item.owedInPaise)}', AppColors.danger));
     }
 
     if (item.previousRenewals == 0) {
@@ -371,30 +423,25 @@ class _RenewalRow extends StatelessWidget {
       // long-standing member drifting away.
       out.add(_tag('first term', Colors.grey.shade600));
     } else {
-      out.add(_tag(
-          'renewed ${item.previousRenewals}×', AppColors.success));
+      out.add(_tag('renewed ${item.previousRenewals}×', AppColors.success));
     }
 
     return out;
   }
 
   static Widget _tag(String text, Color colour) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: colour.withValues(alpha: 0.11),
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: Text(text,
-            style: TextStyle(
-                fontSize: 10.5, fontWeight: FontWeight.w600, color: colour)),
-      );
-}
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+    decoration: BoxDecoration(
+      color: colour.withValues(alpha: 0.11),
+      borderRadius: BorderRadius.circular(5),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 10.5,
+        fontWeight: FontWeight.w600,
+        color: colour,
+      ),
+    ),
+  );
 }

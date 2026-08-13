@@ -9,6 +9,7 @@ import '../invoices/quick_invoice.dart';
 import 'collect_payment_dialog.dart';
 import 'empty_payments.dart';
 import 'payment_card.dart';
+import '../../utils/money.dart';
 
 class PaymentList extends StatelessWidget {
   final bool isLoading;
@@ -53,18 +54,24 @@ class PaymentList extends StatelessWidget {
         ],
         cells: (p) => [
           LedgerCell(p.memberName, bold: true),
-          LedgerCell(p.planName ?? 'Membership fee',
-              colour: Colors.grey.shade700),
+          LedgerCell(
+            p.planName ?? 'Membership fee',
+            colour: Colors.grey.shade700,
+          ),
           LedgerTag(p.status, _statusColour(p.status)),
-          LedgerCell(_date(p.paidDate ?? p.dueDate),
-              colour: Colors.grey.shade700),
+          LedgerCell(
+            _date(p.paidDate ?? p.dueDate),
+            colour: Colors.grey.shade700,
+          ),
           // Right-aligned so digits line up by place value and a bigger
           // number is visibly bigger — the whole reason this is a table.
-          LedgerCell(_money(p.amountInRupees),
-              bold: true,
-              colour: p.status == 'paid'
-                  ? AppColors.textPrimary
-                  : AppColors.danger),
+          LedgerCell(
+            _money(p.amountInRupees),
+            bold: true,
+            colour: p.status == 'paid'
+                ? AppColors.textPrimary
+                : AppColors.danger,
+          ),
         ],
         card: (payment) => Padding(
           padding: const EdgeInsets.only(bottom: 14),
@@ -98,8 +105,18 @@ class PaymentList extends StatelessWidget {
     final d = DateTime.tryParse(raw);
     if (d == null) return raw;
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${d.day} ${months[d.month - 1]} ${d.year}';
   }
@@ -107,22 +124,9 @@ class PaymentList extends StatelessWidget {
   /// Indian grouping: 1,500 then 13,000 then 1,50,000. Without separators a
   /// right-aligned money column loses the one thing it is for -- 13000 and
   /// 1300 are the same width to a glancing eye.
-  static String _money(double rupees) {
-    final s = rupees.round().abs().toString();
-    if (s.length <= 3) return '₹$s';
-
-    // Last three digits, then pairs -- the Indian convention, not groups of
-    // three all the way up.
-    final last3 = s.substring(s.length - 3);
-    var rest = s.substring(0, s.length - 3);
-    final parts = <String>[];
-    while (rest.length > 2) {
-      parts.insert(0, rest.substring(rest.length - 2));
-      rest = rest.substring(0, rest.length - 2);
-    }
-    if (rest.isNotEmpty) parts.insert(0, rest);
-    return '₹${parts.join(',')},$last3';
-  }
+  // Ledger figures are exact: this is the record a member may check against
+  // a receipt, so it never abbreviates.
+  static String _money(double rupees) => money((rupees * 100).round());
 
   static Color _statusColour(String status) {
     switch (status) {
@@ -153,10 +157,7 @@ class PaymentList extends StatelessWidget {
 
     if (!context.mounted) return;
 
-    final result = await showCollectPaymentDialog(
-      context,
-      member: member,
-    );
+    final result = await showCollectPaymentDialog(context, member: member);
 
     if (result == true) {
       onPaymentCollected?.call();

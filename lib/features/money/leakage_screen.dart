@@ -7,6 +7,7 @@ import '../../widgets/app_card.dart';
 import '../../widgets/readable_width.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
+import '../../utils/money.dart';
 
 /// Money leakage (FR-21).
 ///
@@ -193,7 +194,7 @@ class _LeakageScreenState extends State<LeakageScreen> {
                 ),
                 if (g.valueInPaise > 0)
                   Text(
-                    _rupees(g.valueInPaise),
+                    moneyShort(g.valueInPaise),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -262,7 +263,7 @@ class _Headline extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            _rupees(report.valuedInPaise),
+            moneyShort(report.valuedInPaise),
             style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
@@ -350,7 +351,7 @@ class _LeakRow extends StatelessWidget {
                 const SizedBox(width: 10),
                 if (item.valueInPaise > 0)
                   Text(
-                    _rupees(item.valueInPaise),
+                    moneyShort(item.valueInPaise),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -422,12 +423,3 @@ const _months = [
 ];
 
 String _date(DateTime d) => '${d.day} ${_months[d.month - 1]}';
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
-}

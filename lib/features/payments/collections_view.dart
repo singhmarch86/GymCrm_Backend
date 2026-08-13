@@ -4,6 +4,7 @@ import '../../models/collection_queue.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/readable_width.dart';
+import '../../utils/money.dart';
 
 /// The collections worklist (FR-19 §3).
 ///
@@ -103,7 +104,7 @@ class CollectionsView extends StatelessWidget {
                       child: Text(
                         'These dates hide ${queue.outsideCount} other '
                         '${queue.outsideCount == 1 ? 'due' : 'dues'} worth '
-                        '${_rupees(queue.outsideInPaise)}. Older debt is usually '
+                        '${moneyShort(queue.outsideInPaise)}. Older debt is usually '
                         'the worse debt — switch to All before deciding nothing '
                         'is outstanding.',
                         style: const TextStyle(fontSize: 11.5, height: 1.35),
@@ -198,7 +199,7 @@ class CollectionsView extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${g.items.length} · ${_rupees(g.totalInPaise)}',
+                  '${g.items.length} · ${moneyShort(g.totalInPaise)}',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],
@@ -247,7 +248,7 @@ class _Headline extends StatelessWidget {
         children: [
           Row(
             children: [
-              _figure(_rupees(queue.totalInPaise), 'outstanding', null),
+              _figure(moneyShort(queue.totalInPaise), 'outstanding', null),
               Container(width: 1, height: 30, color: Colors.grey.shade200),
               _figure(
                 '${queue.unchasedCount}',
@@ -354,7 +355,7 @@ class _DueRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        _rupees(item.amountInPaise),
+                        moneyShort(item.amountInPaise),
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
@@ -365,7 +366,7 @@ class _DueRow extends StatelessWidget {
                       // wastes the call.
                       if (item.owesMore)
                         Text(
-                          'of ${_rupees(item.memberTotalInPaise)}',
+                          'of ${moneyShort(item.memberTotalInPaise)}',
                           style: TextStyle(
                             fontSize: 10.5,
                             color: Colors.grey.shade500,
@@ -472,13 +473,4 @@ class _DueRow extends StatelessWidget {
   ];
 
   static String _date(DateTime d) => '${d.day} ${_months[d.month - 1]}';
-}
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
 }

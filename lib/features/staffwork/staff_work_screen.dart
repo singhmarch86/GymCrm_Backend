@@ -26,6 +26,7 @@ import '../leads/next_step_sheet.dart';
 import 'staff_analytics_screen.dart';
 import 'staff_lead_work_view.dart';
 import 'staff_work_items_sheet.dart';
+import '../../utils/money.dart';
 
 /// What each person did over a day, a month, or a range (FR-13, FR-18 §9).
 ///
@@ -524,7 +525,8 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
               const SizedBox(height: 14),
               _QueuePointer(
                 icon: Icons.request_quote_rounded,
-                headline: '${_rupees(_collections!.totalInPaise)} still owed',
+                headline:
+                    '${moneyShort(_collections!.totalInPaise)} still owed',
                 detail:
                     '${_collections!.totalCount} dues from '
                     '${_collections!.membersInvolved} members'
@@ -751,7 +753,7 @@ class _DayTotals extends StatelessWidget {
               Container(width: 1, height: 34, color: Colors.grey.shade200),
               Expanded(
                 child: _figure(
-                  _rupees(day.totalHandledInPaise),
+                  moneyShort(day.totalHandledInPaise),
                   // "handled", never "earned" — a receptionist taking a ₹40,000
                   // renewal did not generate ₹40,000 of value.
                   'handled at the desk',
@@ -848,7 +850,7 @@ class _StaffCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        _rupees(staff.totalHandledInPaise),
+                        moneyShort(staff.totalHandledInPaise),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
@@ -945,7 +947,7 @@ class _TallyRow extends StatelessWidget {
             ),
             if (tally.hasMoney)
               Text(
-                _rupees(tally.amountInPaise!),
+                moneyShort(tally.amountInPaise!),
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
@@ -1000,15 +1002,4 @@ class _Caveat extends StatelessWidget {
       ),
     );
   }
-}
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) {
-    return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  }
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
 }

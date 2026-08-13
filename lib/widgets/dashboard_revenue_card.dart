@@ -4,6 +4,7 @@ import '../features/payments/payments_screen.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_card.dart';
 import '../widgets/dashboard_card_stat.dart';
+import '../utils/money.dart';
 
 /// Dashboard revenue card — pure display widget.
 /// All data is passed in from DashboardScreen.loadDashboard() so that
@@ -24,9 +25,6 @@ class DashboardRevenueCard extends StatelessWidget {
     required this.collectedCount,
     this.onDataChanged,
   });
-
-  String _rupees(int paise) =>
-      '₹${(paise / 100).toStringAsFixed(0)}';
 
   Future<void> _openPayments(BuildContext context) async {
     final changed = await Navigator.push(
@@ -54,10 +52,7 @@ class DashboardRevenueCard extends StatelessWidget {
               const SizedBox(width: 8),
               const Text(
                 'Revenue',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               const Icon(
@@ -74,7 +69,7 @@ class DashboardRevenueCard extends StatelessWidget {
             children: [
               Expanded(
                 child: DashboardCardStat(
-                  value: _rupees(monthRevenuePaise),
+                  value: moneyShort(monthRevenuePaise),
                   label: 'This Month',
                   color: AppColors.success,
                   fontSize: 18,
@@ -83,7 +78,7 @@ class DashboardRevenueCard extends StatelessWidget {
               const DashboardCardDivider(),
               Expanded(
                 child: DashboardCardStat(
-                  value: _rupees(todayRevenuePaise),
+                  value: moneyShort(todayRevenuePaise),
                   label: 'Today',
                   color: AppColors.primary,
                   fontSize: 18,

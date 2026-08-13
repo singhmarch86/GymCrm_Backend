@@ -9,6 +9,7 @@ import '../../widgets/date_span_bar.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../../widgets/readable_width.dart';
+import '../../utils/money.dart';
 
 /// Staff work analytics (FR-22).
 ///
@@ -165,7 +166,10 @@ class _Totals extends StatelessWidget {
             children: [
               _figure('${data.totalCount}', 'things recorded'),
               Container(width: 1, height: 32, color: Colors.grey.shade200),
-              _figure(_rupees(data.totalAmountInPaise), 'handled at the desk'),
+              _figure(
+                moneyShort(data.totalAmountInPaise),
+                'handled at the desk',
+              ),
               Container(width: 1, height: 32, color: Colors.grey.shade200),
               _figure('${data.quietDays}', 'days with nothing'),
             ],
@@ -268,7 +272,7 @@ class _Rhythm extends StatelessWidget {
       child: Tooltip(
         message:
             '${t.label}: ${t.count} recorded'
-            '${t.amountInPaise == 0 ? '' : ' · ${_rupees(t.amountInPaise)}'}',
+            '${t.amountInPaise == 0 ? '' : ' · ${moneyShort(t.amountInPaise)}'}',
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -497,13 +501,4 @@ class _PersonRow extends StatelessWidget {
       ],
     );
   }
-}
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
 }

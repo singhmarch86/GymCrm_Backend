@@ -10,6 +10,7 @@ import '../../widgets/readable_width.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import 'payout_new_sheet.dart';
+import '../../utils/money.dart';
 
 /// Trainer payouts (FR-21 §2) — money the gym owes the people who work in it.
 ///
@@ -225,7 +226,7 @@ class _PayoutCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          _rupees(payout.totalInPaise),
+                          moneyShort(payout.totalInPaise),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -278,16 +279,16 @@ class _PayoutCard extends StatelessWidget {
   String _composition() {
     final parts = <String>[];
     if (payout.salaryInPaise > 0) {
-      parts.add('salary ${_rupees(payout.salaryInPaise)}');
+      parts.add('salary ${moneyShort(payout.salaryInPaise)}');
     }
     if (payout.commissionInPaise > 0) {
-      parts.add('commission ${_rupees(payout.commissionInPaise)}');
+      parts.add('commission ${moneyShort(payout.commissionInPaise)}');
     }
     if (payout.sessionsInPaise > 0) {
-      parts.add('sessions ${_rupees(payout.sessionsInPaise)}');
+      parts.add('sessions ${moneyShort(payout.sessionsInPaise)}');
     }
     if (payout.adjustmentInPaise != 0) {
-      parts.add('adjustment ${_rupees(payout.adjustmentInPaise)}');
+      parts.add('adjustment ${moneyShort(payout.adjustmentInPaise)}');
     }
     return parts.isEmpty ? 'nothing earned' : parts.join(' · ');
   }
@@ -463,7 +464,7 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                           ),
                         ),
                         Text(
-                          _rupees(p.totalInPaise),
+                          moneyShort(p.totalInPaise),
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -486,7 +487,7 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  _rupees(l.amountInPaise),
+                                  moneyShort(l.amountInPaise),
                                   style: const TextStyle(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w600,
@@ -595,7 +596,9 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                                           color: Colors.white,
                                         ),
                                       )
-                                    : Text('Paid ${_rupees(p.totalInPaise)}'),
+                                    : Text(
+                                        'Paid ${moneyShort(p.totalInPaise)}',
+                                      ),
                               ),
                             ),
                           const SizedBox(height: 6),
@@ -631,16 +634,3 @@ const _months = [
   'Nov',
   'Dec',
 ];
-
-String _rupees(int paise) {
-  final neg = paise < 0;
-  final rupees = (neg ? -paise : paise) ~/ 100;
-  final sign = neg ? '-' : '';
-  if (rupees >= 100000) {
-    return '$sign₹${(rupees / 100000).toStringAsFixed(1)}L';
-  }
-  if (rupees >= 1000) {
-    return '$sign₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '$sign₹$rupees';
-}

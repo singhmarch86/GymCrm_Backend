@@ -10,6 +10,7 @@ import '../../widgets/ledger_table.dart';
 import '../../widgets/loading_state.dart';
 import '../../widgets/readable_width.dart';
 import 'send_stock_sheet.dart';
+import '../../utils/money.dart';
 
 /// Inventory across branches (FR-22).
 ///
@@ -388,7 +389,7 @@ class _ChainStockScreenState extends State<ChainStockScreen>
           LedgerCell(r.toBranch),
           LedgerCell(r.by),
           LedgerCell(_date(r.at)),
-          LedgerCell(_money(r.valueInPaise)),
+          LedgerCell(money(r.valueInPaise)),
         ],
         card: (r) => _TransferCard(row: r),
       ),
@@ -725,7 +726,7 @@ class _TransferCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${_date(row.at)} · ${row.by} · ${_money(row.valueInPaise)}',
+              '${_date(row.at)} · ${row.by} · ${money(row.valueInPaise)}',
               style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
             ),
             if (row.reason != null && row.reason!.isNotEmpty) ...[
@@ -764,21 +765,3 @@ const _months = [
 ];
 
 String _date(DateTime d) => '${d.day} ${_months[d.month - 1]}';
-
-/// Indian digit grouping: 1,500 then 1,50,000. Pairs above the last three,
-/// not the western triples.
-String _money(int paise) {
-  final rupees = paise ~/ 100;
-  final s = '$rupees';
-  if (s.length <= 3) return '₹$s';
-
-  final last3 = s.substring(s.length - 3);
-  var rest = s.substring(0, s.length - 3);
-  final parts = <String>[];
-  while (rest.length > 2) {
-    parts.insert(0, rest.substring(rest.length - 2));
-    rest = rest.substring(0, rest.length - 2);
-  }
-  if (rest.isNotEmpty) parts.insert(0, rest);
-  return '₹${parts.join(',')},$last3';
-}

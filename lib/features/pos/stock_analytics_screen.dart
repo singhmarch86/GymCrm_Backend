@@ -9,6 +9,7 @@ import '../../widgets/date_span_bar.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../../widgets/readable_width.dart';
+import '../../utils/money.dart';
 
 /// Stock analytics (FR-23).
 ///
@@ -186,9 +187,9 @@ class _Totals extends StatelessWidget {
             children: [
               _figure('${report.unitsSold}', 'sold'),
               _divider(),
-              _figure(_rupees(report.revenueInPaise), 'taken'),
+              _figure(moneyShort(report.revenueInPaise), 'taken'),
               _divider(),
-              _figure(_rupees(report.profitInPaise), 'profit'),
+              _figure(moneyShort(report.profitInPaise), 'profit'),
             ],
           ),
           const SizedBox(height: 10),
@@ -196,10 +197,10 @@ class _Totals extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              _figure(_rupees(report.stockValueInPaise), 'on the shelf'),
+              _figure(moneyShort(report.stockValueInPaise), 'on the shelf'),
               _divider(),
               _figure(
-                _rupees(asleep),
+                moneyShort(asleep),
                 'of it asleep',
                 colour: asleep > 0 ? AppColors.danger : null,
               ),
@@ -220,7 +221,7 @@ class _Totals extends StatelessWidget {
               ),
               child: Text(
                 '$asleepCount ${asleepCount == 1 ? 'product holds' : 'products hold'} '
-                '${_rupees(asleep)} that will take months to sell, or is not '
+                '${moneyShort(asleep)} that will take months to sell, or is not '
                 'selling at all. That is stock money already spent — buying '
                 'less of it frees cash for what turns over.',
                 style: const TextStyle(fontSize: 11.5, height: 1.35),
@@ -357,7 +358,7 @@ class _ProductRow extends StatelessWidget {
                 _meta('${product.unitsSold} sold'),
                 _meta('${product.perDay}/day'),
                 _meta('${product.marginPct}% margin'),
-                _meta('${_rupees(product.profitInPaise)} profit'),
+                _meta('${moneyShort(product.profitInPaise)} profit'),
                 // Shown together so a level that disagrees with the rate is
                 // visible without arithmetic. Advisory: nothing is rewritten.
                 if (product.suggestedReorder > 0)
@@ -420,7 +421,7 @@ class _Categories extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  _rupees(c.profitInPaise),
+                  moneyShort(c.profitInPaise),
                   style: const TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
@@ -494,13 +495,4 @@ class _Caveat extends StatelessWidget {
       ),
     );
   }
-}
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
 }

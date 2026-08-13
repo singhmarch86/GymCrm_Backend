@@ -4,6 +4,7 @@ import '../../models/expected_payments.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/readable_width.dart';
+import '../../utils/money.dart';
 
 /// Expected payments (FR-19 §5).
 ///
@@ -167,7 +168,7 @@ class _Headline extends StatelessWidget {
   }) => Column(
     children: [
       Text(
-        _rupees(amount),
+        moneyShort(amount),
         style: TextStyle(
           fontSize: 19,
           fontWeight: FontWeight.bold,
@@ -278,8 +279,8 @@ class _Column extends StatelessWidget {
       child: Tooltip(
         message:
             '${bucket.label}\n'
-            'raised ${_rupees(bucket.raisedInPaise)} · '
-            'if they renew ${_rupees(bucket.expiringInPaise)}',
+            'raised ${moneyShort(bucket.raisedInPaise)} · '
+            'if they renew ${moneyShort(bucket.expiringInPaise)}',
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -443,7 +444,7 @@ class _Row extends StatelessWidget {
                       if (!item.isRaised && item.owedInPaise > 0) ...[
                         const SizedBox(height: 3),
                         Text(
-                          'Already owes ${_rupees(item.owedInPaise)}',
+                          'Already owes ${moneyShort(item.owedInPaise)}',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -480,7 +481,7 @@ class _Row extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      _rupees(item.amountInPaise),
+                      moneyShort(item.amountInPaise),
                       style: TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.bold,
@@ -554,12 +555,3 @@ const _months = [
 ];
 
 String _date(DateTime d) => '${d.day} ${_months[d.month - 1]}';
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
-}

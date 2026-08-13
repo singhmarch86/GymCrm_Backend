@@ -6,6 +6,7 @@ import '../../services/api_response.dart';
 import '../../services/payout_service.dart';
 import '../../services/trainer_service.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/money.dart';
 
 /// Work out a trainer's pay for a month, then store it as a draft.
 ///
@@ -87,8 +88,7 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
       _preview = null;
     });
     try {
-      final p = await _service.preview(
-          trainerId: t.id, from: _from, to: _to);
+      final p = await _service.preview(trainerId: t.id, from: _from, to: _to);
       if (!mounted) return;
       setState(() {
         _preview = p;
@@ -133,7 +133,9 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -153,14 +155,14 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text('Work out a payout',
-                    style:
-                        TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Work out a payout',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   'Nothing is paid here. This stores a draft for review.',
-                  style:
-                      TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
                 ),
 
                 const SizedBox(height: 16),
@@ -210,26 +212,28 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
                       color: AppColors.danger.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color: AppColors.danger.withValues(alpha: 0.3)),
+                        color: AppColors.danger.withValues(alpha: 0.3),
+                      ),
                     ),
-                    child: Text(_error!,
-                        style: const TextStyle(
-                            fontSize: 12, height: 1.35,
-                            color: AppColors.danger)),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: AppColors.danger,
+                      ),
+                    ),
                   ),
                 ],
 
-                if (p != null) ...[
-                  const SizedBox(height: 14),
-                  _breakdown(p),
-                ],
+                if (p != null) ...[const SizedBox(height: 14), _breakdown(p)],
 
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: (p == null || p.isEmpty || p.alreadyPaid ||
-                            _saving)
+                    onPressed:
+                        (p == null || p.isEmpty || p.alreadyPaid || _saving)
                         ? null
                         : _save,
                     style: ElevatedButton.styleFrom(
@@ -242,7 +246,9 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Text('Save as draft'),
                   ),
@@ -288,8 +294,7 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
               if (k == null) return;
               final parts = k.split('-');
               setState(() {
-                _month =
-                    DateTime(int.parse(parts[0]), int.parse(parts[1]), 1);
+                _month = DateTime(int.parse(parts[0]), int.parse(parts[1]), 1);
                 _preview = null;
               });
               _runPreview();
@@ -317,9 +322,10 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
               child: Text(
                 'A payout already covers this month for ${p.trainer}.',
                 style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.warning),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.warning,
+                ),
               ),
             ),
 
@@ -332,33 +338,43 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
             _line('Sessions delivered', p.sessionsInPaise),
 
           if (p.isEmpty)
-            Text('Nothing earned in this period.',
-                style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600)),
+            Text(
+              'Nothing earned in this period.',
+              style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
+            ),
 
           if (!p.isEmpty) ...[
             Divider(height: 18, color: Colors.grey.shade200),
             Row(
               children: [
                 const Expanded(
-                  child: Text('Total',
-                      style: TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'Total',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
                 ),
-                Text(_rupees(p.totalInPaise),
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  moneyShort(p.totalInPaise),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ],
 
           if (p.lines.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Text('WHAT MAKES IT UP',
-                style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.7,
-                    color: Colors.grey.shade500)),
+            Text(
+              'WHAT MAKES IT UP',
+              style: TextStyle(
+                fontSize: 9.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.7,
+                color: Colors.grey.shade500,
+              ),
+            ),
             const SizedBox(height: 5),
             for (final l in p.lines)
               Padding(
@@ -367,16 +383,23 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Text(l.description,
-                          style: TextStyle(
-                              fontSize: 11.5, color: Colors.grey.shade700)),
+                      child: Text(
+                        l.description,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    Text(_rupees(l.amountInPaise),
-                        style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade700)),
+                    Text(
+                      moneyShort(l.amountInPaise),
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -394,7 +417,7 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
                 borderRadius: BorderRadius.circular(7),
               ),
               child: Text(
-                '${_rupees(p.uncollectedInPaise)} of PT this trainer sold has '
+                '${moneyShort(p.uncollectedInPaise)} of PT this trainer sold has '
                 'not been collected, across ${p.uncollectedCount} '
                 '${p.uncollectedCount == 1 ? 'package' : 'packages'}. No '
                 'commission is due on it until the money arrives.',
@@ -408,30 +431,30 @@ class _NewPayoutSheetState extends State<_NewPayoutSheet> {
   }
 
   Widget _line(String label, int paise) => Padding(
-        padding: const EdgeInsets.only(bottom: 5),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(label, style: const TextStyle(fontSize: 12.5)),
-            ),
-            Text(_rupees(paise),
-                style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600)),
-          ],
+    padding: const EdgeInsets.only(bottom: 5),
+    child: Row(
+      children: [
+        Expanded(child: Text(label, style: const TextStyle(fontSize: 12.5))),
+        Text(
+          moneyShort(paise),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
-      );
+      ],
+    ),
+  );
 }
 
 const _monthNames = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
-}

@@ -6,6 +6,7 @@ import '../../services/api_response.dart';
 import '../../services/queue_service.dart';
 import '../../theme/app_colors.dart';
 import 'renew_dialog.dart';
+import '../../utils/money.dart';
 
 /// What can be done about one expiring membership (FR-19 §4).
 ///
@@ -51,7 +52,9 @@ class _RenewalActionSheetState extends State<_RenewalActionSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -71,13 +74,21 @@ class _RenewalActionSheetState extends State<_RenewalActionSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.member,
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold)),
+                    Text(
+                      item.member,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(_summary(),
-                        style: TextStyle(
-                            fontSize: 12.5, color: Colors.grey.shade600)),
+                    Text(
+                      _summary(),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -92,9 +103,13 @@ class _RenewalActionSheetState extends State<_RenewalActionSheet> {
                       color: AppColors.danger.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(_error!,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColors.danger)),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.danger,
+                      ),
+                    ),
                   ),
                 ),
 
@@ -106,7 +121,7 @@ class _RenewalActionSheetState extends State<_RenewalActionSheet> {
                 title: 'Renew the membership',
                 subtitle: item.owesMoney
                     // Said here rather than discovered at the till.
-                    ? 'They still owe ${_rupees(item.owedInPaise)} separately'
+                    ? 'They still owe ${moneyShort(item.owedInPaise)} separately'
                     : 'Opens the usual renewal form',
                 onTap: _busy ? null : _renew,
               ),
@@ -140,8 +155,8 @@ class _RenewalActionSheetState extends State<_RenewalActionSheet> {
     final when = d < 0
         ? 'Lapsed ${-d} days ago'
         : d == 0
-            ? 'Expires today'
-            : 'Expires in $d days';
+        ? 'Expires today'
+        : 'Expires in $d days';
     return [
       when,
       if (item.planName != null) item.planName!,
@@ -155,25 +170,27 @@ class _RenewalActionSheetState extends State<_RenewalActionSheet> {
     required String title,
     required String subtitle,
     required VoidCallback? onTap,
-  }) =>
-      ListTile(
-        enabled: onTap != null,
-        onTap: onTap,
-        leading: Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: colour.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child: Icon(icon, size: 19, color: colour),
-        ),
-        title: Text(title,
-            style:
-                const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle,
-            style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600)),
-      );
+  }) => ListTile(
+    enabled: onTap != null,
+    onTap: onTap,
+    leading: Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: colour.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: Icon(icon, size: 19, color: colour),
+    ),
+    title: Text(
+      title,
+      style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
+    ),
+    subtitle: Text(
+      subtitle,
+      style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600),
+    ),
+  );
 
   /// Reuses the existing renewal dialog, so there is one path that records a
   /// renewal and one place its rules live.
@@ -283,13 +300,4 @@ class _RenewalActionSheetState extends State<_RenewalActionSheet> {
     controller.dispose();
     return result;
   }
-}
-
-String _rupees(int paise) {
-  final rupees = paise ~/ 100;
-  if (rupees >= 100000) return '₹${(rupees / 100000).toStringAsFixed(1)}L';
-  if (rupees >= 1000) {
-    return '₹${(rupees / 1000).toStringAsFixed(rupees >= 10000 ? 0 : 1)}k';
-  }
-  return '₹$rupees';
 }
