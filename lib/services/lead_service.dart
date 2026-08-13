@@ -183,9 +183,20 @@ class LeadService {
   /// The workflow queue: every open lead grouped by what needs doing.
   ///
   /// [assignedTo] is a user id, the literal 'unassigned', or '' for everyone.
-  Future<LeadWorkflow> getWorkflow({String assignedTo = ''}) async {
+  /// [groupBy] cuts the queue along a different axis (FR-24): timing, which
+  /// is the default and answers "what is late"; next_step, source or goal.
+  /// The server refuses anything else rather than quietly answering a
+  /// different question.
+  Future<LeadWorkflow> getWorkflow({
+    String assignedTo = '',
+    String groupBy = '',
+  }) async {
+    final params = <String, String>{
+      if (assignedTo.isNotEmpty) 'assigned_to': assignedTo,
+      if (groupBy.isNotEmpty && groupBy != 'timing') 'group_by': groupBy,
+    };
     final uri = Uri.parse('$kBaseUrl/api/v1/leads/workflow').replace(
-      queryParameters: assignedTo.isEmpty ? null : {'assigned_to': assignedTo},
+      queryParameters: params.isEmpty ? null : params,
     );
     final response = await guardRequest(
       () async => http.get(uri, headers: await _headers()),

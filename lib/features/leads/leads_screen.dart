@@ -167,13 +167,19 @@ class _LeadsScreenState extends State<LeadsScreen>
     }
   }
 
+  /// Which axis the follow-up queue is cut along (FR-24). Timing is the
+  /// default because "what is late" is the question the desk opens this
+  /// screen to answer; the others are for the person deciding where effort
+  /// goes.
+  String _workflowAxis = 'timing';
+
   Future<void> _loadWorkflow() async {
     setState(() {
       _workflowLoading = true;
       _workflowError = null;
     });
     try {
-      final data = await LeadService().getWorkflow();
+      final data = await LeadService().getWorkflow(groupBy: _workflowAxis);
       if (!mounted) return;
       setState(() {
         _workflow = data;
@@ -641,12 +647,59 @@ class _LeadsScreenState extends State<LeadsScreen>
     }
     if (_workflow == null) return const LoadingView();
 
-    return RefreshIndicator(
-      onRefresh: _loadWorkflow,
-      child: LeadWorkflowView(
-        workflow: _workflow!,
-        onTap: (item) => _openDetailById(item.leadId),
-        onSetNextStep: _setNextStep,
+    return Column(
+      children: [
+        _axisPicker(),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadWorkflow,
+            child: LeadWorkflowView(
+              workflow: _workflow!,
+              onTap: (item) => _openDetailById(item.leadId),
+              onSetNextStep: _setNextStep,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Cuts the same queue a different way. The rows never change — only how
+  /// they are gathered — so the headline counts above stay put and switching
+  /// axis can never look like work appearing or vanishing.
+  Widget _axisPicker() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+      color: Colors.white,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final axis in WorkflowAxis.all) ...[
+              ChoiceChip(
+                label: Text(axis.label),
+                selected: _workflowAxis == axis.key,
+                labelStyle: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: _workflowAxis == axis.key
+                      ? FontWeight.w600
+                      : FontWeight.normal,
+                  color: _workflowAxis == axis.key
+                      ? Colors.white
+                      : AppColors.textPrimary,
+                ),
+                selectedColor: AppColors.primary,
+                onSelected: (_) {
+                  if (_workflowAxis == axis.key) return;
+                  setState(() => _workflowAxis = axis.key);
+                  _loadWorkflow();
+                },
+              ),
+              const SizedBox(width: 8),
+            ],
+          ],
+        ),
       ),
     );
   }

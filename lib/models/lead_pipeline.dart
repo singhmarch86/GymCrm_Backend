@@ -381,12 +381,20 @@ class LeadWorkflow {
   final int overdue;
   final int dueToday;
 
+  /// Which axis the groups represent: timing | next_step | source | goal.
+  /// Sent by the server so a client cannot render one grouping under
+  /// another's heading.
+  final String groupBy;
+  final String groupByLabel;
+
   const LeadWorkflow({
     required this.groups,
     required this.totalOpen,
     required this.unattended,
     required this.overdue,
     required this.dueToday,
+    this.groupBy = 'timing',
+    this.groupByLabel = 'What is late',
   });
 
   factory LeadWorkflow.fromJson(Map<String, dynamic> j) => LeadWorkflow(
@@ -397,9 +405,30 @@ class LeadWorkflow {
         unattended: j['unattended'] ?? 0,
         overdue: j['overdue'] ?? 0,
         dueToday: j['due_today'] ?? 0,
+        groupBy: j['group_by'] ?? 'timing',
+        groupByLabel: j['group_by_label'] ?? 'What is late',
       );
 
   bool get isEmpty => totalOpen == 0;
+}
+
+/// The axes the follow-up queue can be cut along (FR-24).
+///
+/// Named after the question each one answers rather than the column it reads,
+/// because the reader is choosing a question. "Where they came from" is a
+/// thing somebody wants to know; "source" is a database field.
+class WorkflowAxis {
+  final String key;
+  final String label;
+
+  const WorkflowAxis(this.key, this.label);
+
+  static const all = [
+    WorkflowAxis('timing', 'What is late'),
+    WorkflowAxis('next_step', 'What needs doing'),
+    WorkflowAxis('source', 'Where they came from'),
+    WorkflowAxis('goal', 'What they want'),
+  ];
 }
 
 /// One thing a staff member can commit to doing next.
