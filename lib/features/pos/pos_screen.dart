@@ -20,6 +20,7 @@ import '../lifecycle/lifecycle_shared.dart';
 import '../../widgets/member_picker.dart';
 import 'stock_queue_view.dart';
 import 'stock_analytics_screen.dart';
+import 'chain_stock_screen.dart';
 
 /// Retail: the counter, the shelf, and what was sold.
 /// See docs/FR-07-pos-inventory.md.
@@ -60,6 +61,19 @@ class _PosScreenState extends State<PosScreen> {
                   MaterialPageRoute(
                     builder: (_) => const StockAnalyticsScreen(),
                   ),
+                ),
+              ),
+              // Every tab on this screen is about one branch's shelf. This is
+              // the same shelf across the chain — a separate screen rather
+              // than a fifth tab, because it answers the one question the
+              // others cannot: somebody else may already have what we have
+              // run out of.
+              IconButton(
+                tooltip: 'Stock across branches',
+                icon: const Icon(Icons.compare_arrows_rounded),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ChainStockScreen()),
                 ),
               ),
             ],
@@ -182,8 +196,9 @@ class _RestockTabState extends State<_RestockTab> {
       await _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -243,7 +258,9 @@ class _SellTabState extends State<_SellTab> {
       _error = null;
     });
     try {
-      final list = await _service.getProducts(search: _searchController.text.trim());
+      final list = await _service.getProducts(
+        search: _searchController.text.trim(),
+      );
       if (!mounted) return;
       setState(() {
         _products = list.where((p) => p.isActive).toList();
@@ -285,7 +302,10 @@ class _SellTabState extends State<_SellTab> {
   /// enough. The server enforces both too — this just avoids offering a button
   /// that is certain to fail.
   bool get _canPayFromWallet =>
-      _member != null && _wallet != null && _wallet!.balanceInPaise >= _cartTotal && _cartTotal > 0;
+      _member != null &&
+      _wallet != null &&
+      _wallet!.balanceInPaise >= _cartTotal &&
+      _cartTotal > 0;
 
   Future<void> _pickMember() async {
     final picked = await showMemberPicker(
@@ -393,25 +413,25 @@ class _SellTabState extends State<_SellTab> {
           child: _loading
               ? const LoadingView()
               : _products.isEmpty
-                  ? const EmptyStateView(
-                      icon: Icons.inventory_2_outlined,
-                      title: 'Nothing on the shelf',
-                      body: 'Add products from the Stock tab before selling.',
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 220,
-                        mainAxisExtent: 104,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
-                      itemCount: _products.length,
-                      itemBuilder: (_, i) => _ProductTile(
-                        product: _products[i],
-                        onTap: () => _add(_products[i]),
-                      ),
-                    ),
+              ? const EmptyStateView(
+                  icon: Icons.inventory_2_outlined,
+                  title: 'Nothing on the shelf',
+                  body: 'Add products from the Stock tab before selling.',
+                )
+              : GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 220,
+                    mainAxisExtent: 104,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: _products.length,
+                  itemBuilder: (_, i) => _ProductTile(
+                    product: _products[i],
+                    onTap: () => _add(_products[i]),
+                  ),
+                ),
         ),
 
         if (_cart.isNotEmpty) _cartPanel(),
@@ -441,15 +461,25 @@ class _SellTabState extends State<_SellTab> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text('${line.product.name} × ${line.quantity}',
-                                style: const TextStyle(fontSize: 13)),
+                            child: Text(
+                              '${line.product.name} × ${line.quantity}',
+                              style: const TextStyle(fontSize: 13),
+                            ),
                           ),
-                          Text(formatRupees(line.lineTotalInPaise / 100),
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          Text(
+                            formatRupees(line.lineTotalInPaise / 100),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           IconButton(
                             tooltip: 'Remove one',
                             visualDensity: VisualDensity.compact,
-                            icon: const Icon(Icons.remove_circle_outline, size: 18),
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              size: 18,
+                            ),
                             onPressed: () => _remove(line),
                           ),
                         ],
@@ -462,10 +492,18 @@ class _SellTabState extends State<_SellTab> {
           const Divider(),
           Row(
             children: [
-              const Text('Total', style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text(
+                'Total',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
               const Spacer(),
-              Text(formatRupees(_cartTotal / 100),
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              Text(
+                formatRupees(_cartTotal / 100),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
             ],
           ),
           AppSpacing.gapSm,
@@ -484,19 +522,26 @@ class _SellTabState extends State<_SellTab> {
               ),
               child: Row(
                 children: [
-                  Icon(_member == null ? Icons.person_outline : Icons.person,
-                      size: 18, color: AppColors.textSecondary),
+                  Icon(
+                    _member == null ? Icons.person_outline : Icons.person,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _member == null
                           ? 'Walk-in — tap to attach a member'
                           : '${_member!.firstName} ${_member!.lastName}'
-                              '${_wallet != null ? ' · wallet ${formatRupees(_wallet!.balanceInRupees)}' : ''}',
+                                '${_wallet != null ? ' · wallet ${formatRupees(_wallet!.balanceInRupees)}' : ''}',
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: _member == null ? AppColors.textSecondary : AppColors.textPrimary,
-                        fontWeight: _member == null ? FontWeight.w400 : FontWeight.w600,
+                        color: _member == null
+                            ? AppColors.textSecondary
+                            : AppColors.textPrimary,
+                        fontWeight: _member == null
+                            ? FontWeight.w400
+                            : FontWeight.w600,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -531,17 +576,25 @@ class _SellTabState extends State<_SellTab> {
             onSelectionChanged: (s) => setState(() => _paymentMode = s.first),
           ),
 
-          if (_member != null && _wallet != null && !_canPayFromWallet && _cartTotal > 0) ...[
+          if (_member != null &&
+              _wallet != null &&
+              !_canPayFromWallet &&
+              _cartTotal > 0) ...[
             AppSpacing.gapXs,
             Text(
               'Wallet has ${formatRupees(_wallet!.balanceInRupees)} — not enough for this sale.',
-              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
           if (_member == null) ...[
             AppSpacing.gapXs,
-            const Text('Attach a member to pay from their wallet.',
-                style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+            const Text(
+              'Attach a member to pay from their wallet.',
+              style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+            ),
           ],
           AppSpacing.gapSm,
           AppButton(
@@ -588,13 +641,20 @@ class _ProductTile extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
-                color: blocked ? AppColors.textSecondary : AppColors.textPrimary,
+                color: blocked
+                    ? AppColors.textSecondary
+                    : AppColors.textPrimary,
               ),
             ),
             Row(
               children: [
-                Text(formatRupees(product.priceInRupees),
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                Text(
+                  formatRupees(product.priceInRupees),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13.5,
+                  ),
+                ),
                 const Spacer(),
                 Text(
                   blocked ? 'Out of stock' : '${product.stockQty} left',
@@ -603,7 +663,9 @@ class _ProductTile extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: blocked
                         ? AppColors.danger
-                        : (product.isLowStock ? AppColors.warning : AppColors.textSecondary),
+                        : (product.isLowStock
+                              ? AppColors.warning
+                              : AppColors.textSecondary),
                   ),
                 ),
               ],
@@ -690,7 +752,9 @@ class _StockTabState extends State<_StockTab> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -708,58 +772,66 @@ class _StockTabState extends State<_StockTab> {
       body: _loading
           ? const LoadingView()
           : _error != null
-              ? ErrorBanner(message: _error!, onRetry: _load)
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                  children: [
-                    if (s != null) ...[
-                      LifecycleOutcome(
-                        emphasisColor: AppColors.primary,
-                        rows: [
-                          ('Stock value (at cost)', formatRupees(s.stockValueInPaise / 100)),
-                          ('Sold (30 days)', '${s.unitsSold} units'),
-                          ('Margin (30 days)', formatRupees(s.marginInPaise / 100)),
-                          ('Revenue (30 days)', formatRupees(s.revenueInPaise / 100)),
-                        ],
+          ? ErrorBanner(message: _error!, onRetry: _load)
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+              children: [
+                if (s != null) ...[
+                  LifecycleOutcome(
+                    emphasisColor: AppColors.primary,
+                    rows: [
+                      (
+                        'Stock value (at cost)',
+                        formatRupees(s.stockValueInPaise / 100),
                       ),
-                      if (s.lowStockCount > 0) ...[
-                        AppSpacing.gapSm,
-                        LifecycleNotice(
-                          tone: LifecycleTone.warning,
-                          text: '${s.lowStockCount} product${s.lowStockCount == 1 ? ' is' : 's are'} '
-                              'at or below the reorder level.',
-                        ),
-                      ],
-                      AppSpacing.gapMd,
+                      ('Sold (30 days)', '${s.unitsSold} units'),
+                      ('Margin (30 days)', formatRupees(s.marginInPaise / 100)),
+                      (
+                        'Revenue (30 days)',
+                        formatRupees(s.revenueInPaise / 100),
+                      ),
                     ],
-
-                    Row(
-                      children: [
-                        FilterChip(
-                          label: const Text('Low stock only'),
-                          selected: _lowOnly,
-                          onSelected: (v) {
-                            setState(() => _lowOnly = v);
-                            _load();
-                          },
-                        ),
-                      ],
-                    ),
+                  ),
+                  if (s.lowStockCount > 0) ...[
                     AppSpacing.gapSm,
+                    LifecycleNotice(
+                      tone: LifecycleTone.warning,
+                      text:
+                          '${s.lowStockCount} product${s.lowStockCount == 1 ? ' is' : 's are'} '
+                          'at or below the reorder level.',
+                    ),
+                  ],
+                  AppSpacing.gapMd,
+                ],
 
-                    if (_products.isEmpty)
-                      const EmptyStateView(
-                        icon: Icons.inventory_2_outlined,
-                        title: 'No products',
-                        body: 'Add what your gym sells — supplements, shakers, gloves.',
-                      )
-                    else
-                      for (final p in _products) ...[
-                        _StockCard(product: p, onAdjust: () => _adjust(p)),
-                        AppSpacing.gapSm,
-                      ],
+                Row(
+                  children: [
+                    FilterChip(
+                      label: const Text('Low stock only'),
+                      selected: _lowOnly,
+                      onSelected: (v) {
+                        setState(() => _lowOnly = v);
+                        _load();
+                      },
+                    ),
                   ],
                 ),
+                AppSpacing.gapSm,
+
+                if (_products.isEmpty)
+                  const EmptyStateView(
+                    icon: Icons.inventory_2_outlined,
+                    title: 'No products',
+                    body:
+                        'Add what your gym sells — supplements, shakers, gloves.',
+                  )
+                else
+                  for (final p in _products) ...[
+                    _StockCard(product: p, onAdjust: () => _adjust(p)),
+                    AppSpacing.gapSm,
+                  ],
+              ],
+            ),
     );
   }
 }
@@ -776,7 +848,9 @@ class _StockCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: product.isLowStock ? AppColors.warning : AppColors.border),
+        border: Border.all(
+          color: product.isLowStock ? AppColors.warning : AppColors.border,
+        ),
       ),
       child: Row(
         children: [
@@ -784,14 +858,22 @@ class _StockCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(product.name,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                Text(
+                  product.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   '${formatRupees(product.priceInRupees)}'
                   '${product.costInPaise > 0 ? ' · cost ${formatRupees(product.costInPaise / 100)}' : ''}'
                   '${product.sku != null ? ' · ${product.sku}' : ''}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -799,16 +881,25 @@ class _StockCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${product.stockQty}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                    color: product.isOutOfStock
-                        ? AppColors.danger
-                        : (product.isLowStock ? AppColors.warning : AppColors.textPrimary),
-                  )),
-              const Text('in stock',
-                  style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary)),
+              Text(
+                '${product.stockQty}',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: product.isOutOfStock
+                      ? AppColors.danger
+                      : (product.isLowStock
+                            ? AppColors.warning
+                            : AppColors.textPrimary),
+                ),
+              ),
+              const Text(
+                'in stock',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ],
           ),
           IconButton(
@@ -875,7 +966,10 @@ class _SalesTabState extends State<_SalesTab> {
         icon: Icons.undo,
         accent: AppColors.danger,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Keep it')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Keep it'),
+          ),
           AppButton(
             text: 'Refund',
             onPressed: () {
@@ -889,7 +983,8 @@ class _SalesTabState extends State<_SalesTab> {
           children: [
             const LifecycleNotice(
               tone: LifecycleTone.warning,
-              text: 'The original sale is kept exactly as it is. A reversing sale is recorded '
+              text:
+                  'The original sale is kept exactly as it is. A reversing sale is recorded '
                   'and the stock goes back on the shelf. A reason is required.',
             ),
             AppSpacing.gapLg,
@@ -898,7 +993,9 @@ class _SalesTabState extends State<_SalesTab> {
             TextField(
               controller: controller,
               autofillHints: const [],
-              decoration: const InputDecoration(hintText: 'e.g. unopened, member changed mind'),
+              decoration: const InputDecoration(
+                hintText: 'e.g. unopened, member changed mind',
+              ),
             ),
           ],
         ),
@@ -911,7 +1008,9 @@ class _SalesTabState extends State<_SalesTab> {
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -949,11 +1048,15 @@ class _SalesTabState extends State<_SalesTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        s.isRefund ? 'Refund of #${s.refundOfSaleId}' : 'Sale #${s.id}',
+                        s.isRefund
+                            ? 'Refund of #${s.refundOfSaleId}'
+                            : 'Sale #${s.id}',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
-                          color: s.isRefund ? AppColors.danger : AppColors.textPrimary,
+                          color: s.isRefund
+                              ? AppColors.danger
+                              : AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -964,13 +1067,21 @@ class _SalesTabState extends State<_SalesTab> {
                           if (s.createdAt.isNotEmpty)
                             formatDate(DateTime.parse(s.createdAt).toLocal()),
                         ].join(' · '),
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       if (s.reason != null) ...[
                         const SizedBox(height: 2),
-                        Text('"${s.reason}"',
-                            style: const TextStyle(
-                                fontSize: 12, fontStyle: FontStyle.italic, color: AppColors.textSecondary)),
+                        Text(
+                          '"${s.reason}"',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -980,7 +1091,9 @@ class _SalesTabState extends State<_SalesTab> {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
-                    color: s.isRefund ? AppColors.danger : AppColors.textPrimary,
+                    color: s.isRefund
+                        ? AppColors.danger
+                        : AppColors.textPrimary,
                   ),
                 ),
                 if (!s.isRefund)
@@ -1047,7 +1160,8 @@ class _AddProductDialogState extends State<_AddProductDialog> {
       final p = await _service.createProduct(
         name: name,
         priceInPaise: (price * 100).round(),
-        costInPaise: ((double.tryParse(_costController.text.trim()) ?? 0) * 100).round(),
+        costInPaise: ((double.tryParse(_costController.text.trim()) ?? 0) * 100)
+            .round(),
         reorderLevel: int.tryParse(_reorderController.text.trim()) ?? 0,
         openingStock: int.tryParse(_stockController.text.trim()) ?? 0,
       );
@@ -1075,7 +1189,11 @@ class _AddProductDialogState extends State<_AddProductDialog> {
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        AppButton(text: 'Add', loading: _saving, onPressed: _saving ? null : _submit),
+        AppButton(
+          text: 'Add',
+          loading: _saving,
+          onPressed: _saving ? null : _submit,
+        ),
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1085,7 +1203,9 @@ class _AddProductDialogState extends State<_AddProductDialog> {
           TextField(
             controller: _nameController,
             autofillHints: const [],
-            decoration: const InputDecoration(hintText: 'e.g. Whey Protein 1kg'),
+            decoration: const InputDecoration(
+              hintText: 'e.g. Whey Protein 1kg',
+            ),
           ),
           AppSpacing.gapLg,
 
@@ -1099,7 +1219,9 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                     AppSpacing.gapXs,
                     TextField(
                       controller: _priceController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       autofillHints: const [],
                     ),
                   ],
@@ -1114,7 +1236,9 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                     AppSpacing.gapXs,
                     TextField(
                       controller: _costController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       autofillHints: const [],
                     ),
                   ],
@@ -1123,8 +1247,10 @@ class _AddProductDialogState extends State<_AddProductDialog> {
             ],
           ),
           AppSpacing.gapXs,
-          const Text('Cost is what you paid — it is what makes the margin report meaningful.',
-              style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+          const Text(
+            'Cost is what you paid — it is what makes the margin report meaningful.',
+            style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+          ),
           AppSpacing.gapLg,
 
           Row(
@@ -1205,7 +1331,10 @@ class _AdjustStockDialogState extends State<_AdjustStockDialog> {
     // 'purchase' and 'return' add stock; 'wastage' removes it. 'adjustment'
     // takes the sign the user typed, so a correction can go either way.
     final signed = (_type == 'wastage') ? -qty : qty;
-    Navigator.pop(context, _Adjustment(signed, _type, _reasonController.text.trim()));
+    Navigator.pop(
+      context,
+      _Adjustment(signed, _type, _reasonController.text.trim()),
+    );
   }
 
   @override
@@ -1217,7 +1346,10 @@ class _AdjustStockDialogState extends State<_AdjustStockDialog> {
       accent: AppColors.primary,
       error: _error,
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         AppButton(text: 'Record', onPressed: _submit),
       ],
       child: Column(
@@ -1250,13 +1382,16 @@ class _AdjustStockDialogState extends State<_AdjustStockDialog> {
           TextField(
             controller: _reasonController,
             autofillHints: const [],
-            decoration: const InputDecoration(hintText: 'e.g. delivery from supplier'),
+            decoration: const InputDecoration(
+              hintText: 'e.g. delivery from supplier',
+            ),
           ),
           AppSpacing.gapMd,
 
           const LifecycleNotice(
             tone: LifecycleTone.info,
-            text: 'Every change is recorded with its reason, so a stock discrepancy '
+            text:
+                'Every change is recorded with its reason, so a stock discrepancy '
                 'can always be traced back.',
           ),
         ],

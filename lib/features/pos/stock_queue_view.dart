@@ -30,7 +30,8 @@ class StockQueueView extends StatelessWidget {
         icon: Icons.inventory_2_outlined,
         colour: Colors.grey.shade400,
         title: 'No products yet',
-        body: 'Add what the gym sells on the Stock tab and this queue starts '
+        body:
+            'Add what the gym sells on the Stock tab and this queue starts '
             'watching it.',
       );
     }
@@ -40,7 +41,8 @@ class StockQueueView extends StatelessWidget {
         icon: Icons.check_circle_outline_rounded,
         colour: AppColors.success,
         title: 'Everything is stocked',
-        body: 'All ${queue.totalProducts} products are above their reorder '
+        body:
+            'All ${queue.totalProducts} products are above their reorder '
             'level.',
       );
     }
@@ -57,8 +59,11 @@ class StockQueueView extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline_rounded,
-                  size: 14, color: Colors.grey.shade500),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 14,
+                color: Colors.grey.shade500,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -67,7 +72,10 @@ class StockQueueView extends StatelessWidget {
                   'level is wrong, not the product — change it on the Stock '
                   'tab.',
                   style: TextStyle(
-                      fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+                    fontSize: 11,
+                    height: 1.4,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ),
             ],
@@ -86,8 +94,10 @@ class StockQueueView extends StatelessWidget {
             children: [
               Icon(Icons.check_rounded, size: 14, color: Colors.grey.shade400),
               const SizedBox(width: 8),
-              Text('${g.label} — none',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              Text(
+                '${g.label} — none',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
             ],
           ),
         ),
@@ -107,39 +117,47 @@ class StockQueueView extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration:
-                      BoxDecoration(color: colour, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: colour,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const SizedBox(width: 9),
-                Text(g.label,
-                    style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.bold,
-                        color: colour)),
+                Text(
+                  g.label,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.bold,
+                    color: colour,
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Text('${g.items.length}',
-                    style: TextStyle(
-                        fontSize: 12.5, color: Colors.grey.shade500)),
+                Text(
+                  '${g.items.length}',
+                  style: TextStyle(fontSize: 12.5, color: Colors.grey.shade500),
+                ),
               ],
             ),
             const SizedBox(height: 3),
             Padding(
               padding: const EdgeInsets.only(left: 17),
-              child: Text(g.note,
-                  style: TextStyle(
-                      fontSize: 11.5,
-                      height: 1.35,
-                      color: Colors.grey.shade600)),
+              child: Text(
+                g.note,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  height: 1.35,
+                  color: Colors.grey.shade600,
+                ),
+              ),
             ),
           ],
         ),
       ),
       const SizedBox(height: 8),
-      ...g.items.map((i) => _StockRow(
-            item: i,
-            colour: colour,
-            onRestock: () => onRestock(i),
-          )),
+      ...g.items.map(
+        (i) =>
+            _StockRow(item: i, colour: colour, onRestock: () => onRestock(i)),
+      ),
     ];
   }
 
@@ -158,27 +176,28 @@ class StockQueueView extends StatelessWidget {
     required Color colour,
     required String title,
     required String body,
-  }) =>
-      Center(
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 60, color: colour),
-              const SizedBox(height: 16),
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              Text(body,
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontSize: 12.5, color: Colors.grey.shade600)),
-            ],
+  }) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 60, color: colour),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-        ),
-      );
+          const SizedBox(height: 6),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _Headline extends StatelessWidget {
@@ -212,20 +231,25 @@ class _Headline extends StatelessWidget {
   }
 
   Widget _figure(String value, String label, Color? colour) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: colour ?? AppColors.textPrimary)),
-            const SizedBox(height: 2),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+            color: colour ?? AppColors.textPrimary,
+          ),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+        ),
+      ],
+    ),
+  );
 }
 
 class _StockRow extends StatelessWidget {
@@ -255,9 +279,13 @@ class _StockRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.name,
-                          style: const TextStyle(
-                              fontSize: 14.5, fontWeight: FontWeight.w600)),
+                      Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 2),
                       Text(
                         [
@@ -266,7 +294,9 @@ class _StockRow extends StatelessWidget {
                               '${item.reorderLevel}',
                         ].join(' · '),
                         style: TextStyle(
-                            fontSize: 11.5, color: Colors.grey.shade600),
+                          fontSize: 11.5,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -275,9 +305,10 @@ class _StockRow extends StatelessWidget {
                 Text(
                   '${item.stockQty}',
                   style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: colour),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: colour,
+                  ),
                 ),
               ],
             ),
@@ -292,8 +323,10 @@ class _StockRow extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primary,
                     visualDensity: VisualDensity.compact,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                   ),
                 ),
               ],
@@ -313,7 +346,9 @@ class _StockRow extends StatelessWidget {
         'Empty for ${item.daysOutOfStock} '
         '${item.daysOutOfStock == 1 ? 'day' : 'days'}',
         style: style.copyWith(
-            color: AppColors.danger, fontWeight: FontWeight.w600),
+          color: AppColors.danger,
+          fontWeight: FontWeight.w600,
+        ),
       );
     }
 
@@ -332,14 +367,24 @@ class _StockRow extends StatelessWidget {
       item.lastRestockedAt == null
           ? 'No sales recorded'
           : 'No sales in 30 days · last restocked '
-              '${_date(item.lastRestockedAt!)}',
+                '${_date(item.lastRestockedAt!)}',
       style: style,
     );
   }
 
   static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   static String _date(DateTime d) =>

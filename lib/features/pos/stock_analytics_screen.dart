@@ -125,8 +125,7 @@ class _StockAnalyticsScreenState extends State<StockAnalyticsScreen> {
     // Ordered so the two verdicts that cost money come first. A list sorted
     // by profit puts the healthy best-seller at the top, which is pleasant
     // and useless.
-    final needsAction =
-        r.products.where((p) => p.needsAttention).toList();
+    final needsAction = r.products.where((p) => p.needsAttention).toList();
     final rest = r.products.where((p) => !p.needsAttention).toList();
 
     return RefreshIndicator(
@@ -155,18 +154,18 @@ class _StockAnalyticsScreenState extends State<StockAnalyticsScreen> {
   }
 
   Widget _heading(String text, int n) => Padding(
-        padding: const EdgeInsets.fromLTRB(6, 8, 6, 8),
-        child: Row(
-          children: [
-            Text(text,
-                style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 7),
-            Text('$n',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-          ],
+    padding: const EdgeInsets.fromLTRB(6, 8, 6, 8),
+    child: Row(
+      children: [
+        Text(
+          text,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
         ),
-      );
+        const SizedBox(width: 7),
+        Text('$n', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+      ],
+    ),
+  );
 }
 
 class _Totals extends StatelessWidget {
@@ -234,20 +233,25 @@ class _Totals extends StatelessWidget {
   }
 
   Widget _figure(String value, String label, {Color? colour}) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: colour ?? AppColors.textPrimary)),
-            const SizedBox(height: 2),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+            color: colour ?? AppColors.textPrimary,
+          ),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+        ),
+      ],
+    ),
+  );
 
   Widget _divider() =>
       Container(width: 1, height: 30, color: Colors.grey.shade200);
@@ -279,24 +283,32 @@ class _ProductRow extends StatelessWidget {
                       Row(
                         children: [
                           Flexible(
-                            child: Text(product.name,
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600)),
+                            child: Text(
+                              product.name,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: colour.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: Text(label,
-                                style: TextStyle(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: colour)),
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w700,
+                                color: colour,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -304,11 +316,14 @@ class _ProductRow extends StatelessWidget {
                       // The verdict explains itself in the server's words, so
                       // the reason lives in one place rather than being
                       // re-derived per client.
-                      Text(product.note,
-                          style: TextStyle(
-                              fontSize: 11.5,
-                              height: 1.3,
-                              color: Colors.grey.shade700)),
+                      Text(
+                        product.note,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          height: 1.3,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -316,12 +331,20 @@ class _ProductRow extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('${product.stockQty}',
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold)),
-                    Text('in stock',
-                        style: TextStyle(
-                            fontSize: 10, color: Colors.grey.shade500)),
+                    Text(
+                      '${product.stockQty}',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'in stock',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -338,8 +361,10 @@ class _ProductRow extends StatelessWidget {
                 // Shown together so a level that disagrees with the rate is
                 // visible without arithmetic. Advisory: nothing is rewritten.
                 if (product.suggestedReorder > 0)
-                  _meta('reorder at ${product.reorderLevel}'
-                      ' · suggest ${product.suggestedReorder}'),
+                  _meta(
+                    'reorder at ${product.reorderLevel}'
+                    ' · suggest ${product.suggestedReorder}',
+                  ),
               ],
             ),
           ],
@@ -348,8 +373,8 @@ class _ProductRow extends StatelessWidget {
     );
   }
 
-  Widget _meta(String text) => Text(text,
-      style: TextStyle(fontSize: 11, color: Colors.grey.shade600));
+  Widget _meta(String text) =>
+      Text(text, style: TextStyle(fontSize: 11, color: Colors.grey.shade600));
 
   static (String, Color) _verdict(String v) {
     switch (v) {
@@ -380,25 +405,37 @@ class _Categories extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('By category',
-              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+          const Text(
+            'By category',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 10),
           for (final c in report.categories) ...[
             Row(
               children: [
                 Expanded(
-                  child:
-                      Text(c.category, style: const TextStyle(fontSize: 12.5)),
+                  child: Text(
+                    c.category,
+                    style: const TextStyle(fontSize: 12.5),
+                  ),
                 ),
-                Text(_rupees(c.profitInPaise),
-                    style: const TextStyle(
-                        fontSize: 12.5, fontWeight: FontWeight.w600)),
+                Text(
+                  _rupees(c.profitInPaise),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 SizedBox(
                   width: 44,
-                  child: Text('${c.sharePct}%',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          fontSize: 11.5, color: Colors.grey.shade600)),
+                  child: Text(
+                    '${c.sharePct}%',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -432,8 +469,11 @@ class _Caveat extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded,
-              size: 14, color: Colors.grey.shade500),
+          Icon(
+            Icons.info_outline_rounded,
+            size: 14,
+            color: Colors.grey.shade500,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -444,7 +484,10 @@ class _Caveat extends StatelessWidget {
               'yet. Suggested reorder levels are advice; nothing on this '
               'screen changes a setting.',
               style: TextStyle(
-                  fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+                fontSize: 11,
+                height: 1.4,
+                color: Colors.grey.shade600,
+              ),
             ),
           ),
         ],
