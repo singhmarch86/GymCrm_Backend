@@ -39,6 +39,12 @@ type seeder struct {
 	ownerUserID int64
 	staffUserID int64
 
+	// The chain. Both are zero until seedSecondBranch runs, which is last —
+	// everything before it is written as a single-branch gym, because that
+	// is what the gym is until a second location exists.
+	orgID       int64
+	branchGymID int64
+
 	plans    []plans.MembershipPlan
 	members  []seedMember
 	trainers []seedTrainer
@@ -55,6 +61,7 @@ type seeder struct {
 	ptSessionCount  int
 	productCount    int
 	saleCount       int
+	transferCount   int
 }
 
 // Run seeds the database if it looks fresh. Safe to call on every startup —
@@ -110,6 +117,13 @@ func Run(ctx context.Context, db *gorm.DB) error {
 		if err := s.seedSales(); err != nil {
 			return fmt.Errorf("sales: %w", err)
 		}
+		// Last, and on purpose. It backfills the main gym with an
+		// organization and a branch name, and the opening transfer draws on
+		// stock levels that sales have already moved — so it has to see the
+		// finished shop rather than the opening one.
+		if err := s.seedSecondBranch(); err != nil {
+			return fmt.Errorf("second branch: %w", err)
+		}
 		return nil
 	})
 	if err != nil {
@@ -121,6 +135,8 @@ func Run(ctx context.Context, db *gorm.DB) error {
 		s.memberCount, s.attendanceCount, s.renewalCount, s.paymentCount, s.leadCount)
 	log.Printf("devseed: %d trainers, %d PT packages, %d sessions, %d products, %d counter sales",
 		len(s.trainers), s.ptPackageCount, s.ptSessionCount, s.productCount, s.saleCount)
+	log.Printf("devseed: 2 branches (%s, %s) under one organization, %d stock transfer(s)",
+		mainBranchName, secondBranchName, s.transferCount)
 	return nil
 }
 
