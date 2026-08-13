@@ -4,6 +4,7 @@ import '../../models/date_span.dart';
 import '../../models/staff_work.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/readable_width.dart';
 
 /// Per-person lead workflow (FR-18 §7).
 ///
@@ -46,46 +47,51 @@ class StaffLeadWorkView extends StatelessWidget {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
-      children: [
-        _GymTotals(report: report),
-        const SizedBox(height: 8),
-        ...report.staff.map((s) => _StaffLeadCard(
-              staff: s,
-              span: span,
-              onOpenLead: onOpenLead,
-            )),
-        const SizedBox(height: 14),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.info_outline_rounded,
-                  size: 14, color: Colors.grey.shade500),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'What each person is carrying is counted as it stands now, '
-                  'whatever dates are showing — asking for July does not '
-                  'un-neglect a lead still sitting untouched today. What they '
-                  'worked is counted ${span.workedSuffix}, and covers calls, '
-                  'counselling, trials, joins and notes logged by hand; '
-                  'automatic stage history is not counted here.',
-                  style: TextStyle(
-                      fontSize: 11, height: 1.4, color: Colors.grey.shade600),
-                ),
-              ),
-            ],
+    // Capped like every other card list. A per-person card stretched across
+    // a monitor puts the name and the counts at opposite ends of the screen.
+    return ReadableWidth(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
+        children: [
+          _GymTotals(report: report),
+          const SizedBox(height: 8),
+          ...report.staff.map(
+            (s) => _StaffLeadCard(staff: s, span: span, onOpenLead: onOpenLead),
           ),
-        ),
-
-        if (footer != null) ...[
           const SizedBox(height: 14),
-          footer!,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 14,
+                  color: Colors.grey.shade500,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'What each person is carrying is counted as it stands now, '
+                    'whatever dates are showing — asking for July does not '
+                    'un-neglect a lead still sitting untouched today. What they '
+                    'worked is counted ${span.workedSuffix}, and covers calls, '
+                    'counselling, trials, joins and notes logged by hand; '
+                    'automatic stage history is not counted here.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      height: 1.4,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (footer != null) ...[const SizedBox(height: 14), footer!],
         ],
-      ],
+      ),
     );
   }
 }
@@ -103,30 +109,41 @@ class _GymTotals extends StatelessWidget {
         children: [
           _figure('${report.totalOpen}', 'open leads', null),
           _divider(),
-          _figure('${report.totalUnattended}', 'unattended',
-              report.totalUnattended > 0 ? AppColors.danger : null),
+          _figure(
+            '${report.totalUnattended}',
+            'unattended',
+            report.totalUnattended > 0 ? AppColors.danger : null,
+          ),
           _divider(),
-          _figure('${report.totalOverdue}', 'overdue',
-              report.totalOverdue > 0 ? AppColors.warning : null),
+          _figure(
+            '${report.totalOverdue}',
+            'overdue',
+            report.totalOverdue > 0 ? AppColors.warning : null,
+          ),
         ],
       ),
     );
   }
 
   Widget _figure(String value, String label, Color? colour) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: colour ?? AppColors.textPrimary)),
-            const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+            color: colour ?? AppColors.textPrimary,
+          ),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+        ),
+      ],
+    ),
+  );
 
   Widget _divider() =>
       Container(width: 1, height: 28, color: Colors.grey.shade200);
@@ -176,19 +193,23 @@ class _StaffLeadCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(staff.name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(
+                        staff.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
                       const SizedBox(height: 1),
                       Text(
                         [
                           if (staff.role != null) staff.role!,
-                          c.openLeads == 1
-                              ? '1 lead'
-                              : '${c.openLeads} leads',
+                          c.openLeads == 1 ? '1 lead' : '${c.openLeads} leads',
                         ].join(' · '),
                         style: TextStyle(
-                            fontSize: 11.5, color: Colors.grey.shade600),
+                          fontSize: 11.5,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -201,22 +222,31 @@ class _StaffLeadCard extends StatelessWidget {
             // Labelled "now" explicitly. Once a range is on screen, an
             // unlabelled block of counts reads as being scoped to that range,
             // and these are not.
-            Text('Carrying now',
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
-                    color: Colors.grey.shade600)),
+            Text(
+              'Carrying now',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+                color: Colors.grey.shade600,
+              ),
+            ),
             const SizedBox(height: 6),
 
             // Unattended first, because a lead nobody picked up is a worse
             // failure than one being chased late.
             Row(
               children: [
-                _stat('${c.unattended}', 'unattended',
-                    c.unattended > 0 ? AppColors.danger : null),
-                _stat('${c.overdue}', 'overdue',
-                    c.overdue > 0 ? AppColors.warning : null),
+                _stat(
+                  '${c.unattended}',
+                  'unattended',
+                  c.unattended > 0 ? AppColors.danger : null,
+                ),
+                _stat(
+                  '${c.overdue}',
+                  'overdue',
+                  c.overdue > 0 ? AppColors.warning : null,
+                ),
                 _stat('${c.dueToday}', 'due today', null),
               ],
             ),
@@ -233,17 +263,24 @@ class _StaffLeadCard extends StatelessWidget {
                 border: Border.all(color: Colors.grey.shade200),
               ),
               child: c.nextLeadName == null
-                  ? Text('Nothing scheduled next',
+                  ? Text(
+                      'Nothing scheduled next',
                       style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500))
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    )
                   : InkWell(
                       onTap: (onOpenLead == null || c.nextLeadId == null)
                           ? null
                           : () => onOpenLead!(c.nextLeadId!),
                       child: Row(
                         children: [
-                          const Icon(Icons.arrow_forward_rounded,
-                              size: 14, color: AppColors.primary),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -261,18 +298,22 @@ class _StaffLeadCard extends StatelessWidget {
             Divider(height: 1, color: Colors.grey.shade200),
             const SizedBox(height: 10),
 
-            Text('Worked ${span.workedSuffix}',
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
-                    color: Colors.grey.shade600)),
+            Text(
+              'Worked ${span.workedSuffix}',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+                color: Colors.grey.shade600,
+              ),
+            ),
             const SizedBox(height: 8),
 
             if (w.isEmpty)
-              Text('Nothing logged',
-                  style:
-                      TextStyle(fontSize: 12, color: Colors.grey.shade500))
+              Text(
+                'Nothing logged',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              )
             else
               Wrap(
                 spacing: 7,
@@ -282,21 +323,26 @@ class _StaffLeadCard extends StatelessWidget {
                   // fact: a call that rang out is work done, but it is not
                   // contact, and conflating them makes a bad day look good.
                   if (w.calls > 0)
-                    _chip('${w.calls} ${_plural(w.calls, 'call')} · '
-                        '${w.reached} reached', AppColors.info),
+                    _chip(
+                      '${w.calls} ${_plural(w.calls, 'call')} · '
+                      '${w.reached} reached',
+                      AppColors.info,
+                    ),
                   if (w.counselling > 0)
                     _chip('${w.counselling} counselling', AppColors.primary),
                   if (w.trialsBooked > 0)
                     _chip(
-                        '${w.trialsBooked} '
-                        '${_plural(w.trialsBooked, 'trial')} booked',
-                        AppColors.warning),
+                      '${w.trialsBooked} '
+                      '${_plural(w.trialsBooked, 'trial')} booked',
+                      AppColors.warning,
+                    ),
                   if (w.joined > 0)
                     _chip('${w.joined} joined', AppColors.success),
                   if (w.notesLogged > 0)
                     _chip(
-                        '${w.notesLogged} ${_plural(w.notesLogged, 'note')}',
-                        Colors.grey.shade600),
+                      '${w.notesLogged} ${_plural(w.notesLogged, 'note')}',
+                      Colors.grey.shade600,
+                    ),
                 ],
               ),
           ],
@@ -306,31 +352,41 @@ class _StaffLeadCard extends StatelessWidget {
   }
 
   Widget _stat(String value, String label, Color? colour) => Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: colour ?? AppColors.textPrimary)),
-            Text(label,
-                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
-          ],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+            color: colour ?? AppColors.textPrimary,
+          ),
         ),
-      );
+        Text(
+          label,
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+        ),
+      ],
+    ),
+  );
 
   Widget _chip(String text, Color colour) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-        decoration: BoxDecoration(
-          color: colour.withValues(alpha: 0.11),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: colour.withValues(alpha: 0.3)),
-        ),
-        child: Text(text,
-            style: TextStyle(
-                fontSize: 11.5, fontWeight: FontWeight.w600, color: colour)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+    decoration: BoxDecoration(
+      color: colour.withValues(alpha: 0.11),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: colour.withValues(alpha: 0.3)),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 11.5,
+        fontWeight: FontWeight.w600,
+        color: colour,
+      ),
+    ),
+  );
 
   static String _plural(int n, String word) => n == 1 ? word : '${word}s';
 

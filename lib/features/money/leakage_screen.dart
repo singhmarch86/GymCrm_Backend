@@ -4,6 +4,7 @@ import '../../models/leakage.dart';
 import '../../services/queue_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/readable_width.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 
@@ -87,35 +88,46 @@ class _LeakageScreenState extends State<LeakageScreen> {
 
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
-        children: [
-          _Headline(report: report),
-          const SizedBox(height: 6),
-          for (final g in report.groups) ..._group(g),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.info_outline_rounded,
-                    size: 14, color: Colors.grey.shade500),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'These are findings, not accusations. A session past a '
-                    'limit may be goodwill somebody approved, and a visit '
-                    'after expiry may be a cash renewal nobody entered. '
-                    'Nothing here bills anybody — check the row, then decide.',
-                    style: TextStyle(
-                        fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+      // Capped like every other card list: across a wide monitor a name and
+      // its amount end up a hand's width apart, which is the scanning
+      // problem tables solve reappearing inside the cards.
+      child: ReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
+          children: [
+            _Headline(report: report),
+            const SizedBox(height: 6),
+            for (final g in report.groups) ..._group(g),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 14,
+                    color: Colors.grey.shade500,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'These are findings, not accusations. A session past a '
+                      'limit may be goodwill somebody approved, and a visit '
+                      'after expiry may be a cash renewal nobody entered. '
+                      'Nothing here bills anybody — check the row, then decide.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 1.4,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -130,13 +142,17 @@ class _LeakageScreenState extends State<LeakageScreen> {
           padding: const EdgeInsets.fromLTRB(6, 16, 6, 2),
           child: Row(
             children: [
-              const Icon(Icons.check_rounded,
-                  size: 15, color: AppColors.success),
+              const Icon(
+                Icons.check_rounded,
+                size: 15,
+                color: AppColors.success,
+              ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('${g.label} — none found',
-                    style: TextStyle(
-                        fontSize: 12.5, color: Colors.grey.shade600)),
+                child: Text(
+                  '${g.label} — none found',
+                  style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
+                ),
               ),
             ],
           ),
@@ -144,7 +160,9 @@ class _LeakageScreenState extends State<LeakageScreen> {
       ];
     }
 
-    final colour = g.severity == 'urgent' ? AppColors.danger : AppColors.warning;
+    final colour = g.severity == 'urgent'
+        ? AppColors.danger
+        : AppColors.warning;
 
     return [
       Padding(
@@ -157,33 +175,44 @@ class _LeakageScreenState extends State<LeakageScreen> {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration:
-                      BoxDecoration(color: colour, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: colour,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const SizedBox(width: 9),
                 Expanded(
-                  child: Text(g.label,
-                      style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.bold,
-                          color: colour)),
+                  child: Text(
+                    g.label,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.bold,
+                      color: colour,
+                    ),
+                  ),
                 ),
                 if (g.valueInPaise > 0)
-                  Text(_rupees(g.valueInPaise),
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700)),
+                  Text(
+                    _rupees(g.valueInPaise),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 4),
             Padding(
               padding: const EdgeInsets.only(left: 17),
-              child: Text(g.note,
-                  style: TextStyle(
-                      fontSize: 11.5,
-                      height: 1.35,
-                      color: Colors.grey.shade600)),
+              child: Text(
+                g.note,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  height: 1.35,
+                  color: Colors.grey.shade600,
+                ),
+              ),
             ),
           ],
         ),
@@ -206,11 +235,16 @@ class _Headline extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            const Icon(Icons.verified_rounded,
-                size: 44, color: AppColors.success),
+            const Icon(
+              Icons.verified_rounded,
+              size: 44,
+              color: AppColors.success,
+            ),
             const SizedBox(height: 10),
-            const Text('Nothing leaking',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            const Text(
+              'Nothing leaking',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
             Text(
               'No sessions past a package limit, and nobody training on an '
@@ -227,11 +261,14 @@ class _Headline extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       child: Column(
         children: [
-          Text(_rupees(report.valuedInPaise),
-              style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.danger)),
+          Text(
+            _rupees(report.valuedInPaise),
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: AppColors.danger,
+            ),
+          ),
           const SizedBox(height: 2),
           Text(
             '${report.totalCount} '
@@ -255,10 +292,13 @@ class _Headline extends StatelessWidget {
               'valued honestly and prices everything at what the member '
               'already pays — below what a walk-in would.'
               '${report.unvaluedCount == 0 ? '' : ' ${report.unvaluedCount} '
-                  'more ${report.unvaluedCount == 1 ? 'finding carries' : 'findings carry'} '
-                  'no figure at all.'}',
+                        'more ${report.unvaluedCount == 1 ? 'finding carries' : 'findings carry'} '
+                        'no figure at all.'}',
               style: TextStyle(
-                  fontSize: 11.5, height: 1.35, color: Colors.grey.shade700),
+                fontSize: 11.5,
+                height: 1.35,
+                color: Colors.grey.shade700,
+              ),
             ),
           ),
         ],
@@ -289,27 +329,39 @@ class _LeakRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.member,
-                          style: const TextStyle(
-                              fontSize: 14.5, fontWeight: FontWeight.w600)),
+                      Text(
+                        item.member,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text(item.detail,
-                          style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade700)),
+                      Text(
+                        item.detail,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 10),
                 if (item.valueInPaise > 0)
-                  Text(_rupees(item.valueInPaise),
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: colour))
+                  Text(
+                    _rupees(item.valueInPaise),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: colour,
+                    ),
+                  )
                 else
-                  Text('no figure',
-                      style: TextStyle(
-                          fontSize: 11, color: Colors.grey.shade500)),
+                  Text(
+                    'no figure',
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
@@ -329,11 +381,14 @@ class _LeakRow extends StatelessWidget {
             // can reconstruct is a figure nobody will act on.
             if (item.basis.isNotEmpty) ...[
               const SizedBox(height: 6),
-              Text('Valued at ${item.basis}',
-                  style: TextStyle(
-                      fontSize: 10.5,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey.shade500)),
+              Text(
+                'Valued at ${item.basis}',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey.shade500,
+                ),
+              ),
             ],
           ],
         ),
@@ -342,19 +397,28 @@ class _LeakRow extends StatelessWidget {
   }
 
   Widget _meta(IconData icon, String text) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: Colors.grey.shade500),
-          const SizedBox(width: 4),
-          Text(text,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 12, color: Colors.grey.shade500),
+      const SizedBox(width: 4),
+      Text(text, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+    ],
+  );
 }
 
 const _months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 String _date(DateTime d) => '${d.day} ${_months[d.month - 1]}';

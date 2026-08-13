@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/lead_pipeline.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/readable_width.dart';
 
 /// The lead workflow queue (FR-18).
 ///
@@ -53,12 +54,16 @@ class LeadWorkflowView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.task_alt_rounded,
-                  size: 64, color: AppColors.success),
+              const Icon(
+                Icons.task_alt_rounded,
+                size: 64,
+                color: AppColors.success,
+              ),
               const SizedBox(height: 16),
-              const Text('No open leads',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'No open leads',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 6),
               Text(
                 'Every lead has either joined or been closed.',
@@ -71,9 +76,14 @@ class LeadWorkflowView extends StatelessWidget {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
-      children: sections(),
+    // Capped, like every other card list: across a wide monitor a name
+    // and its amount end up a hand's width apart, which is the scanning
+    // problem tables solve reappearing inside the cards.
+    return ReadableWidth(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
+        children: sections(),
+      ),
     );
   }
 
@@ -88,8 +98,10 @@ class LeadWorkflowView extends StatelessWidget {
           children: [
             Icon(Icons.check_rounded, size: 14, color: Colors.grey.shade400),
             const SizedBox(width: 8),
-            Text('${g.label} — none',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+            Text(
+              '${g.label} — none',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            ),
           ],
         ),
       );
@@ -109,13 +121,19 @@ class LeadWorkflowView extends StatelessWidget {
                 decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
               const SizedBox(width: 9),
-              Text(g.label,
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold, color: color)),
+              Text(
+                g.label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
               const SizedBox(width: 7),
-              Text('${g.count}',
-                  style:
-                      TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              Text(
+                '${g.count}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
             ],
           ),
         ),
@@ -128,12 +146,14 @@ class LeadWorkflowView extends StatelessWidget {
               style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
             ),
           ),
-        ...g.items.map((i) => _WorkflowCard(
-              item: i,
-              color: color,
-              onTap: () => onTap(i),
-              onSetNextStep: () => onSetNextStep(i),
-            )),
+        ...g.items.map(
+          (i) => _WorkflowCard(
+            item: i,
+            color: color,
+            onTap: () => onTap(i),
+            onSetNextStep: () => onSetNextStep(i),
+          ),
+        ),
       ],
     );
   }
@@ -166,11 +186,17 @@ class _Headline extends StatelessWidget {
         children: [
           _figure('${workflow.totalOpen}', 'open leads', null),
           _divider(),
-          _figure('${workflow.unattended}', 'unattended',
-              workflow.unattended > 0 ? AppColors.danger : null),
+          _figure(
+            '${workflow.unattended}',
+            'unattended',
+            workflow.unattended > 0 ? AppColors.danger : null,
+          ),
           _divider(),
-          _figure('${workflow.overdue}', 'overdue',
-              workflow.overdue > 0 ? AppColors.warning : null),
+          _figure(
+            '${workflow.overdue}',
+            'overdue',
+            workflow.overdue > 0 ? AppColors.warning : null,
+          ),
           _divider(),
           _figure('${workflow.dueToday}', 'due today', null),
         ],
@@ -179,20 +205,25 @@ class _Headline extends StatelessWidget {
   }
 
   Widget _figure(String value, String label, Color? colour) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: colour ?? AppColors.textPrimary)),
-            const SizedBox(height: 2),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+            color: colour ?? AppColors.textPrimary,
+          ),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+        ),
+      ],
+    ),
+  );
 
   Widget _divider() =>
       Container(width: 1, height: 28, color: Colors.grey.shade200);
@@ -231,14 +262,20 @@ class _WorkflowCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.name,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(
+                            item.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                           const SizedBox(height: 2),
                           Text(
                             '${item.phone} · ${item.stageLabel}',
                             style: TextStyle(
-                                fontSize: 11.5, color: Colors.grey.shade600),
+                              fontSize: 11.5,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ],
                       ),
@@ -249,16 +286,21 @@ class _WorkflowCard extends StatelessWidget {
                       '${item.stageDays}d',
                       style: TextStyle(
                         fontSize: 12.5,
-                        fontWeight:
-                            item.isStale ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: item.isStale
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                         color: item.isStale
                             ? AppColors.danger
                             : Colors.grey.shade500,
                       ),
                     ),
-                    Text(' in stage',
-                        style: TextStyle(
-                            fontSize: 10.5, color: Colors.grey.shade400)),
+                    Text(
+                      ' in stage',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -270,15 +312,16 @@ class _WorkflowCard extends StatelessWidget {
                       onPressed: onSetNextStep,
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.primary,
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         minimumSize: const Size(0, 32),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
                         item.isUnattended ? 'Set next step' : 'Change',
                         style: const TextStyle(
-                            fontSize: 12.5, fontWeight: FontWeight.w600),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -298,16 +341,17 @@ class _WorkflowCard extends StatelessWidget {
       final missing = item.ownerName == null
           ? 'Nobody is assigned'
           : item.nextStep == null
-              ? 'No next step set'
-              : 'No date on the next step';
+          ? 'No next step set'
+          : 'No date on the next step';
       return Row(
         children: [
           Icon(Icons.error_outline_rounded, size: 14, color: AppColors.danger),
           const SizedBox(width: 7),
           Expanded(
-            child: Text(missing,
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.danger)),
+            child: Text(
+              missing,
+              style: const TextStyle(fontSize: 12, color: AppColors.danger),
+            ),
           ),
         ],
       );

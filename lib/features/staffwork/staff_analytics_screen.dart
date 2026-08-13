@@ -8,6 +8,7 @@ import '../../widgets/app_card.dart';
 import '../../widgets/date_span_bar.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
+import '../../widgets/readable_width.dart';
 
 /// Staff work analytics (FR-22).
 ///
@@ -126,19 +127,24 @@ class _StaffAnalyticsScreenState extends State<StaffAnalyticsScreen> {
 
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
-        children: [
-          _Totals(data: d),
-          const SizedBox(height: 12),
-          if (d.trend.length > 1) ...[
-            _Rhythm(data: d),
+      // Capped like every other card list: across a wide monitor a name and
+      // its amount end up a hand's width apart, which is the scanning
+      // problem tables solve reappearing inside the cards.
+      child: ReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
+          children: [
+            _Totals(data: d),
             const SizedBox(height: 12),
+            if (d.trend.length > 1) ...[
+              _Rhythm(data: d),
+              const SizedBox(height: 12),
+            ],
+            _Categories(data: d),
+            const SizedBox(height: 12),
+            _People(data: d, span: _span),
           ],
-          _Categories(data: d),
-          const SizedBox(height: 12),
-          _People(data: d, span: _span),
-        ],
+        ),
       ),
     );
   }
@@ -165,8 +171,10 @@ class _Totals extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text('across ${data.days} ${data.days == 1 ? 'day' : 'days'}',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+          Text(
+            'across ${data.days} ${data.days == 1 ? 'day' : 'days'}',
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+          ),
 
           // Said before any per-person number, because it decides how much
           // those numbers are worth. On this gym's data it has been the
@@ -195,18 +203,21 @@ class _Totals extends StatelessWidget {
   }
 
   Widget _figure(String value, String label) => Expanded(
-        child: Column(
-          children: [
-            Text(value,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 2),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
-          ],
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+        ),
+      ],
+    ),
+  );
 }
 
 /// The gym's rhythm. About the gym, not about anybody in it.
@@ -225,12 +236,15 @@ class _Rhythm extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(data.trendUnit == 'week' ? 'Week by week' : 'Day by day',
-              style:
-                  const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+          Text(
+            data.trendUnit == 'week' ? 'Week by week' : 'Day by day',
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 2),
-          Text('Busiest was $peak in one ${data.trendUnit}',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+          Text(
+            'Busiest was $peak in one ${data.trendUnit}',
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
           const SizedBox(height: 10),
           SizedBox(
             height: 78,
@@ -238,9 +252,7 @@ class _Rhythm extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  for (final t in data.trend) _bar(t, peak),
-                ],
+                children: [for (final t in data.trend) _bar(t, peak)],
               ),
             ),
           ),
@@ -254,7 +266,8 @@ class _Rhythm extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2.5),
       child: Tooltip(
-        message: '${t.label}: ${t.count} recorded'
+        message:
+            '${t.label}: ${t.count} recorded'
             '${t.amountInPaise == 0 ? '' : ' · ${_rupees(t.amountInPaise)}'}',
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -297,25 +310,34 @@ class _Categories extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Where the work went',
-              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+          const Text(
+            'Where the work went',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 10),
           for (final c in data.categories) ...[
             Row(
               children: [
                 Expanded(
-                  child: Text(c.label,
-                      style: const TextStyle(fontSize: 12.5)),
+                  child: Text(c.label, style: const TextStyle(fontSize: 12.5)),
                 ),
-                Text('${c.count}',
-                    style: const TextStyle(
-                        fontSize: 12.5, fontWeight: FontWeight.w600)),
+                Text(
+                  '${c.count}',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 SizedBox(
                   width: 42,
-                  child: Text('${c.sharePct}%',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          fontSize: 11.5, color: Colors.grey.shade600)),
+                  child: Text(
+                    '${c.sharePct}%',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -326,8 +348,7 @@ class _Categories extends StatelessWidget {
                 value: c.sharePct / 100,
                 minHeight: 5,
                 backgroundColor: Colors.grey.shade200,
-                valueColor:
-                    const AlwaysStoppedAnimation(AppColors.primary),
+                valueColor: const AlwaysStoppedAnimation(AppColors.primary),
               ),
             ),
             const SizedBox(height: 10),
@@ -354,8 +375,10 @@ class _People extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Each person, against their own last period',
-              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+          const Text(
+            'Each person, against their own last period',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 2),
           // The heading says what the comparison is, so nobody reads the list
           // as a ranking. Order is the server's, by name, and is never changed
@@ -365,7 +388,10 @@ class _People extends StatelessWidget {
             '${data.days == 1 ? 'day' : 'days'} before this window — not with '
             'each other.',
             style: TextStyle(
-                fontSize: 11, height: 1.35, color: Colors.grey.shade600),
+              fontSize: 11,
+              height: 1.35,
+              color: Colors.grey.shade600,
+            ),
           ),
           const SizedBox(height: 12),
           for (final p in data.people) ...[
@@ -375,8 +401,11 @@ class _People extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline_rounded,
-                  size: 14, color: Colors.grey.shade500),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 14,
+                color: Colors.grey.shade500,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -384,7 +413,10 @@ class _People extends StatelessWidget {
                   'on the front desk instead of the phone, or a quiet month '
                   'all look identical to this count.',
                   style: TextStyle(
-                      fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+                    fontSize: 11,
+                    height: 1.4,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ),
             ],
@@ -409,17 +441,24 @@ class _PersonRow extends StatelessWidget {
         CircleAvatar(
           radius: 15,
           backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-          child: const Icon(Icons.person_rounded,
-              size: 15, color: AppColors.primary),
+          child: const Icon(
+            Icons.person_rounded,
+            size: 15,
+            color: AppColors.primary,
+          ),
         ),
         const SizedBox(width: 11),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(person.name,
-                  style: const TextStyle(
-                      fontSize: 13.5, fontWeight: FontWeight.w600)),
+              Text(
+                person.name,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               Text(
                 [
                   if (person.role.isNotEmpty) person.role,
@@ -433,13 +472,15 @@ class _PersonRow extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text('${person.count}',
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              '${person.count}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             if (change == null)
-              Text('first period',
-                  style:
-                      TextStyle(fontSize: 10, color: Colors.grey.shade500))
+              Text(
+                'first period',
+                style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+              )
             else
               Text(
                 '${change >= 0 ? '+' : ''}$change%',
@@ -448,9 +489,7 @@ class _PersonRow extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                   // Up is quietly positive; down is grey, never red. A fall
                   // has a dozen honest explanations this screen cannot see.
-                  color: change >= 0
-                      ? AppColors.success
-                      : Colors.grey.shade600,
+                  color: change >= 0 ? AppColors.success : Colors.grey.shade600,
                 ),
               ),
           ],

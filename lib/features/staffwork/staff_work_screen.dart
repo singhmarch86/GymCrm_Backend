@@ -15,6 +15,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/date_span_bar.dart';
 import '../../widgets/loading_state.dart';
+import '../../widgets/readable_width.dart';
 import '../leads/lead_detail_screen.dart';
 import '../payments/collection_action_sheet.dart';
 import '../payments/collections_view.dart';
@@ -231,11 +232,13 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           IconButton(
             tooltip: 'Refresh',
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: _loading ? null : () {
-              _load();
-              if (_tabs.index == 1) _loadExpected();
-              if (_tabs.index >= 3) _loadLeadWork();
-            },
+            onPressed: _loading
+                ? null
+                : () {
+                    _load();
+                    if (_tabs.index == 1) _loadExpected();
+                    if (_tabs.index >= 3) _loadLeadWork();
+                  },
           ),
         ],
         bottom: TabBar(
@@ -246,13 +249,28 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
           isScrollable: true,
           tabAlignment: TabAlignment.start,
           tabs: const [
-            Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Money & work'),
+            Tab(
+              icon: Icon(Icons.receipt_long_rounded, size: 18),
+              text: 'Money & work',
+            ),
             // Next to the record of what came in, because it is the same
             // question pointed the other way down the calendar.
-            Tab(icon: Icon(Icons.trending_up_rounded, size: 18), text: 'Expected'),
-            Tab(icon: Icon(Icons.request_quote_rounded, size: 18), text: 'Collect'),
-            Tab(icon: Icon(Icons.person_search_rounded, size: 18), text: 'Leads'),
-            Tab(icon: Icon(Icons.checklist_rounded, size: 18), text: 'Follow up'),
+            Tab(
+              icon: Icon(Icons.trending_up_rounded, size: 18),
+              text: 'Expected',
+            ),
+            Tab(
+              icon: Icon(Icons.request_quote_rounded, size: 18),
+              text: 'Collect',
+            ),
+            Tab(
+              icon: Icon(Icons.person_search_rounded, size: 18),
+              text: 'Leads',
+            ),
+            Tab(
+              icon: Icon(Icons.checklist_rounded, size: 18),
+              text: 'Follow up',
+            ),
           ],
         ),
       ),
@@ -341,19 +359,25 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('$n ${n == 1 ? 'due' : 'dues'} selected',
-                        style: const TextStyle(
-                            fontSize: 13.5, fontWeight: FontWeight.bold)),
-                    Text('Creates drafts — nothing is issued',
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade600)),
+                    Text(
+                      '$n ${n == 1 ? 'due' : 'dues'} selected',
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Creates drafts — nothing is issued',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ],
                 ),
               ),
               TextButton(
-                onPressed: _invoicing
-                    ? null
-                    : () => setState(_toInvoice.clear),
+                onPressed: _invoicing ? null : () => setState(_toInvoice.clear),
                 child: const Text('Clear'),
               ),
               const SizedBox(width: 4),
@@ -368,7 +392,9 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Text('Create invoices'),
               ),
@@ -382,8 +408,9 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   Future<void> _createInvoices() async {
     setState(() => _invoicing = true);
     try {
-      final result = await QueueService()
-          .invoiceDues(paymentIds: _toInvoice.toList());
+      final result = await QueueService().invoiceDues(
+        paymentIds: _toInvoice.toList(),
+      );
       if (!mounted) return;
 
       // Both halves reported. A batch that says only what it created lets an
@@ -393,18 +420,21 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
             '${result.invoiceCount == 1 ? 'draft invoice' : 'draft invoices'}',
         if (result.skipped.isNotEmpty) '${result.skipped.length} skipped',
       ];
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('${parts.join(' · ')}. '
-            'Find them under Invoices to check and issue.'),
-        duration: const Duration(seconds: 5),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${parts.join(' · ')}. '
+            'Find them under Invoices to check and issue.',
+          ),
+          duration: const Duration(seconds: 5),
+        ),
+      );
       setState(() => _invoicing = false);
       await _loadExpected();
     } catch (e) {
       if (!mounted) return;
       setState(() => _invoicing = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }
   }
 
@@ -460,45 +490,52 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
         title: 'Nothing recorded',
         body: _span.isSingleDay
             ? 'No payments, renewals, sales or member work were logged on this '
-                'day. If the gym was open, nobody was signed in.'
+                  'day. If the gym was open, nobody was signed in.'
             : 'Nothing was logged between ${_span.fromParam} and '
-                '${_span.toParam}. For a stretch this long that usually means '
-                'the system was not in use yet, rather than a quiet spell.',
+                  '${_span.toParam}. For a stretch this long that usually means '
+                  'the system was not in use yet, rather than a quiet spell.',
       );
     }
 
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
-        children: [
-          _DayTotals(day: day, span: _span),
-          const SizedBox(height: 8),
-          ...day.staff.map((s) => _StaffCard(
+      // Capped like every other card list. Left uncapped, a person's name and
+      // their counts end up a hand's width apart on a wide monitor.
+      child: ReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
+          children: [
+            _DayTotals(day: day, span: _span),
+            const SizedBox(height: 8),
+            ...day.staff.map(
+              (s) => _StaffCard(
                 staff: s,
                 onOpenCategory: (category) => _openItems(s, category),
-              )),
-          const SizedBox(height: 12),
-          const _Caveat(),
-
-          // What is still owed lives in the Collect tab next door, not here.
-          // This card is a record of a chosen day; that is a worklist owed
-          // now. Pointed at rather than duplicated, so the desk never works
-          // the same due from two places.
-          if (_collections != null && !_collections!.isClear) ...[
-            const SizedBox(height: 14),
-            _QueuePointer(
-              icon: Icons.request_quote_rounded,
-              headline: '${_rupees(_collections!.totalInPaise)} still owed',
-              detail: '${_collections!.totalCount} dues from '
-                  '${_collections!.membersInvolved} members'
-                  '${_collections!.unchasedCount == 0 ? '' : ' · ${_collections!.unchasedCount} with nobody on them'}'
-                  '. Not tied to the dates above.',
-              alarming: _collections!.unchasedCount > 0,
-              onOpen: () => _tabs.animateTo(2),
+              ),
             ),
+            const SizedBox(height: 12),
+            const _Caveat(),
+
+            // What is still owed lives in the Collect tab next door, not here.
+            // This card is a record of a chosen day; that is a worklist owed
+            // now. Pointed at rather than duplicated, so the desk never works
+            // the same due from two places.
+            if (_collections != null && !_collections!.isClear) ...[
+              const SizedBox(height: 14),
+              _QueuePointer(
+                icon: Icons.request_quote_rounded,
+                headline: '${_rupees(_collections!.totalInPaise)} still owed',
+                detail:
+                    '${_collections!.totalCount} dues from '
+                    '${_collections!.membersInvolved} members'
+                    '${_collections!.unchasedCount == 0 ? '' : ' · ${_collections!.unchasedCount} with nobody on them'}'
+                    '. Not tied to the dates above.',
+                alarming: _collections!.unchasedCount > 0,
+                onOpen: () => _tabs.animateTo(2),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -525,7 +562,8 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
                 headline: workflow.unattended == 0
                     ? '${workflow.totalOpen} open leads'
                     : '${workflow.unattended} leads nobody has picked up',
-                detail: '${workflow.totalOpen} open · '
+                detail:
+                    '${workflow.totalOpen} open · '
                     '${workflow.overdue} overdue · '
                     '${workflow.dueToday} due today. Counted as it stands '
                     'now, not for the dates above.',
@@ -580,8 +618,12 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
       stageLabel: item.stageLabel,
       currentStep: item.nextStep,
       currentDue: item.nextStepDue,
-      onSave: (step, due, note) => LeadService()
-          .setNextStep(item.leadId, step: step, due: due, note: note),
+      onSave: (step, due, note) => LeadService().setNextStep(
+        item.leadId,
+        step: step,
+        due: due,
+        note: note,
+      ),
       // Clearing is deliberate, not a mistake to be prevented: a lead that
       // genuinely needs no next step should go back to Unattended rather than
       // carry a fake date somebody stops believing.
@@ -643,29 +685,41 @@ class _QueuePointer extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              Icon(icon,
-                  size: 20,
-                  color: alarming ? AppColors.danger : AppColors.primary),
+              Icon(
+                icon,
+                size: 20,
+                color: alarming ? AppColors.danger : AppColors.primary,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(headline,
-                        style: const TextStyle(
-                            fontSize: 14.5, fontWeight: FontWeight.bold)),
+                    Text(
+                      headline,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(detail,
-                        style: TextStyle(
-                            fontSize: 11.5,
-                            height: 1.35,
-                            color: Colors.grey.shade600)),
+                    Text(
+                      detail,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        height: 1.35,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.chevron_right_rounded,
-                  size: 20, color: Colors.grey.shade400),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: Colors.grey.shade400,
+              ),
             ],
           ),
         ),
@@ -721,24 +775,22 @@ class _DayTotals extends StatelessWidget {
   }
 
   Widget _figure(String value, String label) => Column(
-        children: [
-          Text(value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 2),
-          Text(label,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-        ],
-      );
+    children: [
+      Text(
+        value,
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(height: 2),
+      Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+    ],
+  );
 }
 
 class _StaffCard extends StatelessWidget {
   final StaffDay staff;
   final void Function(StaffTally) onOpenCategory;
 
-  const _StaffCard({
-    required this.staff,
-    required this.onOpenCategory,
-  });
+  const _StaffCard({required this.staff, required this.onOpenCategory});
 
   @override
   Widget build(BuildContext context) {
@@ -773,14 +825,20 @@ class _StaffCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(staff.name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(
+                        staff.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
                       const SizedBox(height: 2),
                       Text(
                         _subtitle(),
                         style: TextStyle(
-                            fontSize: 11.5, color: Colors.grey.shade600),
+                          fontSize: 11.5,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -789,12 +847,20 @@ class _StaffCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(_rupees(staff.totalHandledInPaise),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
-                      Text('collected',
-                          style: TextStyle(
-                              fontSize: 10, color: Colors.grey.shade500)),
+                      Text(
+                        _rupees(staff.totalHandledInPaise),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        'collected',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
                     ],
                   ),
               ],
@@ -814,16 +880,18 @@ class _StaffCard extends StatelessWidget {
                   'Recorded without a signed-in user. Usually a shared login, '
                   'or data brought in from an import.',
                   style: TextStyle(
-                      fontSize: 11.5, height: 1.35, color: Colors.grey.shade700),
+                    fontSize: 11.5,
+                    height: 1.35,
+                    color: Colors.grey.shade700,
+                  ),
                 ),
               ),
             ],
 
             const SizedBox(height: 12),
-            ...staff.tallies.map((t) => _TallyRow(
-                  tally: t,
-                  onTap: () => onOpenCategory(t),
-                )),
+            ...staff.tallies.map(
+              (t) => _TallyRow(tally: t, onTap: () => onOpenCategory(t)),
+            ),
           ],
         ),
       ),
@@ -833,9 +901,11 @@ class _StaffCard extends StatelessWidget {
   String _subtitle() {
     final parts = <String>[];
     if (staff.role != null && staff.role!.isNotEmpty) parts.add(staff.role!);
-    parts.add(staff.totalActions == 1
-        ? '1 thing recorded'
-        : '${staff.totalActions} things recorded');
+    parts.add(
+      staff.totalActions == 1
+          ? '1 thing recorded'
+          : '${staff.totalActions} things recorded',
+    );
     // No time span here on purpose. Several ledgers store a DATE with no clock
     // — a payment's paid_date has none — so those rows land on local midnight
     // and the range renders as "00:00–20:51", which reads as "started at
@@ -862,23 +932,32 @@ class _TallyRow extends StatelessWidget {
           children: [
             SizedBox(
               width: 34,
-              child: Text('${tally.count}',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15)),
+              child: Text(
+                '${tally.count}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
             ),
             Expanded(
-              child: Text(tally.label,
-                  style: const TextStyle(fontSize: 13)),
+              child: Text(tally.label, style: const TextStyle(fontSize: 13)),
             ),
             if (tally.hasMoney)
-              Text(_rupees(tally.amountInPaise!),
-                  style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700)),
+              Text(
+                _rupees(tally.amountInPaise!),
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
             const SizedBox(width: 6),
-            Icon(Icons.chevron_right_rounded,
-                size: 18, color: Colors.grey.shade400),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: Colors.grey.shade400,
+            ),
           ],
         ),
       ),
@@ -899,7 +978,11 @@ class _Caveat extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 14, color: Colors.grey.shade500),
+          Icon(
+            Icons.info_outline_rounded,
+            size: 14,
+            color: Colors.grey.shade500,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -907,7 +990,10 @@ class _Caveat extends StatelessWidget {
               'Marking members in at the counter is not counted — check-ins do '
               'not record who served them.',
               style: TextStyle(
-                  fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+                fontSize: 11,
+                height: 1.4,
+                color: Colors.grey.shade600,
+              ),
             ),
           ),
         ],

@@ -6,6 +6,7 @@ import '../../services/payout_service.dart';
 import '../../services/storage_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/readable_width.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import 'payout_new_sheet.dart';
@@ -101,12 +102,16 @@ class _PayoutsScreenState extends State<PayoutsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.account_balance_wallet_rounded,
-                  size: 56, color: Colors.grey.shade400),
+              Icon(
+                Icons.account_balance_wallet_rounded,
+                size: 56,
+                color: Colors.grey.shade400,
+              ),
               const SizedBox(height: 14),
-              const Text('No payouts yet',
-                  style:
-                      TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              const Text(
+                'No payouts yet',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 6),
               Text(
                 'Work one out for a trainer and a month. Nothing is paid '
@@ -125,43 +130,46 @@ class _PayoutsScreenState extends State<PayoutsScreen> {
 
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
-        children: [
-          if (drafts.isNotEmpty) ...[
-            _heading('Waiting to be paid', drafts.length),
-            ...drafts.map((p) => _PayoutCard(
-                  payout: p,
-                  isOwner: _isOwner,
-                  onChanged: _load,
-                )),
+      // Capped like every other card list: across a wide monitor a name and
+      // its amount end up a hand's width apart, which is the scanning
+      // problem tables solve reappearing inside the cards.
+      child: ReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
+          children: [
+            if (drafts.isNotEmpty) ...[
+              _heading('Waiting to be paid', drafts.length),
+              ...drafts.map(
+                (p) =>
+                    _PayoutCard(payout: p, isOwner: _isOwner, onChanged: _load),
+              ),
+            ],
+            if (settled.isNotEmpty) ...[
+              _heading('Already dealt with', settled.length),
+              ...settled.map(
+                (p) =>
+                    _PayoutCard(payout: p, isOwner: _isOwner, onChanged: _load),
+              ),
+            ],
           ],
-          if (settled.isNotEmpty) ...[
-            _heading('Already dealt with', settled.length),
-            ...settled.map((p) => _PayoutCard(
-                  payout: p,
-                  isOwner: _isOwner,
-                  onChanged: _load,
-                )),
-          ],
-        ],
+        ),
       ),
     );
   }
 
   Widget _heading(String text, int n) => Padding(
-        padding: const EdgeInsets.fromLTRB(6, 8, 6, 8),
-        child: Row(
-          children: [
-            Text(text,
-                style: const TextStyle(
-                    fontSize: 13.5, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 7),
-            Text('$n',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-          ],
+    padding: const EdgeInsets.fromLTRB(6, 8, 6, 8),
+    child: Row(
+      children: [
+        Text(
+          text,
+          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
         ),
-      );
+        const SizedBox(width: 7),
+        Text('$n', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+      ],
+    ),
+  );
 }
 
 class _PayoutCard extends StatelessWidget {
@@ -195,28 +203,37 @@ class _PayoutCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(payout.trainer,
-                              style: const TextStyle(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            payout.trainer,
+                            style: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const SizedBox(height: 2),
-                          Text(_period(),
-                              style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: Colors.grey.shade600)),
+                          Text(
+                            _period(),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(_rupees(payout.totalInPaise),
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: payout.isDraft
-                                    ? AppColors.primary
-                                    : Colors.grey.shade700)),
+                        Text(
+                          _rupees(payout.totalInPaise),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: payout.isDraft
+                                ? AppColors.primary
+                                : Colors.grey.shade700,
+                          ),
+                        ),
                         _statusTag(),
                       ],
                     ),
@@ -225,17 +242,20 @@ class _PayoutCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 // The three schemes, on one line. Enough to see at a glance
                 // why a figure is what it is without opening anything.
-                Text(_composition(),
-                    style:
-                        TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                Text(
+                  _composition(),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                ),
                 if (payout.isPaid && payout.paidBy != null) ...[
                   const SizedBox(height: 4),
                   Text(
                     'Paid by ${payout.paidBy}'
                     '${payout.paymentMode == null ? '' : ' · ${payout.paymentMode}'}'
                     '${payout.referenceNumber == null ? '' : ' · ${payout.referenceNumber}'}',
-                    style:
-                        TextStyle(fontSize: 10.5, color: Colors.grey.shade500),
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: Colors.grey.shade500,
+                    ),
                   ),
                 ],
               ],
@@ -278,9 +298,14 @@ class _PayoutCard extends StatelessWidget {
       'cancelled' => ('cancelled', Colors.grey),
       _ => ('draft', AppColors.warning),
     };
-    return Text(label,
-        style: TextStyle(
-            fontSize: 10, fontWeight: FontWeight.w700, color: colour));
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: colour,
+      ),
+    );
   }
 
   Future<void> _openDetail(BuildContext context) async {
@@ -354,8 +379,11 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
       _error = null;
     });
     try {
-      await _service.markPaid(widget.id,
-          paymentMode: _mode, referenceNumber: _reference.text.trim());
+      await _service.markPaid(
+        widget.id,
+        paymentMode: _mode,
+        referenceNumber: _reference.text.trim(),
+      );
       if (!mounted) return;
       Navigator.pop(context, true);
     } on ApiException catch (e) {
@@ -394,9 +422,12 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85),
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       child: SafeArea(
         child: _loading
             ? const Padding(
@@ -424,14 +455,21 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                       if (p == null)
                         Text(_error ?? 'Could not load that payout.')
                       else ...[
-                        Text(p.trainer,
-                            style: const TextStyle(
-                                fontSize: 17, fontWeight: FontWeight.bold)),
-                        Text(_rupees(p.totalInPaise),
-                            style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary)),
+                        Text(
+                          p.trainer,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          _rupees(p.totalInPaise),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
                         const SizedBox(height: 12),
 
                         for (final l in p.lines)
@@ -441,14 +479,19 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
-                                  child: Text(l.description,
-                                      style: const TextStyle(fontSize: 12.5)),
+                                  child: Text(
+                                    l.description,
+                                    style: const TextStyle(fontSize: 12.5),
+                                  ),
                                 ),
                                 const SizedBox(width: 10),
-                                Text(_rupees(l.amountInPaise),
-                                    style: const TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w600)),
+                                Text(
+                                  _rupees(l.amountInPaise),
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -457,10 +500,13 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                           const SizedBox(height: 14),
                           Divider(color: Colors.grey.shade200),
                           const SizedBox(height: 10),
-                          const Text('Record the payment',
-                              style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Record the payment',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
                             initialValue: _mode,
@@ -472,12 +518,17 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                             ),
                             items: const [
                               DropdownMenuItem(
-                                  value: 'cash', child: Text('Cash')),
+                                value: 'cash',
+                                child: Text('Cash'),
+                              ),
                               DropdownMenuItem(
-                                  value: 'upi', child: Text('UPI')),
+                                value: 'upi',
+                                child: Text('UPI'),
+                              ),
                               DropdownMenuItem(
-                                  value: 'bank_transfer',
-                                  child: Text('Bank transfer')),
+                                value: 'bank_transfer',
+                                child: Text('Bank transfer'),
+                              ),
                             ],
                             onChanged: _working
                                 ? null
@@ -503,17 +554,22 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                             'one action in the app that moves cash out of the '
                             'gym.',
                             style: TextStyle(
-                                fontSize: 12,
-                                height: 1.35,
-                                color: Colors.grey.shade600),
+                              fontSize: 12,
+                              height: 1.35,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ],
 
                         if (_error != null) ...[
                           const SizedBox(height: 10),
-                          Text(_error!,
-                              style: const TextStyle(
-                                  fontSize: 12, color: AppColors.danger)),
+                          Text(
+                            _error!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.danger,
+                            ),
+                          ),
                         ],
 
                         if (p.isDraft) ...[
@@ -527,15 +583,17 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
                                   backgroundColor: AppColors.success,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
-                                      vertical: 13),
+                                    vertical: 13,
+                                  ),
                                 ),
                                 child: _working
                                     ? const SizedBox(
                                         width: 16,
                                         height: 16,
                                         child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white),
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
                                       )
                                     : Text('Paid ${_rupees(p.totalInPaise)}'),
                               ),
@@ -560,8 +618,18 @@ class _PayoutDetailSheetState extends State<_PayoutDetailSheet> {
 }
 
 const _months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 String _rupees(int paise) {

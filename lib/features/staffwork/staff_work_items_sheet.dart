@@ -98,13 +98,18 @@ class _StaffWorkItemsSheetState extends State<StaffWorkItemsSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.title,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text('${widget.staffName} · ${widget.span.label}',
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade600)),
+                  Text(
+                    '${widget.staffName} · ${widget.span.label}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
                 ],
               ),
             ),
@@ -122,8 +127,10 @@ class _StaffWorkItemsSheetState extends State<StaffWorkItemsSheet> {
     final result = _result;
     if (result == null || result.items.isEmpty) {
       return Center(
-        child: Text('Nothing to show',
-            style: TextStyle(color: Colors.grey.shade500)),
+        child: Text(
+          'Nothing to show',
+          style: TextStyle(color: Colors.grey.shade500),
+        ),
       );
     }
 
@@ -142,14 +149,18 @@ class _StaffWorkItemsSheetState extends State<StaffWorkItemsSheet> {
             decoration: BoxDecoration(
               color: AppColors.warning.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(8),
-              border:
-                  Border.all(color: AppColors.warning.withValues(alpha: 0.35)),
+              border: Border.all(
+                color: AppColors.warning.withValues(alpha: 0.35),
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.info_outline_rounded,
-                    size: 15, color: AppColors.warning),
+                const Icon(
+                  Icons.info_outline_rounded,
+                  size: 15,
+                  color: AppColors.warning,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -172,31 +183,44 @@ class _StaffWorkItemsSheetState extends State<StaffWorkItemsSheet> {
       controller: controller,
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 24),
       itemCount: items.length,
-      separatorBuilder: (_, _) => Divider(height: 1, color: Colors.grey.shade200),
+      separatorBuilder: (_, _) =>
+          Divider(height: 1, color: Colors.grey.shade200),
       itemBuilder: (context, i) {
         final item = items[i];
         return ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          title: Text(item.who,
-              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
-          subtitle: Text(item.what,
-              style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600)),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 4,
+            vertical: 2,
+          ),
+          title: Text(
+            item.who,
+            style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            item.what,
+            style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600),
+          ),
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (item.amountInPaise != null)
-                Text('₹${item.amountInPaise! ~/ 100}',
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(
+                  '₹${item.amountInPaise! ~/ 100}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               // Across a span the clock alone is ambiguous — three rows at
               // 18:30 could be three days or three minutes apart.
               Text(
-                  widget.span.isSingleDay
-                      ? _hhmm(item.at)
-                      : '${_dayMon(item.at)} · ${_hhmm(item.at)}',
-                  style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500)),
+                widget.span.isSingleDay
+                    ? _hhmm(item.at)
+                    : '${_dayMon(item.at)} · ${_hhmm(item.at)}',
+                style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500),
+              ),
             ],
           ),
         );
@@ -209,8 +233,18 @@ String _hhmm(DateTime d) =>
     '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
 const _months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 String _dayMon(DateTime d) => '${d.day} ${_months[d.month - 1]}';

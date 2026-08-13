@@ -8,22 +8,22 @@ import '../../widgets/app_card.dart';
 import '../../widgets/date_span_bar.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
+import '../../widgets/readable_width.dart';
 
 /// Stock analytics (FR-23).
 ///
-/// The Restock queue next door answers "what is nearly gone" against a reorder
-/// level somebody typed in once. This answers what that cannot: how long each
-/// product lasts at the rate it actually sells, what it earns, and how much
-/// money is asleep on the shelf.
+/// The Restock queue answers "what is nearly gone" against a reorder level
+/// somebody typed in once. This answers the question that decides money: how
+/// long will it last at the rate it actually sells, and is it worth restocking
+/// at all.
 ///
-/// On the gym's own data the two disagree — a product flagged low has
-/// twenty-five days of cover while an unflagged one has twenty-three — which
-/// is exactly why days of cover leads here and the reorder level is shown
-/// beside it rather than instead of it.
+/// On the gym's own data those disagree — a product flagged low with 25 days
+/// of cover, another unflagged with 23 — which is the reason the screen
+/// exists. Days of cover replaces an arbitrary threshold.
 ///
-/// Nothing here reorders anything or edits a threshold. The suggested level is
-/// advisory, because a suggestion that silently rewrites somebody's setting is
-/// a change nobody agreed to.
+/// Nothing here writes. The suggested reorder level sits beside the current
+/// one so a mismatch is visible, and stays a suggestion: silently editing a
+/// threshold somebody set is a change nobody agreed to.
 class StockAnalyticsScreen extends StatefulWidget {
   const StockAnalyticsScreen({super.key});
 
@@ -34,10 +34,10 @@ class StockAnalyticsScreen extends StatefulWidget {
 class _StockAnalyticsScreenState extends State<StockAnalyticsScreen> {
   final _service = StockReportService();
 
-  /// Two months by default. A shop this size sells a handful of most lines a
-  /// week, and a shorter window turns one quiet fortnight into a rate that
-  /// says a product is dying.
-  late DateSpan _span = DateSpan.custom(
+  /// Two months back by default. A week of counter sales is too few to derive
+  /// a rate from — one quiet Sunday would halve it — and the whole screen
+  /// rests on that rate being believable.
+  DateSpan _span = DateSpan.custom(
     DateTime.now().subtract(const Duration(days: 59)),
     DateTime.now(),
   );
@@ -84,10 +84,7 @@ class _StockAnalyticsScreenState extends State<StockAnalyticsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        // Short enough to survive a phone's app bar. The longer version --
-        // "What the shop is doing" -- truncated to "What the shop is …" at
-        // 638px and collided with the refresh button.
-        title: const Text('Shop performance'),
+        title: const Text('What the shop is doing'),
         toolbarHeight: 48,
         actions: [
           IconButton(
@@ -117,64 +114,42 @@ class _StockAnalyticsScreenState extends State<StockAnalyticsScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(40),
-          child: Text('No products in the shop yet.',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+          child: Text(
+            'No products on the shelf yet.',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+          ),
         ),
       );
     }
 
-    // Products needing a decision come first; the rest are the reference
-    // below. Sorted by what it costs to ignore them, not alphabetically —
-    // this is a list of products, and unlike a list of people a shelf can be
-    // ranked without implying anything about anybody.
-    final attention = r.products.where((p) => p.needsAttention).toList()
-      ..sort((a, b) => b.stockValueInPaise.compareTo(a.stockValueInPaise));
+    // Ordered so the two verdicts that cost money come first. A list sorted
+    // by profit puts the healthy best-seller at the top, which is pleasant
+    // and useless.
+    final needsAction =
+        r.products.where((p) => p.needsAttention).toList();
     final rest = r.products.where((p) => !p.needsAttention).toList();
 
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
-        children: [
-          _Totals(report: r),
-          const SizedBox(height: 12),
-          if (r.categories.length > 1) ...[
+      child: ReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
+          children: [
+            _Totals(report: r),
+            const SizedBox(height: 12),
+            if (needsAction.isNotEmpty) ...[
+              _heading('Worth doing something about', needsAction.length),
+              ...needsAction.map((p) => _ProductRow(product: p)),
+              const SizedBox(height: 6),
+            ],
+            _heading('Everything else', rest.length),
+            ...rest.map((p) => _ProductRow(product: p)),
+            const SizedBox(height: 14),
             _Categories(report: r),
             const SizedBox(height: 12),
+            _Caveat(report: r),
           ],
-          if (attention.isNotEmpty) ...[
-            _heading('Worth a decision', attention.length),
-            ...attention.map((p) => _ProductRow(product: p, report: r)),
-            const SizedBox(height: 8),
-          ],
-          if (rest.isNotEmpty) ...[
-            _heading('Ticking along', rest.length),
-            ...rest.map((p) => _ProductRow(product: p, report: r)),
-          ],
-          const SizedBox(height: 14),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.info_outline_rounded,
-                    size: 14, color: Colors.grey.shade500),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Rates come from what sold in this window, so a festival '
-                    'or a closure inside it moves every figure. "Order now" '
-                    'assumes a restock takes ${r.leadDays} days — an '
-                    'assumption, not a measurement. Nothing here reorders '
-                    'anything or changes a reorder level.',
-                    style: TextStyle(
-                        fontSize: 11, height: 1.4, color: Colors.grey.shade600),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -185,7 +160,7 @@ class _StockAnalyticsScreenState extends State<StockAnalyticsScreen> {
           children: [
             Text(text,
                 style: const TextStyle(
-                    fontSize: 13.5, fontWeight: FontWeight.bold)),
+                    fontSize: 13, fontWeight: FontWeight.bold)),
             const SizedBox(width: 7),
             Text('$n',
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
@@ -201,27 +176,41 @@ class _Totals extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final asleep = report.deadValueInPaise + report.overstockedValueInPaise;
+    final asleepCount = report.deadCount + report.overstockedCount;
+
     return AppCard(
       padding: const EdgeInsets.all(14),
       child: Column(
         children: [
           Row(
             children: [
-              _figure(_rupees(report.revenueInPaise), 'sold'),
-              Container(width: 1, height: 32, color: Colors.grey.shade200),
+              _figure('${report.unitsSold}', 'sold'),
+              _divider(),
+              _figure(_rupees(report.revenueInPaise), 'taken'),
+              _divider(),
               _figure(_rupees(report.profitInPaise), 'profit'),
-              Container(width: 1, height: 32, color: Colors.grey.shade200),
-              _figure(_rupees(report.stockValueInPaise), 'on the shelf'),
             ],
           ),
-          const SizedBox(height: 6),
-          Text('${report.unitsSold} units over ${report.days} days',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+          const SizedBox(height: 10),
+          Divider(height: 1, color: Colors.grey.shade200),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _figure(_rupees(report.stockValueInPaise), 'on the shelf'),
+              _divider(),
+              _figure(
+                _rupees(asleep),
+                'of it asleep',
+                colour: asleep > 0 ? AppColors.danger : null,
+              ),
+            ],
+          ),
 
-          // The number worth acting on. Said as money rather than as a count,
-          // because "four products" is not a reason to do anything and
-          // "Rs 62,000 asleep" is.
-          if (report.overstockedValueInPaise > 0) ...[
+          // The sentence the screen exists to deliver. Money already spent
+          // that is doing nothing is more actionable than money not yet
+          // earned, because it can be stopped tomorrow.
+          if (asleep > 0) ...[
             const SizedBox(height: 10),
             Container(
               width: double.infinity,
@@ -231,29 +220,10 @@ class _Totals extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '${_rupees(report.overstockedValueInPaise)} is tied up in '
-                '${report.overstockedCount} '
-                '${report.overstockedCount == 1 ? 'product that will take' : 'products that will take'} '
-                'months to sell. That is money already spent, sitting still.',
-                style: const TextStyle(fontSize: 11.5, height: 1.35),
-              ),
-            ),
-          ],
-
-          if (report.deadCount > 0) ...[
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.danger.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '${report.deadCount} '
-                '${report.deadCount == 1 ? 'product sold' : 'products sold'} '
-                'nothing at all in this window — '
-                '${_rupees(report.deadValueInPaise)} of stock.',
+                '$asleepCount ${asleepCount == 1 ? 'product holds' : 'products hold'} '
+                '${_rupees(asleep)} that will take months to sell, or is not '
+                'selling at all. That is stock money already spent — buying '
+                'less of it frees cash for what turns over.',
                 style: const TextStyle(fontSize: 11.5, height: 1.35),
               ),
             ),
@@ -263,78 +233,34 @@ class _Totals extends StatelessWidget {
     );
   }
 
-  Widget _figure(String value, String label) => Expanded(
+  Widget _figure(String value, String label, {Color? colour}) => Expanded(
         child: Column(
           children: [
             Text(value,
-                style: const TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: colour ?? AppColors.textPrimary)),
             const SizedBox(height: 2),
             Text(label,
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
           ],
         ),
       );
-}
 
-class _Categories extends StatelessWidget {
-  final StockReport report;
-
-  const _Categories({required this.report});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Where the money came from',
-              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 10),
-          for (final c in report.categories) ...[
-            Row(
-              children: [
-                Expanded(
-                    child: Text(c.category,
-                        style: const TextStyle(fontSize: 12.5))),
-                // Profit beside revenue, because they disagree: the biggest
-                // seller by revenue is rarely the biggest earner.
-                Text('${_rupees(c.revenueInPaise)} · ',
-                    style: TextStyle(
-                        fontSize: 11.5, color: Colors.grey.shade600)),
-                Text(_rupees(c.profitInPaise),
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600)),
-              ],
-            ),
-            const SizedBox(height: 4),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: LinearProgressIndicator(
-                value: c.sharePct / 100,
-                minHeight: 5,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
-        ],
-      ),
-    );
-  }
+  Widget _divider() =>
+      Container(width: 1, height: 30, color: Colors.grey.shade200);
 }
 
 class _ProductRow extends StatelessWidget {
   final ProductStock product;
-  final StockReport report;
 
-  const _ProductRow({required this.product, required this.report});
+  const _ProductRow({required this.product});
 
   @override
   Widget build(BuildContext context) {
-    final (label, colour) = _verdict();
+    final (label, colour) = _verdict(product.verdict);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -355,7 +281,8 @@ class _ProductRow extends StatelessWidget {
                           Flexible(
                             child: Text(product.name,
                                 style: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w600)),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600)),
                           ),
                           const SizedBox(width: 6),
                           Container(
@@ -374,6 +301,9 @@ class _ProductRow extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 3),
+                      // The verdict explains itself in the server's words, so
+                      // the reason lives in one place rather than being
+                      // re-derived per client.
                       Text(product.note,
                           style: TextStyle(
                               fontSize: 11.5,
@@ -386,41 +316,30 @@ class _ProductRow extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // Days of cover leads, because it is the number that
-                    // decides whether to order. The unit count is context.
-                    Text(
-                      product.daysCover == null
-                          ? '—'
-                          : '${product.daysCover}d',
-                      style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: colour),
-                    ),
-                    Text('${product.stockQty} left',
+                    Text('${product.stockQty}',
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold)),
+                    Text('in stock',
                         style: TextStyle(
-                            fontSize: 10.5, color: Colors.grey.shade500)),
+                            fontSize: 10, color: Colors.grey.shade500)),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 9),
             Wrap(
-              spacing: 14,
+              spacing: 12,
               runSpacing: 4,
               children: [
                 _meta('${product.unitsSold} sold'),
-                _meta('${product.perDay.toStringAsFixed(2)}/day'),
-                _meta('${_rupees(product.profitInPaise)} profit'),
+                _meta('${product.perDay}/day'),
                 _meta('${product.marginPct}% margin'),
-                // The current level next to what the rate implies, so a
-                // mismatch is visible without the screen editing anything.
+                _meta('${_rupees(product.profitInPaise)} profit'),
+                // Shown together so a level that disagrees with the rate is
+                // visible without arithmetic. Advisory: nothing is rewritten.
                 if (product.suggestedReorder > 0)
-                  _meta(
-                    'reorder at ${product.reorderLevel} '
-                    '(rate suggests ${product.suggestedReorder})',
-                    dim: product.reorderLevel == product.suggestedReorder,
-                  ),
+                  _meta('reorder at ${product.reorderLevel}'
+                      ' · suggest ${product.suggestedReorder}'),
               ],
             ),
           ],
@@ -429,25 +348,108 @@ class _ProductRow extends StatelessWidget {
     );
   }
 
-  Widget _meta(String text, {bool dim = true}) => Text(
-        text,
-        style: TextStyle(
-            fontSize: 11,
-            color: dim ? Colors.grey.shade600 : Colors.grey.shade700),
-      );
+  Widget _meta(String text) => Text(text,
+      style: TextStyle(fontSize: 11, color: Colors.grey.shade600));
 
-  (String, Color) _verdict() {
-    switch (product.verdict) {
+  static (String, Color) _verdict(String v) {
+    switch (v) {
       case 'out_of_stock':
         return ('out of stock', AppColors.danger);
       case 'reorder_now':
         return ('order now', AppColors.danger);
       case 'dead':
-        return ('not selling', AppColors.danger);
+        return ('not selling', AppColors.warning);
       case 'overstocked':
         return ('overstocked', AppColors.warning);
     }
-    return ('fine', AppColors.success);
+    return ('healthy', AppColors.success);
+  }
+}
+
+class _Categories extends StatelessWidget {
+  final StockReport report;
+
+  const _Categories({required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    if (report.categories.isEmpty) return const SizedBox.shrink();
+
+    return AppCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('By category',
+              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 10),
+          for (final c in report.categories) ...[
+            Row(
+              children: [
+                Expanded(
+                  child:
+                      Text(c.category, style: const TextStyle(fontSize: 12.5)),
+                ),
+                Text(_rupees(c.profitInPaise),
+                    style: const TextStyle(
+                        fontSize: 12.5, fontWeight: FontWeight.w600)),
+                SizedBox(
+                  width: 44,
+                  child: Text('${c.sharePct}%',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                          fontSize: 11.5, color: Colors.grey.shade600)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: c.sharePct / 100,
+                minHeight: 5,
+                backgroundColor: Colors.grey.shade200,
+                valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _Caveat extends StatelessWidget {
+  final StockReport report;
+
+  const _Caveat({required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded,
+              size: 14, color: Colors.grey.shade500),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Rates are what sold in the window above, not a forecast — a '
+              'festival or a closure inside it moves every number here. '
+              '"Order now" assumes a restock takes ${report.leadDays} days, '
+              'which is an assumption nobody has checked with the supplier '
+              'yet. Suggested reorder levels are advice; nothing on this '
+              'screen changes a setting.',
+              style: TextStyle(
+                  fontSize: 11, height: 1.4, color: Colors.grey.shade600),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
