@@ -350,8 +350,15 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
     return Material(
       elevation: 8,
       color: Colors.white,
+      // Bottom inset only. Left and right are deliberately off: this bar sits
+      // edge to edge, and a horizontal safe-area inset here once starved the
+      // Row of width until each label wrapped to one character per line,
+      // which made the bar tall enough to squeeze the list above it to
+      // nothing.
       child: SafeArea(
         top: false,
+        left: false,
+        right: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
           child: Row(
@@ -359,9 +366,15 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Both labels are single-line and clip. A summary bar must
+                    // stay one row high whatever width it is handed — if it
+                    // grows instead, it eats the list it is summarising.
                     Text(
                       '$n ${n == 1 ? 'due' : 'dues'} selected',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.bold,
@@ -369,6 +382,8 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
                     ),
                     Text(
                       'Creates drafts — nothing is issued',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey.shade600,

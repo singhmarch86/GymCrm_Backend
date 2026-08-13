@@ -226,7 +226,10 @@ class _Shape extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 74,
+            // Derived from the bar height rather than typed in again: the two
+            // have to agree, and when they were separate numbers in separate
+            // classes the chart was quietly cropping its own tallest column.
+            height: _Column.maxBar + _Column.labelStrip,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -259,12 +262,19 @@ class _Column extends StatelessWidget {
 
   const _Column({required this.bucket, required this.peak, required this.unit});
 
-  static const _maxBar = 50.0;
+  /// How tall the tallest column may be. Generous on purpose: at 50 a single
+  /// busy day flattened every other bar to a few pixels, and a chart whose
+  /// small values are indistinguishable is decoration rather than information.
+  static const maxBar = 130.0;
+
+  /// The gap and the date label under each column. Kept here so the card can
+  /// size itself from one place.
+  static const labelStrip = 20.0;
 
   @override
   Widget build(BuildContext context) {
-    final raised = bucket.raisedInPaise / peak * _maxBar;
-    final expiring = bucket.expiringInPaise / peak * _maxBar;
+    final raised = bucket.raisedInPaise / peak * maxBar;
+    final expiring = bucket.expiringInPaise / peak * maxBar;
 
     // Every bucket gets a label when the columns are months; days get one
     // every fifth, or the axis turns into a smear.
@@ -317,7 +327,7 @@ class _Column extends StatelessWidget {
   // A zero keeps a visible hairline rather than vanishing: an empty day is a
   // fact about the span, and a gap reads as missing data.
   Widget _bar(double h, Color c) => Container(
-    width: 6,
+    width: 7,
     height: h < 1 ? 1 : h,
     color: h < 1 ? Colors.grey.shade300 : c,
   );
