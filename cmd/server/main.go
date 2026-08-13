@@ -38,6 +38,7 @@ import (
 	"gymcrm/internal/retention"
 	"gymcrm/internal/rhythm"
 	"gymcrm/internal/staffwork"
+	"gymcrm/internal/stockreport"
 	"gymcrm/internal/trainers"
 	"gymcrm/internal/users"
 	"gymcrm/internal/visitors"
@@ -185,6 +186,10 @@ func main() {
 	retentionRepo := retention.NewRepository(db)
 	retentionSvc := retention.NewService(retentionRepo)
 	retentionHandler := retention.NewHandler(retentionSvc)
+
+	stockReportRepo := stockreport.NewRepository(db)
+	stockReportSvc := stockreport.NewService(stockReportRepo)
+	stockReportHandler := stockreport.NewHandler(stockReportSvc)
 
 	staffWorkRepo := staffwork.NewRepository(db)
 	staffWorkSvc := staffwork.NewService(staffWorkRepo)
@@ -347,6 +352,11 @@ func main() {
 	// Plain jwt: low stock is a fact about the shelf, not about a person, and
 	// the receptionist who notices it is the one who should be able to see it.
 	mux.Handle("GET /api/v1/queues/stock", jwt(http.HandlerFunc(queuesHandler.Stock)))
+	// Stock analytics (FR-23). The queue above answers "what is nearly gone"
+	// against a typed-in threshold; this answers how long the shelf lasts at
+	// the rate things actually sell, which is the question that decides money.
+	mux.Handle("GET /api/v1/stock/analytics",
+		jwt(http.HandlerFunc(stockReportHandler.Report)))
 
 	// Collections (FR-19 §3). Not narrowed by user: unlike staff work this is
 	// a worklist rather than a record of who did what, and a receptionist
