@@ -30,12 +30,23 @@ type SetNextStepRequest struct {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        assigned_to  query  string  false  "user id, 'unassigned', or omit for everyone"
+// @Param        group_by     query  string  false  "timing (default) | next_step | source | goal"
 // @Success      200  {object}  WorkflowResponse
 // @Router       /api/v1/leads/workflow [get]
 func (h *Handler) Workflow(w http.ResponseWriter, r *http.Request) {
 	assignedTo := strings.TrimSpace(r.URL.Query().Get("assigned_to"))
 
-	result, err := h.svc.GetWorkflow(r.Context(), assignedTo)
+	// An unknown value is refused rather than quietly falling back to timing.
+	// Silently answering a different question than the one asked is how a
+	// client ends up rendering "Instagram" rows under an "Overdue" heading.
+	groupBy, ok := ParseGroupBy(strings.TrimSpace(r.URL.Query().Get("group_by")))
+	if !ok {
+		response.BadRequest(w,
+			"group_by must be timing, next_step, source or goal")
+		return
+	}
+
+	result, err := h.svc.GetWorkflow(r.Context(), assignedTo, groupBy)
 	if err != nil {
 		h.handleError(w, err)
 		return

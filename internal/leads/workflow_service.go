@@ -35,6 +35,12 @@ type WorkflowItem struct {
 	// cannot disagree with the server about who is overdue.
 	State       string `json:"state"`
 	DaysOverdue int    `json:"days_overdue,omitempty"`
+
+	// Carried on every item, whichever axis the queue is grouped by. A row
+	// that says where the lead came from is worth reading even when the
+	// grouping is by timing.
+	Source string `json:"source,omitempty"`
+	Goal   string `json:"goal,omitempty"`
 }
 
 // WorkflowGroup is one bucket of the queue.
@@ -55,6 +61,11 @@ type WorkflowResponse struct {
 	Overdue    int `json:"overdue"`
 	DueToday   int `json:"due_today"`
 
+	// Which axis the groups above represent, so a client cannot render one
+	// grouping under another's heading.
+	GroupBy      string `json:"group_by"`
+	GroupByLabel string `json:"group_by_label"`
+
 	GeneratedAt time.Time `json:"generated_at"`
 }
 
@@ -65,7 +76,9 @@ var groupOrder = []WorkflowState{
 }
 
 // GetWorkflow builds the queue.
-func (s *Service) GetWorkflow(ctx context.Context, assignedTo string) (*WorkflowResponse, error) {
+func (s *Service) GetWorkflow(
+	ctx context.Context, assignedTo string, groupBy GroupBy,
+) (*WorkflowResponse, error) {
 	rows, err := s.repo.WorkflowLeads(ctx, assignedTo)
 	if err != nil {
 		return nil, fmt.Errorf("workflow: %w", err)
@@ -89,6 +102,10 @@ func (s *Service) GetWorkflow(ctx context.Context, assignedTo string) (*Workflow
 			NextStepDue: row.NextStepDue,
 			OwnerID:     row.AssignedUserID,
 			State:       string(state),
+			Source:      string(row.Source),
+		}
+		if row.Goal != nil {
+			item.Goal = string(*row.Goal)
 		}
 		if row.NextStep != nil && *row.NextStep != "" {
 			label := NextStep(*row.NextStep).Label()
@@ -105,24 +122,61 @@ func (s *Service) GetWorkflow(ctx context.Context, assignedTo string) (*Workflow
 		buckets[state] = append(buckets[state], item)
 	}
 
-	out := &WorkflowResponse{Groups: []WorkflowGroup{}, GeneratedAt: time.Now().UTC()}
-	for _, st := range groupOrder {
-		items := buckets[st]
-		// Every group is returned, including empty ones. "0 unattended" is the
-		// single most useful thing this screen can say, and a group that
-		// vanishes when it hits zero denies the reader that sentence.
-		out.Groups = append(out.Groups, WorkflowGroup{
-			State: string(st),
-			Label: st.Label(),
-			Count: len(items),
-			Items: items,
-		})
-		out.TotalOpen += len(items)
+	out := &WorkflowResponse{
+		Groups:       []WorkflowGroup{},
+		GroupBy:      string(groupBy),
+		GroupByLabel: groupBy.Label(),
+		GeneratedAt:  time.Now().UTC(),
 	}
 
+	// The headline counts are the same numbers whichever axis the queue is
+	// cut along. Recomputing them per grouping would let "3 overdue" change
+	// meaning when somebody switches the view, which is the fastest way to
+	// make a number untrustworthy.
 	out.Unattended = len(buckets[StateUnattended])
 	out.Overdue = len(buckets[StateOverdue])
 	out.DueToday = len(buckets[StateToday])
+
+	var all []WorkflowItem
+	for _, st := range groupOrder {
+		out.TotalOpen += len(buckets[st])
+		all = append(all, buckets[st]...)
+	}
+
+	switch groupBy {
+	case GroupByNextStep:
+		out.Groups = groupByField(all,
+			func(i WorkflowItem) string {
+				if i.NextStep == nil {
+					return ""
+				}
+				return *i.NextStep
+			},
+			func(k string) string { return NextStep(k).Label() },
+			"No next step recorded",
+			nextStepKeys())
+	case GroupBySource:
+		out.Groups = groupByField(all,
+			func(i WorkflowItem) string { return i.Source },
+			prettify, "Source not recorded", knownSources)
+	case GroupByGoal:
+		out.Groups = groupByField(all,
+			func(i WorkflowItem) string { return i.Goal },
+			prettify, "Goal not recorded", knownGoals)
+	default:
+		for _, st := range groupOrder {
+			items := buckets[st]
+			// Every group is returned, including empty ones. "0 unattended" is
+			// the single most useful thing this screen can say, and a group
+			// that vanishes when it hits zero denies the reader that sentence.
+			out.Groups = append(out.Groups, WorkflowGroup{
+				State: string(st),
+				Label: st.Label(),
+				Count: len(items),
+				Items: items,
+			})
+		}
+	}
 
 	return out, nil
 }
