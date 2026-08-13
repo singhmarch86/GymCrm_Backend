@@ -19,6 +19,7 @@ import '../../widgets/loading_state.dart';
 import '../lifecycle/lifecycle_shared.dart';
 import '../../widgets/member_picker.dart';
 import 'stock_queue_view.dart';
+import 'stock_analytics_screen.dart';
 
 /// Retail: the counter, the shelf, and what was sold.
 /// See docs/FR-07-pos-inventory.md.
@@ -46,6 +47,22 @@ class _PosScreenState extends State<PosScreen> {
           backgroundColor: AppColors.background,
           appBar: AppBar(
             title: const Text('Shop'),
+            actions: [
+              // The queue in Restock says what is nearly gone against a
+              // typed-in threshold. This says how long things actually last
+              // and what they earn — a different question, so a separate
+              // screen rather than a fifth tab.
+              IconButton(
+                tooltip: 'Shop performance',
+                icon: const Icon(Icons.insights_rounded),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const StockAnalyticsScreen(),
+                  ),
+                ),
+              ),
+            ],
             bottom: const TabBar(
               isScrollable: true,
               tabAlignment: TabAlignment.start,
