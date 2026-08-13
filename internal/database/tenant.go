@@ -22,7 +22,14 @@ type TenantContext struct {
 	role   string
 }
 
-// NewTenantContext is called ONLY by JWT middleware after token validation.
+// NewTenantContext builds the identity every repository scopes its queries to.
+//
+// Only two callers, and both must have already established who is acting:
+// the JWT middleware, after validating a token, and the development seeder,
+// running the retention scanners as the owner it has just created. Nothing
+// that takes a gym id from a request may call this — that is how a caller
+// reads another gym's data.
+
 func NewTenantContext(gymID, userID int64, role string) TenantContext {
 	return TenantContext{
 		gymID:  gymID,

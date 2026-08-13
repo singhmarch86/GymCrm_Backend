@@ -62,6 +62,8 @@ type seeder struct {
 	productCount    int
 	saleCount       int
 	transferCount   int
+	retentionAlerts int64
+	rhythmAlerts    int64
 }
 
 // Run seeds the database if it looks fresh. Safe to call on every startup —
@@ -130,6 +132,18 @@ func Run(ctx context.Context, db *gorm.DB) error {
 		return fmt.Errorf("devseed: %w", err)
 	}
 
+	// After the commit, never inside it. Both scanners read the seeded history
+	// through their own repositories and write their own rows; running them
+	// against an uncommitted transaction would show them a database that does
+	// not exist yet.
+	//
+	// A scan failure is logged, not returned. The seed itself has already
+	// committed and is sound — losing the derived alerts is worth a warning,
+	// but refusing to boot over it would be a poor trade.
+	if err := s.runScans(ctx, db); err != nil {
+		log.Printf("devseed: warning: %v (At Risk will be empty until a scan runs)", err)
+	}
+
 	log.Printf("devseed: seeded demo gym %q — owner login phone=9876543210 password=secure123", "Demo Fitness Gym")
 	log.Printf("devseed: %d members, %d attendance records, %d renewals, %d payments, %d leads",
 		s.memberCount, s.attendanceCount, s.renewalCount, s.paymentCount, s.leadCount)
@@ -137,6 +151,8 @@ func Run(ctx context.Context, db *gorm.DB) error {
 		len(s.trainers), s.ptPackageCount, s.ptSessionCount, s.productCount, s.saleCount)
 	log.Printf("devseed: 2 branches (%s, %s) under one organization, %d stock transfer(s)",
 		mainBranchName, secondBranchName, s.transferCount)
+	log.Printf("devseed: %d inactivity alerts, %d rhythm breaks — raised by the real scanners",
+		s.retentionAlerts, s.rhythmAlerts)
 	return nil
 }
 
