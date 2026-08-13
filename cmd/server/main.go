@@ -39,6 +39,7 @@ import (
 	"gymcrm/internal/rhythm"
 	"gymcrm/internal/staffwork"
 	"gymcrm/internal/stockreport"
+	"gymcrm/internal/stocktransfer"
 	"gymcrm/internal/trainers"
 	"gymcrm/internal/users"
 	"gymcrm/internal/visitors"
@@ -190,6 +191,10 @@ func main() {
 	stockReportRepo := stockreport.NewRepository(db)
 	stockReportSvc := stockreport.NewService(stockReportRepo)
 	stockReportHandler := stockreport.NewHandler(stockReportSvc)
+
+	stockTransferRepo := stocktransfer.NewRepository(db)
+	stockTransferSvc := stocktransfer.NewService(stockTransferRepo, db)
+	stockTransferHandler := stocktransfer.NewHandler(stockTransferSvc)
 
 	staffWorkRepo := staffwork.NewRepository(db)
 	staffWorkSvc := staffwork.NewService(staffWorkRepo)
@@ -357,6 +362,17 @@ func main() {
 	// the rate things actually sell, which is the question that decides money.
 	mux.Handle("GET /api/v1/stock/analytics",
 		jwt(http.HandlerFunc(stockReportHandler.Report)))
+
+	// Inventory across branches (FR-22). Plain jwt for the same reason as the
+	// stock queue: the person who notices an empty shelf is standing at it,
+	// and a transfer that needs an owner is a transfer that does not happen.
+	// Who moved what is recorded on the transfer instead.
+	mux.Handle("GET /api/v1/stock/chain",
+		jwt(http.HandlerFunc(stockTransferHandler.Chain)))
+	mux.Handle("POST /api/v1/stock/transfer",
+		jwt(http.HandlerFunc(stockTransferHandler.Send)))
+	mux.Handle("GET /api/v1/stock/transfers",
+		jwt(http.HandlerFunc(stockTransferHandler.History)))
 
 	// Collections (FR-19 §3). Not narrowed by user: unlike staff work this is
 	// a worklist rather than a record of who did what, and a receptionist
