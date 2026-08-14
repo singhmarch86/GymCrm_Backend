@@ -310,29 +310,3 @@ String formatDate(DateTime d) {
   ];
   return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}';
 }
-
-/// Rupees with thousands separators, Indian grouping (1,23,456).
-String formatRupees(double amount) {
-  final whole = amount.floor();
-  final paise = ((amount - whole) * 100).round();
-  final s = whole.toString();
-
-  String grouped;
-  if (s.length <= 3) {
-    grouped = s;
-  } else {
-    final last3 = s.substring(s.length - 3);
-    var rest = s.substring(0, s.length - 3);
-    final parts = <String>[];
-    while (rest.length > 2) {
-      parts.insert(0, rest.substring(rest.length - 2));
-      rest = rest.substring(0, rest.length - 2);
-    }
-    if (rest.isNotEmpty) parts.insert(0, rest);
-    grouped = '${parts.join(',')},$last3';
-  }
-
-  return paise > 0
-      ? '₹$grouped.${paise.toString().padLeft(2, '0')}'
-      : '₹$grouped';
-}

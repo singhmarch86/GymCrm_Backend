@@ -10,6 +10,7 @@ import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../../widgets/status_chip.dart';
 import '../lifecycle/lifecycle_shared.dart';
+import '../../utils/money.dart';
 
 /// One invoice: its lines, totals and the actions available for its state.
 ///
@@ -388,7 +389,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${item.quantity} × ${formatRupees(item.unitPriceInRupees)} · GST ${item.taxRatePct.toStringAsFixed(0)}%'
+                  '${item.quantity} × ${moneyR(item.unitPriceInRupees)} · GST ${item.taxRatePct.toStringAsFixed(0)}%'
                   '${item.sacCode != null ? ' · SAC ${item.sacCode}' : ''}',
                   style: const TextStyle(
                     fontSize: 11.5,
@@ -399,7 +400,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
             ),
           ),
           Text(
-            formatRupees(item.lineTotalInRupees),
+            moneyR(item.lineTotalInRupees),
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
           ),
           if (inv.isDraft)
@@ -419,18 +420,18 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     return LifecycleOutcome(
       emphasisColor: AppColors.primary,
       rows: [
-        ('Subtotal', formatRupees(inv.subtotalInPaise / 100)),
+        ('Subtotal', money(inv.subtotalInPaise)),
         if (inv.discountInPaise > 0)
           (
             'Discount${inv.discountLabel != null ? ' — ${inv.discountLabel}' : ''}',
-            '− ${formatRupees(inv.discountInPaise / 100)}',
+            '− ${money(inv.discountInPaise)}',
           ),
-        ('CGST', formatRupees(inv.cgstInPaise / 100)),
-        ('SGST', formatRupees(inv.sgstInPaise / 100)),
-        if (!inv.isDraft) ('Paid', formatRupees(inv.paidInPaise / 100)),
+        ('CGST', money(inv.cgstInPaise)),
+        ('SGST', money(inv.sgstInPaise)),
+        if (!inv.isDraft) ('Paid', money(inv.paidInPaise)),
         if (!inv.isDraft && inv.dueInPaise > 0)
-          ('Balance due', formatRupees(inv.dueInPaise / 100)),
-        ('Total', formatRupees(inv.totalInRupees)),
+          ('Balance due', money(inv.dueInPaise)),
+        ('Total', moneyR(inv.totalInRupees)),
       ],
     );
   }

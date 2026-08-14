@@ -9,6 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_spacing.dart';
 import 'lifecycle_shared.dart';
+import '../../utils/money.dart';
 
 /// Change-plan dialog.
 ///
@@ -199,12 +200,12 @@ class _UpgradeDialogState extends State<UpgradeDialog> {
                 ('Days remaining', '${q.remainingDays}'),
                 (
                   'Rate change per day',
-                  '${formatRupees(q.oldDailyRatePaise / 100)} → ${formatRupees(q.newDailyRatePaise / 100)}',
+                  '${money(q.oldDailyRatePaise)} → ${money(q.newDailyRatePaise)}',
                 ),
                 if (q.isDowngrade)
-                  ('Credit to member', formatRupees(q.amountCreditInRupees))
+                  ('Credit to member', moneyR(q.amountCreditInRupees))
                 else
-                  ('Amount due now', formatRupees(q.amountDueInRupees)),
+                  ('Amount due now', moneyR(q.amountDueInRupees)),
               ],
             ),
             AppSpacing.gapSm,
@@ -278,7 +279,7 @@ class _PlanOption extends StatelessWidget {
               ),
             ),
             Text(
-              '${formatRupees(plan.priceInRupees)} · ${plan.durationDays}d',
+              '${moneyR(plan.priceInRupees)} · ${plan.durationDays}d',
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,

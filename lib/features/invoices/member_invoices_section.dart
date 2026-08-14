@@ -5,9 +5,9 @@ import '../../services/api_response.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_spacing.dart';
 import '../../widgets/status_chip.dart';
-import '../lifecycle/lifecycle_shared.dart' show formatRupees;
 import 'invoice_detail_screen.dart';
 import 'quick_invoice.dart';
+import '../../utils/money.dart';
 
 /// A member's invoices, shown on their profile.
 ///
@@ -166,7 +166,7 @@ class _MemberInvoicesSectionState extends State<MemberInvoicesSection> {
                       ),
                     ),
                     Text(
-                      formatRupees(inv.totalInRupees),
+                      moneyR(inv.totalInRupees),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,

@@ -21,6 +21,7 @@ import '../../widgets/member_picker.dart';
 import 'stock_queue_view.dart';
 import 'stock_analytics_screen.dart';
 import 'chain_stock_screen.dart';
+import '../../utils/money.dart';
 
 /// Retail: the counter, the shelf, and what was sold.
 /// See docs/FR-07-pos-inventory.md.
@@ -362,7 +363,7 @@ class _SellTabState extends State<_SellTab> {
       // Confirm the sale before any follow-up work: the sale is already
       // committed, so the receipt message must not depend on what happens next.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sold — ${formatRupees(sale.totalInRupees)}')),
+        SnackBar(content: Text('Sold — ${moneyR(sale.totalInRupees)}')),
       );
       _load();
 
@@ -467,7 +468,7 @@ class _SellTabState extends State<_SellTab> {
                             ),
                           ),
                           Text(
-                            formatRupees(line.lineTotalInPaise / 100),
+                            money(line.lineTotalInPaise),
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -498,7 +499,7 @@ class _SellTabState extends State<_SellTab> {
               ),
               const Spacer(),
               Text(
-                formatRupees(_cartTotal / 100),
+                money(_cartTotal),
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
@@ -533,7 +534,7 @@ class _SellTabState extends State<_SellTab> {
                       _member == null
                           ? 'Walk-in — tap to attach a member'
                           : '${_member!.firstName} ${_member!.lastName}'
-                                '${_wallet != null ? ' · wallet ${formatRupees(_wallet!.balanceInRupees)}' : ''}',
+                                '${_wallet != null ? ' · wallet ${moneyR(_wallet!.balanceInRupees)}' : ''}',
                       style: TextStyle(
                         fontSize: 12.5,
                         color: _member == null
@@ -582,7 +583,7 @@ class _SellTabState extends State<_SellTab> {
               _cartTotal > 0) ...[
             AppSpacing.gapXs,
             Text(
-              'Wallet has ${formatRupees(_wallet!.balanceInRupees)} — not enough for this sale.',
+              'Wallet has ${moneyR(_wallet!.balanceInRupees)} — not enough for this sale.',
               style: const TextStyle(
                 fontSize: 11.5,
                 color: AppColors.textSecondary,
@@ -649,7 +650,7 @@ class _ProductTile extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  formatRupees(product.priceInRupees),
+                  moneyR(product.priceInRupees),
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13.5,
@@ -780,16 +781,10 @@ class _StockTabState extends State<_StockTab> {
                   LifecycleOutcome(
                     emphasisColor: AppColors.primary,
                     rows: [
-                      (
-                        'Stock value (at cost)',
-                        formatRupees(s.stockValueInPaise / 100),
-                      ),
+                      ('Stock value (at cost)', money(s.stockValueInPaise)),
                       ('Sold (30 days)', '${s.unitsSold} units'),
-                      ('Margin (30 days)', formatRupees(s.marginInPaise / 100)),
-                      (
-                        'Revenue (30 days)',
-                        formatRupees(s.revenueInPaise / 100),
-                      ),
+                      ('Margin (30 days)', money(s.marginInPaise)),
+                      ('Revenue (30 days)', money(s.revenueInPaise)),
                     ],
                   ),
                   if (s.lowStockCount > 0) ...[
@@ -867,8 +862,8 @@ class _StockCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${formatRupees(product.priceInRupees)}'
-                  '${product.costInPaise > 0 ? ' · cost ${formatRupees(product.costInPaise / 100)}' : ''}'
+                  '${moneyR(product.priceInRupees)}'
+                  '${product.costInPaise > 0 ? ' · cost ${money(product.costInPaise)}' : ''}'
                   '${product.sku != null ? ' · ${product.sku}' : ''}',
                   style: const TextStyle(
                     fontSize: 12,
@@ -962,7 +957,7 @@ class _SalesTabState extends State<_SalesTab> {
       context: context,
       builder: (_) => LifecycleDialogShell(
         title: 'Refund this sale?',
-        subtitle: formatRupees(sale.totalInRupees),
+        subtitle: moneyR(sale.totalInRupees),
         icon: Icons.undo,
         accent: AppColors.danger,
         actions: [
@@ -1087,7 +1082,7 @@ class _SalesTabState extends State<_SalesTab> {
                   ),
                 ),
                 Text(
-                  formatRupees(s.totalInRupees),
+                  moneyR(s.totalInRupees),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,

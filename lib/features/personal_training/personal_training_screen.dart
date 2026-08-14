@@ -12,9 +12,10 @@ import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../../widgets/status_chip.dart';
 import '../invoices/quick_invoice.dart';
-import '../lifecycle/lifecycle_shared.dart' show formatDate, formatRupees;
+import '../lifecycle/lifecycle_shared.dart' show formatDate;
 import 'book_appointment_dialog.dart';
 import 'sell_package_dialog.dart';
+import '../../utils/money.dart';
 
 /// Personal training: packages sold to members and the 1:1 appointments
 /// booked against them. See FR-03-trainers-pt-appointments.md — packages are
@@ -236,7 +237,7 @@ class _PackageCard extends StatelessWidget {
           AppSpacing.gapXs,
           Text(
             'with ${package.trainerName} · ${package.sessionsUsed}/${package.totalSessions} used · '
-            '${formatRupees(package.amountInRupees)}'
+            '${moneyR(package.amountInRupees)}'
             '${package.expiryDate != null ? ' · expires ${package.expiryDate!.substring(0, 10)}' : ''}',
             style: const TextStyle(
               fontSize: 12,

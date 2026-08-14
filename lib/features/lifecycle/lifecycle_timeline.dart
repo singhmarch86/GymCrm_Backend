@@ -8,6 +8,7 @@ import '../../widgets/app_spacing.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_banner.dart';
 import 'lifecycle_shared.dart';
+import '../../utils/money.dart';
 
 /// A member's membership history — every freeze, plan change, transfer and
 /// termination, with who did it and what money it moved.
@@ -176,8 +177,8 @@ class _TimelineRow extends StatelessWidget {
                     AppSpacing.gapXs,
                     Text(
                       event.amountCreditInPaise > 0
-                          ? 'Credit ${formatRupees(event.amountCreditInRupees)}'
-                          : 'Due ${formatRupees(event.amountDueInRupees)}',
+                          ? 'Credit ${moneyR(event.amountCreditInRupees)}'
+                          : 'Due ${moneyR(event.amountDueInRupees)}',
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,

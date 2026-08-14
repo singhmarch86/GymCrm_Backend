@@ -10,6 +10,7 @@ import '../../widgets/app_spacing.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/loading_state.dart';
 import '../lifecycle/lifecycle_shared.dart';
+import '../../utils/money.dart';
 
 /// Branches: switch between locations, see the chain at a glance, add one.
 /// See docs/FR-06-multi-location.md.
@@ -220,12 +221,11 @@ class _BranchScreenState extends State<BranchScreen> {
                         ),
                         (
                           'Revenue this month',
-                          formatRupees(
+                          money(
                             _summary.fold<int>(
-                                  0,
-                                  (a, s) => a + s.revenueInPaise,
-                                ) /
-                                100,
+                              0,
+                              (a, s) => a + s.revenueInPaise,
+                            ),
                           ),
                         ),
                       ],
@@ -388,7 +388,7 @@ class _SummaryCard extends StatelessWidget {
                 ),
               ),
               Text(
-                formatRupees(summary.revenueInRupees),
+                moneyR(summary.revenueInRupees),
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -444,7 +444,7 @@ class _SummaryCard extends StatelessWidget {
             children: [
               Text(
                 summary.revenuePerMemberInPaise > 0
-                    ? '${formatRupees(summary.revenuePerMemberInPaise / 100)} per member'
+                    ? '${money(summary.revenuePerMemberInPaise)} per member'
                     : '—',
                 style: const TextStyle(
                   fontSize: 11.5,

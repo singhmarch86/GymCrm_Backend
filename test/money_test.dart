@@ -21,9 +21,20 @@ void main() {
       expect(money(15000000), isNot(contains('150,000')));
     });
 
-    test('truncates paise rather than rounding', () {
-      // A displayed figure must never exceed what was actually charged.
-      expect(money(150099), '₹1,500');
+    test('shows a paise remainder rather than hiding it', () {
+      // This is the "exact" formatter — a figure somebody may check against
+      // a receipt. ₹1,500 when ₹1,500.99 was charged is wrong in the same
+      // direction as ₹1,501 would be; it just looks safer. GST splits land
+      // on paise in practice, so this branch is not hypothetical.
+      expect(money(150099), '₹1,500.99');
+    });
+
+    test('pads a single paise digit', () {
+      expect(money(150005), '₹1,500.05');
+    });
+
+    test('a whole rupee amount carries no decimal at all', () {
+      expect(money(150000), '₹1,500');
     });
 
     test('signs negatives outside the symbol', () {
@@ -73,5 +84,22 @@ void main() {
   test('moneyPlain omits the symbol for editable fields', () {
     expect(moneyPlain(41650000), '4,16,500');
     expect(moneyPlain(95000), '950');
+  });
+
+  group('moneyR / moneyShortR — the rupees-as-double models', () {
+    test('moneyR matches money() for a whole-rupee value', () {
+      expect(moneyR(1500), '₹1,500');
+    });
+
+    test('moneyR recovers a paise fraction from the double', () {
+      // GST math and per-unit line totals are exactly where this shows up:
+      // 17.82 arrived as a double, not as an int paise value, and the old
+      // formatRupees() this replaces got it right — the fold-in must too.
+      expect(moneyR(17.82), '₹17.82');
+    });
+
+    test('moneyShortR abbreviates the same as moneyShort', () {
+      expect(moneyShortR(416500), '₹4.2L');
+    });
   });
 }

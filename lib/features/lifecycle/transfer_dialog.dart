@@ -12,6 +12,7 @@ import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_spacing.dart';
 import 'lifecycle_shared.dart';
+import '../../utils/money.dart';
 
 /// Transfer dialog — moves remaining validity to another member.
 ///
@@ -326,7 +327,7 @@ class _TransferDialogState extends State<TransferDialog> {
                 if (widget.expiryDate != null)
                   ('Validity moving', 'until ${widget.expiryDate}'),
                 if ((_feePaise ?? 0) > 0)
-                  ('Transfer fee', formatRupees((_feePaise ?? 0) / 100)),
+                  ('Transfer fee', money(_feePaise ?? 0)),
                 ('${widget.memberName} becomes', 'Terminated'),
               ],
             ),

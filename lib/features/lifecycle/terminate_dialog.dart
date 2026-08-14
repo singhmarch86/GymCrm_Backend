@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_spacing.dart';
 import 'lifecycle_shared.dart';
+import '../../utils/money.dart';
 
 /// Terminate dialog.
 ///
@@ -182,9 +183,9 @@ class _TerminateDialogState extends State<TerminateDialog> {
               emphasisColor: AppColors.danger,
               rows: [
                 ('Days remaining', '${q.remainingDays}'),
-                ('Gross refund', formatRupees(q.grossRefundInPaise / 100)),
-                ('Less fee', formatRupees(q.terminationFeeInPaise / 100)),
-                ('Refund owed', formatRupees(q.netRefundInRupees)),
+                ('Gross refund', money(q.grossRefundInPaise)),
+                ('Less fee', money(q.terminationFeeInPaise)),
+                ('Refund owed', moneyR(q.netRefundInRupees)),
               ],
             ),
           AppSpacing.gapSm,

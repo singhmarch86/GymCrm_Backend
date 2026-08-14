@@ -1,8 +1,8 @@
 /// Money, formatted the way an Indian gym owner reads it.
 ///
 /// Two functions, because there are two genuinely different jobs and the app
-/// had been quietly doing both — plus a third, wrong one — from thirteen
-/// private copies:
+/// had been quietly doing both — plus two more, one wrong and one merely
+/// duplicated — from a total of fourteen private copies:
 ///
 ///   money()       ₹4,16,500 — exact. For ledgers, invoices, anywhere the
 ///                 figure is the record and somebody may check it against a
@@ -19,13 +19,28 @@
 /// fell past the abbreviation thresholds and printed raw.
 library;
 
-/// Exact, with Indian digit grouping: 1,500 · 13,000 · 1,50,000.
+/// Exact, with Indian digit grouping: 1,500 · 13,000 · 1,50,000 — and, when
+/// the amount is not a whole rupee, the paise: 1,500.99.
 ///
 /// Pairs above the last three, not western triples all the way up.
+///
+/// The paise are shown, never dropped, on principle: this is the "exact"
+/// formatter, the one whose doc comment promises a figure somebody may check
+/// against a receipt, and a receipt for ₹1,500.99 that reads ₹1,500 is wrong
+/// in the same direction as one that reads ₹1,501 — it just looks safer.
+/// Every rupee amount in the app happens to be whole today, so this branch is
+/// dormant everywhere except invoices, where GST splits genuinely land on
+/// paise (18% of ₹99 is ₹17.82) and rounding it away would be reporting the
+/// wrong number on a tax document.
 String money(int paise) {
   final negative = paise < 0;
-  final rupees = (negative ? -paise : paise) ~/ 100;
-  return '${negative ? '-' : ''}₹${_group(rupees)}';
+  final absPaise = negative ? -paise : paise;
+  final rupees = absPaise ~/ 100;
+  final remainder = absPaise % 100;
+
+  final whole = '${negative ? '-' : ''}₹${_group(rupees)}';
+  if (remainder == 0) return whole;
+  return '$whole.${remainder.toString().padLeft(2, '0')}';
 }
 
 /// Abbreviated: ₹950 · ₹1.5k · ₹13k · ₹4.2L.

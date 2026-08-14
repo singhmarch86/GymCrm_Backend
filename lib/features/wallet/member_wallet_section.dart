@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_spacing.dart';
 import '../lifecycle/lifecycle_shared.dart';
+import '../../utils/money.dart';
 
 /// A member's stored credit, shown on their profile.
 ///
@@ -186,7 +187,7 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        formatRupees(w.balanceInRupees),
+                        moneyR(w.balanceInRupees),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -247,7 +248,7 @@ class _MemberWalletSectionState extends State<MemberWalletSection> {
                       ),
                     ),
                     Text(
-                      '${t.isCredit ? '+' : ''}${formatRupees(t.amountInPaise / 100)}',
+                      '${t.isCredit ? '+' : ''}${money(t.amountInPaise)}',
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
@@ -337,7 +338,7 @@ class _WalletActionDialogState extends State<_WalletActionDialog> {
     return LifecycleDialogShell(
       title: _title,
       subtitle: widget.kind == _WalletActionKind.spend
-          ? '${formatRupees(widget.availableInPaise / 100)} available'
+          ? '${money(widget.availableInPaise)} available'
           : 'Stored credit on the account',
       icon: Icons.account_balance_wallet_outlined,
       accent: widget.kind == _WalletActionKind.topUp

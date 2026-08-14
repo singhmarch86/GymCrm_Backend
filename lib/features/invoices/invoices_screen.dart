@@ -17,6 +17,7 @@ import '../../widgets/status_chip.dart';
 import '../lifecycle/lifecycle_shared.dart';
 import 'billing_settings_screen.dart';
 import 'invoice_detail_screen.dart';
+import '../../utils/money.dart';
 
 /// Invoices and the discount rules behind them.
 /// See docs/FR-04-invoicing-discounts.md in the backend repo.
@@ -266,7 +267,7 @@ class _InvoiceCard extends StatelessWidget {
                   if (invoice.dueInPaise > 0 && invoice.status == 'issued') ...[
                     const SizedBox(height: 2),
                     Text(
-                      'Balance ${formatRupees(invoice.dueInPaise / 100)}',
+                      'Balance ${money(invoice.dueInPaise)}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -281,7 +282,7 @@ class _InvoiceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  formatRupees(invoice.totalInRupees),
+                  moneyR(invoice.totalInRupees),
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
