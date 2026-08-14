@@ -50,6 +50,17 @@ String moneyShort(int paise) {
 /// currency mark in the text would be typed over or submitted by accident.
 String moneyPlain(int paise) => _group((paise < 0 ? -paise : paise) ~/ 100);
 
+/// [money] for the handful of models that expose rupees as a double rather
+/// than paise as an int — plan prices and invoice line items, mostly, from
+/// before the paise convention was consistent. Rounds to the nearest paisa
+/// rather than truncating, since these values were never fractions of a
+/// paisa to begin with and rounding is the more honest read of a double that
+/// arrived via JSON.
+String moneyR(double rupees) => money((rupees * 100).round());
+
+/// [moneyShort] for the same rupees-as-double fields.
+String moneyShortR(double rupees) => moneyShort((rupees * 100).round());
+
 String _group(int rupees) {
   final s = '$rupees';
   if (s.length <= 3) return s;

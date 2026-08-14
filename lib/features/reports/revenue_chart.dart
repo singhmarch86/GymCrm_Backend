@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/revenue_report.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/money.dart';
 
 class RevenueChart extends StatelessWidget {
   final RevenueReport report;
@@ -35,31 +36,19 @@ class RevenueChart extends StatelessWidget {
       spacing: 12,
       runSpacing: 12,
       children: [
-        _kpi(
-          'Today',
-          '₹${report.todayInRupees.toStringAsFixed(0)}',
-          AppColors.success,
-        ),
+        _kpi('Today', moneyShortR(report.todayInRupees), AppColors.success),
         _kpi(
           'Yesterday',
-          '₹${report.yesterdayInRupees.toStringAsFixed(0)}',
+          moneyShortR(report.yesterdayInRupees),
           Colors.blueGrey,
         ),
-        _kpi(
-          'This Week',
-          '₹${report.weekInRupees.toStringAsFixed(0)}',
-          AppColors.primary,
-        ),
+        _kpi('This Week', moneyShortR(report.weekInRupees), AppColors.primary),
         _kpi(
           'This Month',
-          '₹${report.monthInRupees.toStringAsFixed(0)}',
+          moneyShortR(report.monthInRupees),
           Colors.deepPurple,
         ),
-        _kpi(
-          'Last Month',
-          '₹${report.lastMonthInRupees.toStringAsFixed(0)}',
-          Colors.teal,
-        ),
+        _kpi('Last Month', moneyShortR(report.lastMonthInRupees), Colors.teal),
       ],
     );
   }

@@ -4,6 +4,8 @@
 // actually arrived. `paymentState` here is computed server-side from the
 // payments linked to the invoice — the app never derives it locally.
 
+import '../utils/money.dart';
+
 class InvoiceItem {
   final int id;
   final String description;
@@ -249,7 +251,7 @@ class Discount {
   /// "25% off" or "₹500 off" — value is paise for flat discounts.
   String get valueLabel => isPercent
       ? '${value.toStringAsFixed(value.truncateToDouble() == value ? 0 : 2)}% off'
-      : '₹${(value / 100).toStringAsFixed(0)} off';
+      : '${money(value.round())} off';
 
   factory Discount.fromJson(Map<String, dynamic> j) => Discount(
     id: j['id'] ?? 0,

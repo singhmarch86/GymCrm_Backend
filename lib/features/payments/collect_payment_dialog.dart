@@ -10,6 +10,7 @@ import '../../theme/app_text_styles.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_spacing.dart';
+import '../../utils/money.dart';
 
 /// Shows the Collect Payment dialog.
 /// Returns true if payment was successfully collected, false/null otherwise.
@@ -208,7 +209,7 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
                                 (p) => DropdownMenuItem(
                                   value: p.id,
                                   child: Text(
-                                    '${p.name} (₹${p.priceInRupees.toStringAsFixed(0)})',
+                                    '${p.name} (${moneyR(p.priceInRupees)})',
                                   ),
                                 ),
                               )

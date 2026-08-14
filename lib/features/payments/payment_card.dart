@@ -4,6 +4,7 @@ import '../../models/payment.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/status_chip.dart';
+import '../../utils/money.dart';
 
 class PaymentCard extends StatelessWidget {
   final Payment payment;
@@ -127,7 +128,7 @@ class PaymentCard extends StatelessWidget {
               Icon(Icons.currency_rupee_rounded, size: 17, color: _statusColor),
               const SizedBox(width: 8),
               Text(
-                '₹${payment.amountInRupees.toStringAsFixed(0)}',
+                moneyR(payment.amountInRupees),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,

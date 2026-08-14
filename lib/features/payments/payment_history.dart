@@ -4,6 +4,7 @@ import '../../models/payment.dart';
 import '../../services/payment_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/status_chip.dart';
+import '../../utils/money.dart';
 
 /// Embeddable payment history widget for a specific member.
 /// Used inside MemberDetailScreen (or any future detail view).
@@ -139,7 +140,7 @@ class _PaymentHistoryTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '₹${payment.amountInRupees.toStringAsFixed(0)}',
+                  moneyR(payment.amountInRupees),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,

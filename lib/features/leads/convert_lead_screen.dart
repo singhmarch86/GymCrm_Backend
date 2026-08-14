@@ -10,6 +10,7 @@ import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_spacing.dart';
+import '../../utils/money.dart';
 
 /// Lead → Member conversion screen.
 ///
@@ -278,7 +279,7 @@ class _ConvertLeadScreenState extends State<ConvertLeadScreen> {
                           (p) => DropdownMenuItem(
                             value: p.id,
                             child: Text(
-                              '${p.name}  ·  ₹${p.priceInRupees.toStringAsFixed(0)}',
+                              '${p.name}  ·  ${moneyR(p.priceInRupees)}',
                             ),
                           ),
                         )

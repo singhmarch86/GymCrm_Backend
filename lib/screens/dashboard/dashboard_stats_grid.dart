@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../utils/money.dart';
 import '../../widgets/dashboard_kpi_card.dart';
 
 class DashboardStatsGrid extends StatelessWidget {
@@ -97,7 +98,7 @@ class DashboardStatsGrid extends StatelessWidget {
   Widget _revenueCard() {
     return DashboardKpiCard(
       title: 'Revenue',
-      value: '₹${(revenueThisMonthPaise / 100).toStringAsFixed(0)}',
+      value: moneyShort(revenueThisMonthPaise),
       icon: Icons.currency_rupee_rounded,
       color: AppColors.info,
       subtitle: 'This month',

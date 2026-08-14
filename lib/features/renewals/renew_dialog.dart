@@ -10,6 +10,7 @@ import '../../theme/app_text_styles.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_spacing.dart';
+import '../../utils/money.dart';
 
 /// Shows the Renew Membership dialog for [renewal] and returns true via
 /// Navigator.pop if the renewal succeeded, so callers can refresh their list.
@@ -257,7 +258,7 @@ class _RenewDialogState extends State<RenewDialog> {
                             (plan) => DropdownMenuItem<int>(
                               value: plan.id,
                               child: Text(
-                                "${plan.name} (₹${plan.priceInRupees.toStringAsFixed(0)})",
+                                "${plan.name} (${moneyR(plan.priceInRupees)})",
                               ),
                             ),
                           )

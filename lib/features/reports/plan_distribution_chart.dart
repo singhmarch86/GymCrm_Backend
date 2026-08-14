@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/plan_report.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/money.dart';
 
 class PlanDistributionChart extends StatelessWidget {
   final PlanReport report;
@@ -166,10 +167,7 @@ class PlanDistributionChart extends StatelessWidget {
             children: [
               _cell(p.planName, bold: true),
               _cell('${p.activeMembers}'),
-              _cell(
-                '₹${p.revenueInRupees.toStringAsFixed(0)}',
-                color: AppColors.success,
-              ),
+              _cell(moneyR(p.revenueInRupees), color: AppColors.success),
               _cell('${p.countSold}'),
             ],
           ),

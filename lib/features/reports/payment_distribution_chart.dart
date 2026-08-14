@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/payment_report.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/money.dart';
 
 class PaymentDistributionChart extends StatelessWidget {
   final PaymentReport report;
@@ -28,17 +29,17 @@ class PaymentDistributionChart extends StatelessWidget {
           children: [
             _kpi(
               'Collected',
-              '₹${report.collectedInRupees.toStringAsFixed(0)}',
+              moneyShortR(report.collectedInRupees),
               AppColors.success,
             ),
             _kpi(
               'Pending',
-              '₹${report.pendingInRupees.toStringAsFixed(0)}',
+              moneyShortR(report.pendingInRupees),
               AppColors.warning,
             ),
             _kpi(
               'Overdue',
-              '₹${report.overdueInRupees.toStringAsFixed(0)}',
+              moneyShortR(report.overdueInRupees),
               AppColors.danger,
             ),
             _kpi('Count', '${report.collectedCount}', AppColors.primary),

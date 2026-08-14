@@ -10,6 +10,7 @@ import '../theme/app_theme.dart';
 import '../widgets/app_spacing.dart' show AppSpacing;
 import '../utils/validators.dart';
 import '../widgets/error_banner.dart';
+import '../utils/money.dart';
 
 /// Shows the "edit member" form as a centered modal dialog, matching the
 /// CollectPaymentDialog/AddMemberDialog convention.
@@ -200,7 +201,7 @@ class _EditMemberDialogState extends State<EditMemberDialog> {
                                 (plan) => DropdownMenuItem(
                                   value: plan.id,
                                   child: Text(
-                                    '${plan.name} (₹${plan.priceInRupees.toStringAsFixed(0)})',
+                                    '${plan.name} (${moneyR(plan.priceInRupees)})',
                                   ),
                                 ),
                               )

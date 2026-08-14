@@ -4,6 +4,7 @@ import '../../models/collection_queue.dart';
 import '../../services/api_response.dart';
 import '../../services/queue_service.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/money.dart';
 
 /// What can be done about one outstanding due (FR-19 §3).
 ///
@@ -100,7 +101,7 @@ class _CollectionActionSheetState extends State<_CollectionActionSheet> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '₹${item.amountInPaise ~/ 100} outstanding'
+                      '${money(item.amountInPaise)} outstanding'
                       '${item.phone.isEmpty ? '' : ' · ${item.phone}'}',
                       style: TextStyle(
                         fontSize: 12.5,
@@ -217,7 +218,7 @@ class _CollectionActionSheetState extends State<_CollectionActionSheet> {
     final mode = await showDialog<String>(
       context: context,
       builder: (ctx) => SimpleDialog(
-        title: Text('How did they pay ₹${widget.item.amountInPaise ~/ 100}?'),
+        title: Text('How did they pay ${money(widget.item.amountInPaise)}?'),
         children: [
           for (final e in _modes.entries)
             SimpleDialogOption(

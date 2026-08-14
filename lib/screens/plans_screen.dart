@@ -9,6 +9,7 @@ import '../widgets/error_banner.dart';
 import '../widgets/loading_state.dart';
 import 'add_plan_screen.dart';
 import 'edit_plan_screen.dart';
+import '../utils/money.dart';
 
 class PlansScreen extends StatefulWidget {
   const PlansScreen({super.key});
@@ -135,9 +136,7 @@ class _PlansScreenState extends State<PlansScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Price : ₹${plan.priceInRupees.toStringAsFixed(0)}',
-                              ),
+                              Text('Price : ${moneyR(plan.priceInRupees)}'),
                               const SizedBox(height: 4),
                               Text('Duration : ${plan.durationDays} Days'),
                             ],
