@@ -27,9 +27,19 @@ import 'package:gymcrm_app/features/payments/expected_view.dart';
 /// project already has a documented canvas-sizing artefact on Flutter web
 /// when the viewport changes around a load.
 ///
-/// That is why the fix is defensive rather than causal, and why the last test
-/// here is the one that matters: whatever hands the bar a bad width, it must
-/// never grow tall enough to consume the list it is summarising.
+/// That is why the fix is defensive rather than causal. The maxLines change
+/// above was shipped first and was NOT sufficient on its own: the bug was
+/// reported again, on a live device, after that fix was confirmed deployed —
+/// cache cleared, byte-identical build verified server-side. Whatever narrows
+/// this Row happens somewhere neither a widget test nor a browser DevTools
+/// cache check can reach.
+///
+/// The actual fix is a hard SizedBox height cap plus a ClipRect, added after
+/// that second report. It does not try to keep the Row's contents legible
+/// under a bad constraint — it makes the *box* refuse to grow no matter what
+/// the Row does inside it. `barHeightCapTest` below is the one that matters:
+/// whatever hands the bar a bad width, the box stays exactly [kBarHeight]
+/// tall and the list beneath it is never touched.
 
 /// Stands in for the invoice bar and records the constraints it was given.
 class _Probe extends StatelessWidget {
@@ -47,44 +57,63 @@ class _Probe extends StatelessWidget {
   );
 }
 
-/// The real bar's structure, lifted verbatim so the test exercises the same
-/// layout the screen builds. Kept in sync by shape, not by import: the
-/// original is private to the screen's State and the screen needs a network.
-Widget invoiceBarBody() => Material(
-  elevation: 8,
-  color: Colors.white,
-  child: SafeArea(
-    top: false,
-    left: false,
-    right: false,
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  '1 due selected',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+/// Matches `_StaffWorkScreenState._barHeight` exactly. Not imported — that
+/// constant is private to the State class — so this is the second place that
+/// number lives. If they drift, `barHeightCapTest` below will not actually be
+/// testing what ships; check `_barHeight` in staff_work_screen.dart first if
+/// this test starts looking suspicious.
+const kBarHeight = 72.0;
+
+/// The real bar's current structure, lifted verbatim so the test exercises
+/// the same layout the screen builds. Kept in sync by shape, not by import:
+/// the original is private to the screen's State and the screen needs a
+/// network.
+Widget invoiceBarBody() => SizedBox(
+  height: kBarHeight,
+  child: ClipRect(
+    child: Material(
+      elevation: 8,
+      color: Colors.white,
+      child: SafeArea(
+        top: false,
+        left: false,
+        right: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      '1 due selected',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Creates drafts — nothing is issued',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  'Creates drafts — nothing is issued',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                ),
-              ],
-            ),
+              ),
+              TextButton(onPressed: () {}, child: const Text('Clear')),
+              const SizedBox(width: 4),
+              ElevatedButton(onPressed: () {}, child: const Text('Create')),
+            ],
           ),
-          TextButton(onPressed: () {}, child: const Text('Clear')),
-          const SizedBox(width: 4),
-          ElevatedButton(onPressed: () {}, child: const Text('Create')),
-        ],
+        ),
       ),
     ),
   ),
@@ -347,6 +376,52 @@ void main() {
 
     expect(seen.maxWidth, 1400);
   });
+
+  testWidgets(
+    'barHeightCapTest — the box stays exactly kBarHeight under an adversarial width',
+    (tester) async {
+      tester.view.physicalSize = const Size(1400, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      const listStandInKey = Key('list-stand-in');
+
+      // 6px, not zero: this is the width the diagnosis test showed *does*
+      // reproduce stacked-letter wrapping (zero forces a sideways overflow
+      // instead, which is the case already ruled out above). Whatever
+      // mechanism narrows the real bar, this is a fair stand-in for it.
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                Expanded(
+                  child: Container(key: listStandInKey, color: Colors.blue),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(width: 6, child: invoiceBarBody()),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // The box itself — not its overflowing content — must be exactly
+      // kBarHeight. A looser bound would let a regression through as long as
+      // it stayed under some threshold; this is the actual contract.
+      final capSize = tester.getSize(find.byType(SizedBox).first);
+      expect(capSize.height, kBarHeight);
+
+      // And the consequence that matters: the stand-in for the list keeps its
+      // full share of the screen, because the Column above never had to give
+      // any more than kBarHeight to its fixed sibling.
+      final listSize = tester.getSize(find.byKey(listStandInKey));
+      expect(listSize.height, 900 - kBarHeight);
+    },
+  );
 
   testWidgets('the bar never grows tall enough to eat the list', (
     tester,

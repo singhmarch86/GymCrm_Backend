@@ -345,76 +345,96 @@ class _StaffWorkScreenState extends State<StaffWorkScreen>
   /// Only appears once something is ticked, and says the two things a person
   /// needs before pressing it: how many documents this makes, and that they
   /// are drafts.
+  // The tallest this bar is ever allowed to be. Chosen to comfortably fit two
+  // lines of text and a full-height button with the surrounding padding —
+  // see the sizing note below.
+  static const _barHeight = 72.0;
+
   Widget _invoiceBar() {
     final n = _toInvoice.length;
-    return Material(
-      elevation: 8,
-      color: Colors.white,
-      // Bottom inset only. Left and right are deliberately off: this bar sits
-      // edge to edge, and a horizontal safe-area inset here once starved the
-      // Row of width until each label wrapped to one character per line,
-      // which made the bar tall enough to squeeze the list above it to
-      // nothing.
-      child: SafeArea(
-        top: false,
-        left: false,
-        right: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Both labels are single-line and clip. A summary bar must
-                    // stay one row high whatever width it is handed — if it
-                    // grows instead, it eats the list it is summarising.
-                    Text(
-                      '$n ${n == 1 ? 'due' : 'dues'} selected',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Creates drafts — nothing is issued',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              TextButton(
-                onPressed: _invoicing ? null : () => setState(_toInvoice.clear),
-                child: const Text('Clear'),
-              ),
-              const SizedBox(width: 4),
-              ElevatedButton(
-                onPressed: _invoicing ? null : _createInvoices,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                ),
-                child: _invoicing
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+    // A hard height cap, not a hint. Two rebuilds fixed the wrapping labels
+    // that were once reported here — maxLines, no left/right SafeArea inset —
+    // and the tab still collapsed on a live device after the fix was
+    // confirmed deployed. Whatever is narrowing this Row is happening
+    // somewhere this codebase does not reach: not the widget tree tests can
+    // probe, not stale caching, ruled out on the running build. Rather than
+    // keep chasing an environment that cannot be reproduced, the box itself
+    // now refuses to grow. Content that still overflows a too-narrow width
+    // clips silently inside it; the Expanded list above always gets
+    // `available height − _barHeight`, full stop, whatever the Row inside is
+    // doing.
+    return SizedBox(
+      height: _barHeight,
+      child: ClipRect(
+        child: Material(
+          elevation: 8,
+          color: Colors.white,
+          // Bottom inset only. Left and right are deliberately off: this bar
+          // sits edge to edge and has no edge to avoid.
+          child: SafeArea(
+            top: false,
+            left: false,
+            right: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Both labels are single-line and clip. A summary bar must
+                        // stay one row high whatever width it is handed — if it
+                        // grows instead, it eats the list it is summarising.
+                        Text(
+                          '$n ${n == 1 ? 'due' : 'dues'} selected',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      )
-                    : const Text('Create invoices'),
+                        Text(
+                          'Creates drafts — nothing is issued',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _invoicing
+                        ? null
+                        : () => setState(_toInvoice.clear),
+                    child: const Text('Clear'),
+                  ),
+                  const SizedBox(width: 4),
+                  ElevatedButton(
+                    onPressed: _invoicing ? null : _createInvoices,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: _invoicing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Create invoices'),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
