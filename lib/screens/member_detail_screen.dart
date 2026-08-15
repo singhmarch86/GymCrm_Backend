@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../features/branch/transfer_to_branch_dialog.dart';
 import '../features/invoices/member_invoices_section.dart';
+import '../features/ptfeedback/member_feedback_section.dart';
+import '../features/ptfeedback/member_pt_report_section.dart';
+import '../features/recognition/member_recognition_section.dart';
 import '../features/wallet/member_wallet_section.dart';
 import '../features/lifecycle/freeze_dialog.dart';
 import '../features/lifecycle/lifecycle_shared.dart' show formatDate;
@@ -275,6 +278,18 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
                 memberId: widget.member.id,
                 refreshToken: _timelineToken,
               ),
+
+              AppSpacing.gapXxl,
+
+              MemberPtReportSection(memberId: widget.member.id),
+
+              AppSpacing.gapXxl,
+
+              MemberFeedbackSection(memberId: widget.member.id),
+
+              AppSpacing.gapXxl,
+
+              MemberRecognitionSection(memberId: widget.member.id),
 
               AppSpacing.gapXxl,
 

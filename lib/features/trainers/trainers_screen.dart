@@ -11,6 +11,7 @@ import '../../widgets/loading_state.dart';
 import '../../widgets/status_chip.dart';
 import '../branch/transfer_to_branch_dialog.dart';
 import 'trainer_dialog.dart';
+import 'trainer_detail_screen.dart';
 
 /// PT trainer roster. A trainer here is a standalone record (name, phone,
 /// comp) — separate from the `trainer_user_id` used for group-class
@@ -72,6 +73,16 @@ class _TrainersScreenState extends State<TrainersScreen> {
     }
   }
 
+  Future<void> _open(Trainer t) async {
+    final result = await showTrainerDetailScreen(context, t);
+    if (result == 'edit') {
+      await _edit(t);
+    } else if (result == 'changed') {
+      _changed = true;
+      _load();
+    }
+  }
+
   Future<void> _move(Trainer t) async {
     final moved = await showTransferToBranchDialog(
       context,
@@ -118,7 +129,7 @@ class _TrainersScreenState extends State<TrainersScreen> {
                   separatorBuilder: (_, __) => AppSpacing.gapSm,
                   itemBuilder: (_, i) => _TrainerCard(
                     trainer: _trainers[i],
-                    onTap: () => _edit(_trainers[i]),
+                    onTap: () => _open(_trainers[i]),
                     onMove: () => _move(_trainers[i]),
                   ),
                 ),

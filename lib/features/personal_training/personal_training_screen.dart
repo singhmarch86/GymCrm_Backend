@@ -13,6 +13,7 @@ import '../../widgets/loading_state.dart';
 import '../../widgets/status_chip.dart';
 import '../invoices/quick_invoice.dart';
 import '../lifecycle/lifecycle_shared.dart' show formatDate;
+import '../ptfeedback/add_feedback_dialog.dart';
 import 'book_appointment_dialog.dart';
 import 'sell_package_dialog.dart';
 import '../../utils/money.dart';
@@ -352,40 +353,66 @@ class _AppointmentsTabState extends State<_AppointmentsTab> {
   }
 
   Future<void> _openOutcomeSheet(PtAppointment a) async {
-    if (a.status != 'scheduled') return;
     final choice = await showModalBottomSheet<String>(
       context: context,
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(
-                Icons.check_circle_outline,
-                color: AppColors.success,
+            if (a.status == 'scheduled') ...[
+              ListTile(
+                leading: const Icon(
+                  Icons.check_circle_outline,
+                  color: AppColors.success,
+                ),
+                title: const Text('Completed'),
+                subtitle: const Text('Consumes one session credit'),
+                onTap: () => Navigator.pop(context, 'completed'),
               ),
-              title: const Text('Completed'),
-              subtitle: const Text('Consumes one session credit'),
-              onTap: () => Navigator.pop(context, 'completed'),
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.person_off_outlined,
-                color: AppColors.danger,
+              ListTile(
+                leading: const Icon(
+                  Icons.person_off_outlined,
+                  color: AppColors.danger,
+                ),
+                title: const Text('No-show'),
+                onTap: () => Navigator.pop(context, 'no_show'),
               ),
-              title: const Text('No-show'),
-              onTap: () => Navigator.pop(context, 'no_show'),
-            ),
+              ListTile(
+                leading: const Icon(
+                  Icons.block,
+                  color: AppColors.textSecondary,
+                ),
+                title: const Text('Cancelled'),
+                onTap: () => Navigator.pop(context, 'cancelled'),
+              ),
+            ],
             ListTile(
-              leading: const Icon(Icons.block, color: AppColors.textSecondary),
-              title: const Text('Cancelled'),
-              onTap: () => Navigator.pop(context, 'cancelled'),
+              leading: const Icon(Icons.chat_bubble_outline, color: Colors.teal),
+              title: const Text('Log feedback'),
+              subtitle: Text('For ${a.memberName}, this session'),
+              onTap: () => Navigator.pop(context, 'feedback'),
             ),
           ],
         ),
       ),
     );
-    if (choice != null) _setOutcome(a, choice);
+    if (choice == 'feedback') {
+      if (!mounted) return;
+      final created = await showAddFeedbackDialog(
+        context,
+        memberId: a.memberId,
+        preselectedTrainerId: a.trainerId,
+        ptAppointmentId: a.id,
+        ptPackageId: a.ptPackageId,
+      );
+      if (created != null && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Feedback logged')));
+      }
+    } else if (choice != null) {
+      _setOutcome(a, choice);
+    }
   }
 
   @override
