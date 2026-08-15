@@ -31,7 +31,10 @@ import (
 	"gymcrm/internal/plans"
 	"gymcrm/internal/pos"
 	"gymcrm/internal/pt"
+	"gymcrm/internal/ptfeedback"
+	"gymcrm/internal/ptreport"
 	"gymcrm/internal/queues"
+	"gymcrm/internal/recognition"
 	"gymcrm/internal/referrals"
 	"gymcrm/internal/renewals"
 	"gymcrm/internal/reports"
@@ -195,6 +198,18 @@ func main() {
 	stockTransferRepo := stocktransfer.NewRepository(db)
 	stockTransferSvc := stocktransfer.NewService(stockTransferRepo, db)
 	stockTransferHandler := stocktransfer.NewHandler(stockTransferSvc)
+
+	ptFeedbackRepo := ptfeedback.NewRepository(db)
+	ptFeedbackSvc := ptfeedback.NewService(ptFeedbackRepo, db)
+	ptFeedbackHandler := ptfeedback.NewHandler(ptFeedbackSvc)
+
+	ptReportRepo := ptreport.NewRepository(db)
+	ptReportSvc := ptreport.NewService(ptReportRepo, ptFeedbackSvc)
+	ptReportHandler := ptreport.NewHandler(ptReportSvc)
+
+	recognitionRepo := recognition.NewRepository(db)
+	recognitionSvc := recognition.NewService(recognitionRepo, db)
+	recognitionHandler := recognition.NewHandler(recognitionSvc)
 
 	staffWorkRepo := staffwork.NewRepository(db)
 	staffWorkSvc := staffwork.NewService(staffWorkRepo)
@@ -521,6 +536,23 @@ func main() {
 	mux.Handle("POST /api/v1/pt-appointments", jwt(http.HandlerFunc(ptHandler.Book)))
 	mux.Handle("GET /api/v1/pt-appointments", jwt(http.HandlerFunc(ptHandler.ListAppointments)))
 	mux.Handle("POST /api/v1/pt-appointments/{id}/outcome", jwt(http.HandlerFunc(ptHandler.SetOutcome)))
+
+	// PT feedback. One log, author_role tells whose words they are — both
+	// member and trainer notes are staff-transcribed, since trainers have no
+	// login (FR-03).
+	mux.Handle("POST /api/v1/pt/feedback", jwt(http.HandlerFunc(ptFeedbackHandler.Create)))
+	mux.Handle("GET /api/v1/members/{id}/feedback", jwt(http.HandlerFunc(ptFeedbackHandler.ByMember)))
+	mux.Handle("GET /api/v1/trainers/{id}/feedback", jwt(http.HandlerFunc(ptFeedbackHandler.ByTrainer)))
+
+	// PT reports (Phase 2). Read-only compositions over pt, ptfeedback and
+	// rhythm — the member and trainer sides are answered independently.
+	mux.Handle("GET /api/v1/members/{id}/pt-report", jwt(http.HandlerFunc(ptReportHandler.Member)))
+	mux.Handle("GET /api/v1/trainers/{id}/pt-report", jwt(http.HandlerFunc(ptReportHandler.Trainer)))
+
+	// Private member recognition (Phase 3). Always a human reason, never a
+	// score or a rank — same discipline as FR-13 §1.
+	mux.Handle("POST /api/v1/members/{id}/recognitions", jwt(http.HandlerFunc(recognitionHandler.Create)))
+	mux.Handle("GET /api/v1/members/{id}/recognitions", jwt(http.HandlerFunc(recognitionHandler.ByMember)))
 
 	// ── Invoicing & discounts ──────────────────────────────────────────────
 	mux.Handle("POST /api/v1/invoices", jwt(http.HandlerFunc(invoicingHandler.Create)))
