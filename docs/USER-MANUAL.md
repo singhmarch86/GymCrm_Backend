@@ -96,8 +96,8 @@ that is how somebody is found at the front desk.
 ### The member's page
 
 Tap any member. Everything about one person in one place: plan and expiry,
-check-in history, payments and invoices, PT package, shop purchases, wallet
-balance, and a full history of changes.
+check-in history, payments and invoices, PT packages, PT feedback and
+recognition, shop purchases, wallet balance, and a full history of changes.
 
 ### Actions on the member's page
 
@@ -435,6 +435,16 @@ all understood.
 Add a trainer with name, phone and specialisation. Trainers can be attached to
 classes and to PT packages.
 
+### A trainer's page
+
+Tap any trainer to open their profile: contact details and comp, plus their PT
+report — sessions delivered, feedback they have given or received, who they
+currently work with, and what they were last paid. **Edit** and **Move to
+another branch** are actions on this page rather than on the list.
+
+Members on a trainer's page are always listed by name, never ranked or scored
+against each other.
+
 ---
 
 # 18. Personal Training
@@ -449,6 +459,43 @@ as they are used, and the remaining balance is always visible.
 
 When a member is down to their last couple of sessions, the front desk sees a
 note at check-in — the natural moment to talk about the next block.
+
+### Feedback
+
+**What it is** — a running note of what a member said and what a trainer
+observed, in one place. Trainers do not log in, so both directions are
+**written by staff** — either transcribing what the member told you, or what
+the trainer told you (or dictated at the desk).
+
+**To log feedback:**
+
+- From a session — open the appointment and tap **Log feedback**. This
+  pre-fills the member, trainer and session for you.
+- From the member's page — tap **Add feedback** and pick who it's from.
+
+Every entry shows up on both the member's page and the trainer's page, so
+either side of the conversation is visible from wherever you're looking.
+
+### Reports
+
+Both the member's page and a trainer's page show a PT report built from the
+same records — sessions used and remaining, feedback, and (on the member's
+side) how consistent their attendance has been recently. Nothing here is a
+separate thing to fill in; it's just those records read back to you.
+
+### Recognition
+
+**What it is** — a private way to note when a member deserves a shout-out:
+exceptional consistency, real effort, anything worth remembering. It lives on
+the member's page, visible to staff only.
+
+**To use it:** on the member's page, tap **Recognize member**, write why, and
+optionally point at what prompted it — their attendance consistency or a
+specific feedback note. The reason is required; the citation is not.
+
+**This is not a leaderboard.** There is no score, no ranking, and no member
+ever sees it — it's a private record for staff, the same way At Risk alerts
+are a private worklist rather than something shown to members.
 
 ---
 
@@ -536,6 +583,9 @@ Being straight about this matters more than a longer feature list.
 - **It does not predict who will quit, or score members out of 100.** Every
   flag can be traced back to that member's actual visits — which means you can
   always check whether it is right.
+- **It does not rank or score members, staff, or trainers.** Recognition is a
+  private note with a reason, never a leaderboard; trainers' assigned members
+  are always listed by name, never ranked by any figure.
 
 ---
 
@@ -552,6 +602,9 @@ Being straight about this matters more than a longer feature list.
 | Sell a protein tub | Shop → Sell |
 | Freeze a membership | Member → Freeze |
 | Book a PT session | Personal Training → Book appointment |
+| Log PT feedback | Session → Log feedback, or Member → Add feedback |
+| Recognize a member | Member → Recognize member |
+| See a trainer's report | Trainers → tap the trainer |
 | Add a class to the timetable | Classes → Add schedule |
 | Change a price | Plans |
 | Give a new employee access | Staff → Add staff |
