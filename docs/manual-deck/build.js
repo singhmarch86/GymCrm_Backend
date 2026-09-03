@@ -1229,6 +1229,80 @@ async function main() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
+  // FULL FEATURE LIST — one-page checklist
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    const s = bgSlide(WHITE);
+    moduleHeader(s, {
+      eyebrow: "Also read",
+      title: "The Complete Feature List",
+      what: "Every module in this manual, one page — nothing here that isn't a real, working screen.",
+      iconKey: "FiCheckSquare",
+    });
+
+    const left = [
+      "Membership lifecycle — plans, freeze, transfer, terminate",
+      "Renewals — Due & Lapsed, before anyone lapses unnoticed",
+      "GST invoicing — sequential numbers, a Discounts tab",
+      "Payments & Collections — worst-first, not oldest-first",
+      "Money Leaks — audits value given away, not just what's owed",
+      "Digital Wallet — balance, top-up, spend",
+      "Shop (POS) — Sell, Restock, Stock and Sales, four tabs",
+      "Stock analytics — reorder now / dead / overstocked, by product",
+      "Attendance & check-in",
+      "Classes & schedule",
+      "Personal Training — packages and appointments",
+      "PT Feedback, Reports & Recognition",
+    ];
+    const right = [
+      "Trainer payouts — computed, never silent",
+      "Leads CRM — five-stage pipeline, a default next step for each",
+      "Lead workflow & follow-ups — nothing goes quiet unnoticed",
+      "Visitors — walk-ins, trials, tours",
+      "Referral tracking — who brought whom, and whether it converted",
+      "At Risk — real visits behind every flag, never a guess",
+      "Analytics — Business, Leads, Retention and Staff in one section",
+      "Staff Work — a record of the day, never a leaderboard",
+      "Staff accounts — role-based login, deactivate rather than delete",
+      "Multi-branch — chain overview, targets, stock transfer",
+      "Data import — bring in an old member list safely, in two stages",
+      "Every membership change recorded — who did it, and when",
+    ];
+
+    const top = 2.05,
+      colGap = 0.5,
+      colW = (CONTENT_W - colGap) / 2;
+
+    function checklist(items, x) {
+      const runs = [];
+      items.forEach((t) => {
+        runs.push({ text: "✓  ", options: { bold: true, color: GOOD, fontSize: 12.5 } });
+        runs.push({ text: t, options: { color: INK, fontSize: 12.5, breakLine: true, paraSpaceAfter: 11 } });
+      });
+      s.addText(runs, {
+        x,
+        y: top,
+        w: colW,
+        h: H - top - 0.6,
+        fontFace: "Calibri",
+        isTextBox: true,
+        margin: 0,
+        valign: "top",
+      });
+    }
+    checklist(left, MARGIN);
+    checklist(right, MARGIN + colW + colGap);
+    s.addShape(pres.ShapeType.line, {
+      x: MARGIN + colW + colGap / 2,
+      y: top,
+      w: 0,
+      h: H - top - 0.65,
+      line: { color: "E2E6ED", width: 1 },
+    });
+    pageFooter(s, "Also read", n++);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
   // QUICK REFERENCE
   // ══════════════════════════════════════════════════════════════════════
   {
