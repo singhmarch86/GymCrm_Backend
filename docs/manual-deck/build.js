@@ -861,6 +861,7 @@ async function main() {
           "Everything here already existed on other screens — this just gathers it",
           "Use At Risk for today's work; use Analytics → Business for last month's answer",
           "If a fifth view appears later, it belongs here too, not a new corner",
+          ["Also findable as “Reports” under More —", "same Business charts, plus a per-plan Members/Revenue/Sold table"],
         ],
       },
     ],
