@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'services/api_response.dart';
 import 'services/auth_service.dart';
+import 'services/entitlements_service.dart';
 import 'services/storage_service.dart';
 import 'screens/register_screen.dart';
 import 'theme/app_colors.dart';
@@ -47,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (!mounted) return;
       final data = result['data'];
+      final planTier = data['gym']?['plan_tier'] as String?;
       await StorageService.saveAuthData(
         accessToken: data['access_token'],
         refreshToken: data['refresh_token'],
@@ -54,7 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
         gymId: data['user']['gym_id'],
         userName: data['user']['name'],
         role: data['user']['role'],
+        planTier: planTier,
       );
+      EntitlementsService.setTier(planTier);
       if (!mounted) return;
       Navigator.pushReplacement(
         context,

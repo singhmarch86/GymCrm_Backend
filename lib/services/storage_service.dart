@@ -8,6 +8,10 @@ class StorageService {
   static const String gymIdKey = 'gym_id';
   static const String roleKey = 'role';
   static const String userNameKey = 'user_name';
+  // "normal" / "medium" / "premium" — see internal/entitlements on the
+  // backend. Saved at login/register so EntitlementsService can gate nav
+  // without a round trip on every app start.
+  static const String planTierKey = 'plan_tier';
 
   static Future<void> saveAuthData({
     required String accessToken,
@@ -16,6 +20,7 @@ class StorageService {
     required int gymId,
     required String role,
     required String userName,
+    String? planTier,
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -27,6 +32,10 @@ class StorageService {
 
     await prefs.setString(roleKey, role);
     await prefs.setString(userNameKey, userName);
+
+    if (planTier != null) {
+      await prefs.setString(planTierKey, planTier);
+    }
   }
 
   /// Replaces just the token pair, leaving the user/gym/role fields intact.
@@ -68,6 +77,16 @@ class StorageService {
   static Future<String?> getUserName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(userNameKey);
+  }
+
+  static Future<String?> getPlanTier() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(planTierKey);
+  }
+
+  static Future<void> setPlanTier(String planTier) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(planTierKey, planTier);
   }
 
   static Future<void> clearAll() async {

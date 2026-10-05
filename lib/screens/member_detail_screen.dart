@@ -14,6 +14,7 @@ import '../features/lifecycle/transfer_dialog.dart';
 import '../features/lifecycle/upgrade_dialog.dart';
 import '../models/lifecycle_event.dart';
 import '../models/member.dart';
+import '../services/entitlements_service.dart';
 import '../services/lifecycle_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_spacing.dart' show AppSpacing;
@@ -270,9 +271,10 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
 
               AppSpacing.gapXxl,
 
-              MemberWalletSection(memberId: widget.member.id),
-
-              AppSpacing.gapXxl,
+              if (EntitlementsService.has(Feature.digitalWallet)) ...[
+                MemberWalletSection(memberId: widget.member.id),
+                AppSpacing.gapXxl,
+              ],
 
               MemberInvoicesSection(
                 memberId: widget.member.id,
@@ -281,17 +283,21 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
 
               AppSpacing.gapXxl,
 
-              MemberPtReportSection(memberId: widget.member.id),
+              // PT report, feedback and recognition are three views over the
+              // same Medium/Premium-only records (internal/ptfeedback,
+              // internal/recognition) — hidden together rather than each
+              // silently failing to load and showing its own error text.
+              if (EntitlementsService.has(Feature.trainerFeedback)) ...[
+                MemberPtReportSection(memberId: widget.member.id),
+                AppSpacing.gapXxl,
+                MemberFeedbackSection(memberId: widget.member.id),
+                AppSpacing.gapXxl,
+              ],
 
-              AppSpacing.gapXxl,
-
-              MemberFeedbackSection(memberId: widget.member.id),
-
-              AppSpacing.gapXxl,
-
-              MemberRecognitionSection(memberId: widget.member.id),
-
-              AppSpacing.gapXxl,
+              if (EntitlementsService.has(Feature.recognition)) ...[
+                MemberRecognitionSection(memberId: widget.member.id),
+                AppSpacing.gapXxl,
+              ],
 
               const Text(
                 'Membership history',

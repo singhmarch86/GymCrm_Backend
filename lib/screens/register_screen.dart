@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/api_response.dart';
 import '../services/auth_service.dart';
+import '../services/entitlements_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/validators.dart';
@@ -58,6 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (!mounted) return;
       final data = result['data'];
+      final planTier = data['gym']?['plan_tier'] as String?;
 
       await StorageService.saveAuthData(
         accessToken: data['access_token'],
@@ -66,7 +68,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         gymId: data['user']['gym_id'],
         userName: data['user']['name'],
         role: data['user']['role'],
+        planTier: planTier,
       );
+      EntitlementsService.setTier(planTier);
 
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(

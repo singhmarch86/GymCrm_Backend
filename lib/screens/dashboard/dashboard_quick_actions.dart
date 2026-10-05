@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/entitlements_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/dashboard_action_card.dart';
 
@@ -209,6 +210,12 @@ class _Action {
   final Widget Function() screen;
   final String? badge;
 
+  /// Which pricing-tier feature this tile needs, if any. Null means
+  /// available on every plan — either genuinely core, or a screen this
+  /// app hasn't been taught to gate yet (see EntitlementsService's own
+  /// "not here yet" list: Reports, Staff, Leads).
+  final Feature? feature;
+
   const _Action({
     required this.title,
     required this.subtitle,
@@ -216,6 +223,7 @@ class _Action {
     required this.color,
     required this.screen,
     this.badge,
+    this.feature,
   });
 }
 
@@ -284,6 +292,7 @@ class DashboardQuickActions extends StatelessWidget {
       color: AppColors.danger,
       screen: () => const AtRiskScreen(),
       badge: atRiskHigh > 0 ? '$atRiskHigh high' : null,
+      feature: Feature.retentionSignals,
     ),
     _Action(
       title: 'Payments',
@@ -298,6 +307,7 @@ class DashboardQuickActions extends StatelessWidget {
       icon: Icons.water_damage_rounded,
       color: AppColors.danger,
       screen: () => const LeakageScreen(),
+      feature: Feature.moneyLeaks,
     ),
     _Action(
       title: 'Trainer pay',
@@ -305,6 +315,7 @@ class DashboardQuickActions extends StatelessWidget {
       icon: Icons.account_balance_wallet_rounded,
       color: AppColors.warning,
       screen: () => const PayoutsScreen(),
+      feature: Feature.advancedPayouts,
     ),
     _Action(
       title: 'Staff work',
@@ -312,6 +323,7 @@ class DashboardQuickActions extends StatelessWidget {
       icon: Icons.badge_rounded,
       color: AppColors.info,
       screen: () => const StaffWorkScreen(),
+      feature: Feature.staffWork,
     ),
     _Action(
       title: 'Shop',
@@ -319,6 +331,7 @@ class DashboardQuickActions extends StatelessWidget {
       icon: Icons.storefront_rounded,
       color: AppColors.success,
       screen: () => const PosScreen(),
+      feature: Feature.shopPos,
     ),
     _Action(
       title: 'Invoices',
@@ -340,6 +353,7 @@ class DashboardQuickActions extends StatelessWidget {
       icon: Icons.self_improvement_rounded,
       color: AppColors.success,
       screen: () => const ClassesScreen(),
+      feature: Feature.classes,
     ),
     _Action(
       title: 'Plans',
@@ -382,6 +396,10 @@ class DashboardQuickActions extends StatelessWidget {
       icon: Icons.store_rounded,
       color: AppColors.primary,
       screen: () => const BranchScreen(),
+      // Not gated: MyBranches/Switch (the screen's core, every gym's own
+      // branch context) stay available on every plan server-side too — only
+      // adding a second location, transfers, and chain-wide views are
+      // Premium-gated, inside the screen itself.
     ),
     _Action(
       title: 'Import data',
@@ -396,6 +414,11 @@ class DashboardQuickActions extends StatelessWidget {
       icon: Icons.sports_rounded,
       color: AppColors.primary,
       screen: () => const TrainersScreen(),
+      // Gated on the same feature as PT feedback, not its own: tapping a
+      // trainer here opens TrainerDetailScreen, which is built entirely
+      // around PtReportService — a screen with nothing to show below
+      // Medium isn't worth reaching.
+      feature: Feature.trainerFeedback,
     ),
     _Action(
       title: 'Personal Training',
@@ -403,6 +426,7 @@ class DashboardQuickActions extends StatelessWidget {
       icon: Icons.fitness_center_rounded,
       color: AppColors.success,
       screen: () => const PersonalTrainingScreen(),
+      feature: Feature.ptPackages,
     ),
   ];
 
@@ -448,7 +472,11 @@ class DashboardQuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final byTitle = {for (final a in _actions) a.title: a};
+    final byTitle = {
+      for (final a in _actions)
+        if (a.feature == null || EntitlementsService.has(a.feature!))
+          a.title: a,
+    };
 
     return LayoutBuilder(
       builder: (context, constraints) {

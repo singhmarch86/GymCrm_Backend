@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/entitlements_service.dart';
 import '../services/storage_service.dart';
 import '../login_screen.dart';
 import '../shell/app_shell.dart';
@@ -30,6 +31,8 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (token != null && token.isNotEmpty) {
+      await EntitlementsService.load();
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AppShell()),

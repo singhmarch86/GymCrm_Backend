@@ -5,6 +5,7 @@ import '../features/leads/leads_screen.dart';
 import '../features/members/member_screen.dart';
 import '../features/retention/at_risk_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../services/entitlements_service.dart';
 import '../theme/app_colors.dart';
 import 'more_section.dart';
 
@@ -31,39 +32,79 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   late int _index = widget.initialIndex;
 
+  /// Every possible tab, each paired with the plan-tier feature it needs
+  /// (null = every plan). Filtered once into [_items] below — At Risk is
+  /// the one tab today's pricing sheet doesn't include on Normal
+  /// (FeatureRetentionSignals is Medium+), so a Normal-tier gym never
+  /// sees a tab that would just 403 on tap.
+  static final List<(IconData, IconData, String, Widget Function(), Feature?)>
+  _allTabs = [
+    (
+      Icons.dashboard_rounded,
+      Icons.dashboard_outlined,
+      'Today',
+      // Today drops the tile grid — it lives in More now, so what remains
+      // is the numbers that actually change daily (FR-14 §5).
+      () => const DashboardScreen(showQuickActions: false),
+      null,
+    ),
+    (
+      Icons.groups_rounded,
+      Icons.groups_outlined,
+      'Members',
+      () => const MembersScreen(),
+      null,
+    ),
+    (
+      Icons.person_add_rounded,
+      Icons.person_add_alt_outlined,
+      'Leads',
+      // Opens on the board, not the list: the board answers "where is the
+      // funnel blocked", which is the question an owner actually has.
+      () => const LeadsScreen(initialTab: LeadsScreen.boardTab),
+      null,
+    ),
+    (
+      Icons.health_and_safety_rounded,
+      Icons.health_and_safety_outlined,
+      'At Risk',
+      () => const AtRiskScreen(),
+      Feature.retentionSignals,
+    ),
+    (
+      Icons.insights_rounded,
+      Icons.insights_outlined,
+      'Analytics',
+      // Every number the product computes, in one place (FR-15). It earns
+      // a tab because visibility is the entire point — scattered across
+      // four screens, the depth that was already built read as absent.
+      () => const AnalyticsScreen(),
+      null,
+    ),
+    (
+      Icons.apps_rounded,
+      Icons.apps_outlined,
+      'More',
+      () => const MoreSection(),
+      null,
+    ),
+  ];
+
+  late final List<(IconData, IconData, String, Widget Function(), Feature?)>
+  _items = _allTabs
+      .where((t) => t.$5 == null || EntitlementsService.has(t.$5!))
+      .toList();
+
   /// Built once, kept alive by the IndexedStack below.
   ///
   /// This is what makes rule 3 true: a receptionist who scrolls to the bottom
   /// of At Risk, takes a payment, and comes back must find themselves where
   /// they left off. Rebuilding on every switch would reset scroll, filters and
   /// sub-tab, which is a worse tool than the one they had.
-  late final List<Widget> _sections = [
-    // Today drops the tile grid — it lives in More now, so what remains is the
-    // numbers that actually change daily (FR-14 §5).
-    const DashboardScreen(showQuickActions: false),
-    const MembersScreen(),
-    // Opens on the board, not the list: the board answers "where is the funnel
-    // blocked", which is the question an owner actually has.
-    const LeadsScreen(initialTab: LeadsScreen.boardTab),
-    const AtRiskScreen(),
-    // Every number the product computes, in one place (FR-15). It earns a tab
-    // because visibility is the entire point — scattered across four screens,
-    // the depth that was already built read as absent.
-    const AnalyticsScreen(),
-    const MoreSection(),
-  ];
+  late final List<Widget> _sections = [for (final t in _items) t.$4()];
 
-  static const _destinations = [
-    (Icons.dashboard_rounded, Icons.dashboard_outlined, 'Today'),
-    (Icons.groups_rounded, Icons.groups_outlined, 'Members'),
-    (Icons.person_add_rounded, Icons.person_add_alt_outlined, 'Leads'),
-    (
-      Icons.health_and_safety_rounded,
-      Icons.health_and_safety_outlined,
-      'At Risk',
-    ),
-    (Icons.insights_rounded, Icons.insights_outlined, 'Analytics'),
-    (Icons.apps_rounded, Icons.apps_outlined, 'More'),
+  List<(IconData, IconData, String)> get _destinations => [
+    for (final t in _items) (t.$1, t.$2, t.$3),
   ];
 
   void _select(int i) {
