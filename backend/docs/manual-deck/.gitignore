@@ -1,0 +1,6 @@
+node_modules/
+.venv/
+bin/
+*.pdf
+slide-*.jpg
+manual_dump.txt

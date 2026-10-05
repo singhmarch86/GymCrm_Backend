@@ -1,0 +1,81 @@
+# Production stack for a single gym or small chain, on one VPS.
+#
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d
+#
+# Differences from the dev compose that matter:
+#
+#   - Every secret comes from the environment. Nothing is defaulted, so a
+#     missing value fails loudly at startup instead of silently shipping the
+#     dev JWT secret to a real gym's data.
+#   - APP_ENV is production, which disables the demo seeder.
+#   - Postgres is NOT published to the host. Nothing outside this network
+#     needs to reach it, and an exposed database with a guessable password is
+#     how small deployments get ransomwared.
+#   - nginx serves the Flutter build and proxies /api to the API on the same
+#     origin, so there is no CORS to configure and no rebuild when the
+#     hostname changes.
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      PORT: "8089"
+      APP_ENV: "production"
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      DB_USER: "${DB_USER:?set DB_USER in deploy/.env}"
+      DB_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in deploy/.env}"
+      DB_NAME: "${DB_NAME:?set DB_NAME in deploy/.env}"
+      DB_SSLMODE: "disable"
+      JWT_SECRET: "${JWT_SECRET:?set JWT_SECRET in deploy/.env, at least 32 random chars}"
+      JWT_ACCESS_TOKEN_MINUTES: "15"
+      JWT_REFRESH_TOKEN_DAYS: "30"
+      # Same-origin deployment needs no cross-origin allowance at all. Set
+      # this only if you serve the app from a different hostname.
+      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-}"
+      # Who may create a gym. Both default to empty/false, which leaves
+      # registration CLOSED in production — see deploy/.env.example.
+      REGISTRATION_INVITE_CODE: "${REGISTRATION_INVITE_CODE:-}"
+      ALLOW_PUBLIC_REGISTRATION: "${ALLOW_PUBLIC_REGISTRATION:-false}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: "${DB_USER:?}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?}"
+      POSTGRES_DB: "${DB_NAME:?}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Migrations run in filename order on an EMPTY volume only. On an
+      # existing database Postgres skips this entirely — apply new migrations
+      # by hand, the way every migration in this project has been applied.
+      - ../migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  web:
+    image: nginx:1.27-alpine
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Built with:
+      #   flutter build web --release --dart-define=API_BASE_URL=
+      # then copied to deploy/web/ (see deploy/README.md).
+      - ./web:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  pgdata:
