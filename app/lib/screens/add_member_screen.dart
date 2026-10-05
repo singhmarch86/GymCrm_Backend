@@ -1,0 +1,497 @@
+import 'package:flutter/material.dart';
+
+import '../models/plan.dart';
+import '../services/api_response.dart';
+import '../services/member_service.dart';
+import '../services/plan_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_spacing.dart' show AppSpacing;
+import '../utils/validators.dart';
+import '../widgets/error_banner.dart';
+
+/// Shows the "add member" form as a centered modal dialog — matching the
+/// existing CollectPaymentDialog/RenewDialog convention — instead of
+/// pushing a full-page route that replaces the whole window.
+Future<bool?> showAddMemberDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (_) => const AddMemberDialog(),
+  );
+}
+
+class AddMemberDialog extends StatefulWidget {
+  const AddMemberDialog({super.key});
+
+  @override
+  State<AddMemberDialog> createState() => _AddMemberDialogState();
+}
+
+class _AddMemberDialogState extends State<AddMemberDialog> {
+  final _formKey = GlobalKey<FormState>();
+
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final emailController = TextEditingController();
+  final addressController = TextEditingController();
+  // The desk will write "knee injury — no squats" somewhere. Without a field
+  // for it, it goes on paper and leaves with whoever wrote it.
+  final notesController = TextEditingController();
+  final emergencyNameController = TextEditingController();
+  final emergencyPhoneController = TextEditingController();
+
+  String? _gender;
+  int? _planId;
+  DateTime _startDate = DateTime.now();
+  DateTime? _expiryDate;
+  // Optional, and the field the backend has always accepted while the form
+  // never sent it. Drives birthday messages, age-appropriate advice, and any
+  // medical conversation.
+  DateTime? _dateOfBirth;
+
+  List<Plan> _plans = [];
+  bool _loadingPlans = true;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlans();
+  }
+
+  Future<void> _loadPlans() async {
+    try {
+      final plans = await PlanService().getActivePlans();
+      if (!mounted) return;
+      setState(() {
+        _plans = plans;
+        _loadingPlans = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingPlans = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    addressController.dispose();
+    notesController.dispose();
+    emergencyNameController.dispose();
+    emergencyPhoneController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate({required bool isStart}) async {
+    final initial = isStart ? _startDate : (_expiryDate ?? _startDate);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isStart) {
+        _startDate = picked;
+      } else {
+        _expiryDate = picked;
+      }
+    });
+  }
+
+  Future<void> saveMember() async {
+    setState(() => _error = null);
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await MemberService().createMember(
+        firstName: firstNameController.text.trim(),
+        lastName: lastNameController.text.trim(),
+        phone: phoneController.text.trim(),
+        email: emailController.text.trim(),
+        address: addressController.text.trim(),
+        gender: _gender,
+        membershipPlanId: _planId,
+        startDate: _startDate,
+        expiryDate: _expiryDate,
+        dateOfBirth: _dateOfBirth,
+        notes: notesController.text.trim(),
+        emergencyContactName: emergencyNameController.text.trim(),
+        emergencyContactPhone: emergencyPhoneController.text.trim(),
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e is ApiException
+            ? e.message
+            : "Couldn't add this member. Please try again.";
+      });
+    }
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+  }
+
+  String _formatDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480, maxHeight: 640),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.person_add_alt_1_rounded,
+                        color: AppColors.primary,
+                      ),
+                      AppSpacing.hGapSm,
+                      const Text(
+                        'Add Member',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  AppSpacing.gapLg,
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: firstNameController,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(
+                            labelText: 'First Name',
+                          ),
+                          validator: (v) =>
+                              Validators.required(v, 'First name'),
+                        ),
+                      ),
+                      AppSpacing.hGapMd,
+                      Expanded(
+                        child: TextFormField(
+                          controller: lastNameController,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(
+                            labelText: 'Last Name',
+                          ),
+                          validator: (v) => Validators.required(v, 'Last name'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  AppSpacing.gapMd,
+
+                  TextFormField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(labelText: 'Phone'),
+                    validator: Validators.phone,
+                  ),
+                  AppSpacing.gapMd,
+
+                  TextFormField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      labelText: 'Email (optional)',
+                    ),
+                    validator: Validators.emailOptional,
+                  ),
+                  AppSpacing.gapMd,
+
+                  TextFormField(
+                    controller: addressController,
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(
+                      labelText: 'Address (optional)',
+                    ),
+                    onFieldSubmitted: (_) => saveMember(),
+                  ),
+                  AppSpacing.gapMd,
+
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate:
+                            _dateOfBirth ??
+                            DateTime.now().subtract(
+                              const Duration(days: 365 * 25),
+                            ),
+                        // No upper bound on age and nobody under 5: a gym has
+                        // no business rejecting a date somebody actually has.
+                        firstDate: DateTime(1920),
+                        lastDate: DateTime.now().subtract(
+                          const Duration(days: 365 * 5),
+                        ),
+                        helpText: 'Date of birth',
+                        initialDatePickerMode: DatePickerMode.year,
+                      );
+                      if (picked != null) setState(() => _dateOfBirth = picked);
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Date of Birth (optional)',
+                      ),
+                      child: Text(
+                        _dateOfBirth == null
+                            ? 'Not set'
+                            : _formatDate(_dateOfBirth!),
+                        style: TextStyle(
+                          color: _dateOfBirth == null
+                              ? Colors.grey.shade500
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<String>(
+                    initialValue: _gender,
+                    decoration: const InputDecoration(
+                      labelText: 'Gender (optional)',
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'male', child: Text('Male')),
+                      DropdownMenuItem(value: 'female', child: Text('Female')),
+                      DropdownMenuItem(value: 'other', child: Text('Other')),
+                    ],
+                    onChanged: (v) => setState(() => _gender = v),
+                  ),
+                  AppSpacing.gapMd,
+
+                  _loadingPlans
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        )
+                      : DropdownButtonFormField<int>(
+                          initialValue: _planId,
+                          decoration: const InputDecoration(
+                            labelText: 'Membership Plan (optional)',
+                          ),
+                          items: _plans
+                              .map(
+                                (p) => DropdownMenuItem(
+                                  value: p.id,
+                                  child: Text(p.name),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (v) => setState(() => _planId = v),
+                        ),
+                  AppSpacing.gapMd,
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _DateField(
+                          label: 'Start Date',
+                          value: _formatDate(_startDate),
+                          onTap: () => _pickDate(isStart: true),
+                        ),
+                      ),
+                      AppSpacing.hGapMd,
+                      Expanded(
+                        child: _DateField(
+                          label: 'Expiry Date (optional)',
+                          value: _expiryDate == null
+                              ? 'Not set'
+                              : _formatDate(_expiryDate!),
+                          onTap: () => _pickDate(isStart: false),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  AppSpacing.gapLg,
+
+                  // The only fields on this form that exist for the member's
+                  // sake rather than the gym's. Grouped and labelled so a
+                  // receptionist can see at a glance whether they were filled
+                  // — this is the one blank nobody wants to discover in the
+                  // moment it matters.
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.emergency_share_rounded,
+                        size: 15,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        'In an emergency',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  AppSpacing.gapSm,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: emergencyNameController,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: const InputDecoration(
+                            labelText: 'Contact name (optional)',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: emergencyPhoneController,
+                          keyboardType: TextInputType.phone,
+                          decoration: const InputDecoration(
+                            labelText: 'Contact phone (optional)',
+                          ),
+                          // Validated only if filled: half an emergency
+                          // contact still beats none, and a name with no
+                          // number is something staff can act on.
+                          validator: (v) {
+                            final t = (v ?? '').trim();
+                            if (t.isEmpty) return null;
+                            return t.length < 10
+                                ? 'Enter a full phone number'
+                                : null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  AppSpacing.gapLg,
+
+                  // Last on the form on purpose. Every field added is friction
+                  // at the counter while somebody waits, and joining is the
+                  // worst possible moment for friction — so the free-text one
+                  // sits where it can be skipped without scrolling past
+                  // anything that matters.
+                  TextFormField(
+                    controller: notesController,
+                    maxLines: 3,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Notes (optional)',
+                      hintText:
+                          'Injuries, goals, anything the desk should know',
+                      alignLabelWithHint: true,
+                    ),
+                  ),
+
+                  if (_error != null) ...[
+                    AppSpacing.gapMd,
+                    ErrorBanner.inline(message: _error!),
+                  ],
+
+                  AppSpacing.gapXl,
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      AppSpacing.hGapSm,
+                      ElevatedButton(
+                        style: AppTheme.dialogActionButton,
+                        onPressed: _isLoading ? null : saveMember,
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Save Member'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DateField extends StatelessWidget {
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  const _DateField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: InputDecorator(
+        decoration: InputDecoration(labelText: label),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(value),
+            const Icon(
+              Icons.calendar_today_rounded,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
