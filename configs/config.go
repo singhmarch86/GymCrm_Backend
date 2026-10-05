@@ -19,6 +19,12 @@ type Config struct {
 type ServerConfig struct {
 	Port string // e.g. "8080"
 	Env  string // "development" | "production"
+
+	// PublicBaseURL is where a gym's public advertisement page is actually
+	// reachable — used only to build the page_url a gym owner is shown in
+	// the app (e.g. "https://regulars.app"), never for anything the API
+	// itself calls out to.
+	PublicBaseURL string
 }
 
 type DatabaseConfig struct {
@@ -40,8 +46,9 @@ type JWTConfig struct {
 func Load() (*Config, error) {
 	cfg := &Config{
 		Server: ServerConfig{
-			Port: getEnv("PORT", "8080"),
-			Env:  getEnv("APP_ENV", "development"),
+			Port:          getEnv("PORT", "8080"),
+			Env:           getEnv("APP_ENV", "development"),
+			PublicBaseURL: getEnv("PUBLIC_BASE_URL", "http://localhost:8080"),
 		},
 		Database: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),

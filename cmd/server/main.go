@@ -20,6 +20,8 @@ import (
 	"gymcrm/internal/dashboard"
 	"gymcrm/internal/database"
 	"gymcrm/internal/devseed"
+	"gymcrm/internal/entitlements"
+	"gymcrm/internal/gyms"
 	"gymcrm/internal/importer"
 	"gymcrm/internal/invoicing"
 	"gymcrm/internal/leads"
@@ -183,6 +185,10 @@ func main() {
 	branchesSvc := branches.NewService(branchesRepo, cfg.JWT.Secret)
 	branchesHandler := branches.NewHandler(branchesSvc)
 
+	gymsRepo := gyms.NewRepository(db)
+	gymsSvc := gyms.NewService(gymsRepo)
+	gymsHandler := gyms.NewHandler(gymsRepo, gymsSvc, cfg.Server.PublicBaseURL)
+
 	usersRepo := users.NewRepository(db)
 	usersSvc := users.NewService(usersRepo)
 	usersHandler := users.NewHandler(usersSvc)
@@ -267,6 +273,15 @@ func main() {
 	mux.Handle("GET /api/v1/auth/me", jwt(http.HandlerFunc(authHandler.Me)))
 	mux.Handle("POST /api/v1/auth/logout", jwt(http.HandlerFunc(authHandler.Logout)))
 
+	// ── Gym public advertisement page — public, no jwt (see gyms.Repository's
+	// own comment: this is the one route on this server meant for an
+	// anonymous visitor or a search-engine crawler) ─────────────────────────
+	mux.HandleFunc("GET /api/v1/public/gyms/{slug}", gymsHandler.GetPublicProfile)
+
+	// ── Gym public advertisement page — settings screen (protected) ────────
+	mux.Handle("GET /api/v1/gyms/public-profile", jwt(http.HandlerFunc(gymsHandler.GetPublicProfileSettings)))
+	mux.Handle("PATCH /api/v1/gyms/public-profile", jwt(http.HandlerFunc(gymsHandler.UpdatePublicProfile)))
+
 	// ── Members ────────────────────────────────────────────────────────────
 	mux.Handle("POST /api/v1/members", jwt(http.HandlerFunc(membersHandler.Create)))
 	mux.Handle("GET /api/v1/members", jwt(http.HandlerFunc(membersHandler.List)))
@@ -340,6 +355,14 @@ func main() {
 	owner := func(h http.HandlerFunc) http.Handler {
 		return jwt(middleware.OwnerOnly(h))
 	}
+
+	// gated wraps a route with a pricing-tier check — see
+	// internal/entitlements. Chains after jwt for the same reason owner
+	// does: the tenant context (which gym is calling) must already exist
+	// before a feature gate can look up that gym's plan.
+	gated := func(feature entitlements.Feature, h http.HandlerFunc) http.Handler {
+		return jwt(entitlements.RequireFeature(gymsRepo, feature)(h))
+	}
 	mux.Handle("GET /api/v1/users", owner(usersHandler.List))
 	mux.Handle("POST /api/v1/users", owner(usersHandler.Create))
 	mux.Handle("PUT /api/v1/users/{id}", owner(usersHandler.Update))
@@ -349,24 +372,27 @@ func main() {
 	// ── Retention ──────────────────────────────────────────────────────────
 	// Member churn-risk alerts. Scan and resolve are staff-actionable (not
 	// owner-only) — chasing lapsing members is exactly front-desk work.
-	mux.Handle("POST /api/v1/retention/scan", jwt(http.HandlerFunc(retentionHandler.Scan)))
-	mux.Handle("GET /api/v1/retention/alerts", jwt(http.HandlerFunc(retentionHandler.ListAlerts)))
-	mux.Handle("GET /api/v1/retention/summary", jwt(http.HandlerFunc(retentionHandler.Summary)))
-	mux.Handle("PATCH /api/v1/retention/alerts/{id}/resolve", jwt(http.HandlerFunc(retentionHandler.Resolve)))
-	mux.Handle("GET /api/v1/retention/staff-activity", jwt(http.HandlerFunc(retentionHandler.StaffActivity)))
+	// Medium plan and up (pricing sheet: "At Risk / retention system — all
+	// 9 retention signals").
+	mux.Handle("POST /api/v1/retention/scan", gated(entitlements.FeatureRetentionSignals, retentionHandler.Scan))
+	mux.Handle("GET /api/v1/retention/alerts", gated(entitlements.FeatureRetentionSignals, retentionHandler.ListAlerts))
+	mux.Handle("GET /api/v1/retention/summary", gated(entitlements.FeatureRetentionSignals, retentionHandler.Summary))
+	mux.Handle("PATCH /api/v1/retention/alerts/{id}/resolve", gated(entitlements.FeatureRetentionSignals, retentionHandler.Resolve))
+	mux.Handle("GET /api/v1/retention/staff-activity", gated(entitlements.FeatureRetentionSignals, retentionHandler.StaffActivity))
 
 	// Staff work (FR-13). Read-only over ledgers that already record who acted.
 	// Plain jwt, not owner-only: a staff member may see their own day, and the
 	// service narrows the result from the token rather than trusting a query
 	// parameter.
-	mux.Handle("GET /api/v1/staff-work", jwt(http.HandlerFunc(staffWorkHandler.Day)))
-	mux.Handle("GET /api/v1/staff-work/items", jwt(http.HandlerFunc(staffWorkHandler.Items)))
-	mux.Handle("GET /api/v1/staff-work/leads", jwt(http.HandlerFunc(staffWorkHandler.LeadWork)))
+	// Medium plan and up (pricing sheet: "Staff Work").
+	mux.Handle("GET /api/v1/staff-work", gated(entitlements.FeatureStaffWork, staffWorkHandler.Day))
+	mux.Handle("GET /api/v1/staff-work/items", gated(entitlements.FeatureStaffWork, staffWorkHandler.Items))
+	mux.Handle("GET /api/v1/staff-work/leads", gated(entitlements.FeatureStaffWork, staffWorkHandler.LeadWork))
 	// Analytics (FR-22). Same range parameters as the day view. Not a
 	// ranking: people come back ordered by name and compared only to their
 	// own previous period.
 	mux.Handle("GET /api/v1/staff-work/analytics",
-		jwt(http.HandlerFunc(staffWorkHandler.Analytics)))
+		gated(entitlements.FeatureStaffWork, staffWorkHandler.Analytics))
 
 	// Work queues (FR-19). What is still owed, as opposed to what happened.
 	// Plain jwt: low stock is a fact about the shelf, not about a person, and
@@ -433,22 +459,25 @@ func main() {
 
 	// Money leakage (FR-21). What the gym handed over and never billed —
 	// which is why none of it appears in the collections queue.
+	// Medium plan and up (pricing sheet: "Money Leaks").
 	mux.Handle("GET /api/v1/queues/leakage",
-		jwt(http.HandlerFunc(queuesHandler.Leakage)))
+		gated(entitlements.FeatureMoneyLeaks, queuesHandler.Leakage))
 
 	// Trainer payouts (FR-21 §2). The other direction of the same problem:
-	// money the gym owes, which nothing recorded until now.
+	// money the gym owes, which nothing recorded until now. Premium plan
+	// only (pricing sheet: "Advanced trainer payouts", "Salary +
+	// commission + session-based payouts").
 	mux.Handle("GET /api/v1/trainers/{trainer_id}/payout-preview",
-		jwt(http.HandlerFunc(payoutsHandler.Preview)))
-	mux.Handle("GET /api/v1/payouts", jwt(http.HandlerFunc(payoutsHandler.List)))
-	mux.Handle("POST /api/v1/payouts", jwt(http.HandlerFunc(payoutsHandler.Create)))
-	mux.Handle("GET /api/v1/payouts/{id}", jwt(http.HandlerFunc(payoutsHandler.Get)))
+		gated(entitlements.FeatureAdvancedPayouts, payoutsHandler.Preview))
+	mux.Handle("GET /api/v1/payouts", gated(entitlements.FeatureAdvancedPayouts, payoutsHandler.List))
+	mux.Handle("POST /api/v1/payouts", gated(entitlements.FeatureAdvancedPayouts, payoutsHandler.Create))
+	mux.Handle("GET /api/v1/payouts/{id}", gated(entitlements.FeatureAdvancedPayouts, payoutsHandler.Get))
 	mux.Handle("POST /api/v1/payouts/{id}/cancel",
-		jwt(http.HandlerFunc(payoutsHandler.Cancel)))
+		gated(entitlements.FeatureAdvancedPayouts, payoutsHandler.Cancel))
 	// Owner-only, enforced in the service from the token: this is the one
 	// operation in the system that moves cash out of the gym.
 	mux.Handle("POST /api/v1/payouts/{id}/pay",
-		jwt(http.HandlerFunc(payoutsHandler.MarkPaid)))
+		gated(entitlements.FeatureAdvancedPayouts, payoutsHandler.MarkPaid))
 
 	// Rhythm-break detection (FR-09). Raises a `rhythm_break` alert into the
 	// same retention_alerts queue, so resolution goes through the retention
@@ -466,10 +495,13 @@ func main() {
 
 	// The counter prompt (FR-11). Not a new signal — a new place to show the
 	// ones that already exist, at the moment the member is standing there.
-	mux.Handle("POST /api/v1/counter/checkin/{member_id}", jwt(http.HandlerFunc(counterHandler.Show)))
-	mux.Handle("GET /api/v1/counter/prompt/{member_id}", jwt(http.HandlerFunc(counterHandler.Peek)))
-	mux.Handle("PATCH /api/v1/counter/prompts/{id}/acted", jwt(http.HandlerFunc(counterHandler.MarkActed)))
-	mux.Handle("GET /api/v1/counter/effectiveness", jwt(http.HandlerFunc(counterHandler.Effectiveness)))
+	// Medium plan and up (pricing sheet: "Counter prompts") — note this
+	// gates only the prompt itself, never /api/v1/attendance/checkin, so a
+	// Normal-tier gym can still check members in.
+	mux.Handle("POST /api/v1/counter/checkin/{member_id}", gated(entitlements.FeatureCounterPrompts, counterHandler.Show))
+	mux.Handle("GET /api/v1/counter/prompt/{member_id}", gated(entitlements.FeatureCounterPrompts, counterHandler.Peek))
+	mux.Handle("PATCH /api/v1/counter/prompts/{id}/acted", gated(entitlements.FeatureCounterPrompts, counterHandler.MarkActed))
+	mux.Handle("GET /api/v1/counter/effectiveness", gated(entitlements.FeatureCounterPrompts, counterHandler.Effectiveness))
 
 	// ── Membership lifecycle ───────────────────────────────────────────────
 	// Freeze / unfreeze / upgrade / transfer / terminate, plus the preview
@@ -488,26 +520,27 @@ func main() {
 	// ── Classes & booking ──────────────────────────────────────────────────
 	// Class types, recurring schedules, materialized sessions, and member
 	// bookings with waitlist. Rules: docs/FR-02-classes-booking.md
-	mux.Handle("POST /api/v1/class-types", jwt(http.HandlerFunc(classesHandler.CreateClassType)))
-	mux.Handle("GET /api/v1/class-types", jwt(http.HandlerFunc(classesHandler.ListClassTypes)))
-	mux.Handle("PUT /api/v1/class-types/{id}", jwt(http.HandlerFunc(classesHandler.UpdateClassType)))
+	// Medium plan and up (pricing sheet: "Classes & timetable").
+	mux.Handle("POST /api/v1/class-types", gated(entitlements.FeatureClasses, classesHandler.CreateClassType))
+	mux.Handle("GET /api/v1/class-types", gated(entitlements.FeatureClasses, classesHandler.ListClassTypes))
+	mux.Handle("PUT /api/v1/class-types/{id}", gated(entitlements.FeatureClasses, classesHandler.UpdateClassType))
 
-	mux.Handle("POST /api/v1/class-schedules", jwt(http.HandlerFunc(classesHandler.CreateSchedule)))
-	mux.Handle("GET /api/v1/class-schedules", jwt(http.HandlerFunc(classesHandler.ListSchedules)))
-	mux.Handle("POST /api/v1/class-schedules/generate", jwt(http.HandlerFunc(classesHandler.GenerateUpcomingSessions)))
+	mux.Handle("POST /api/v1/class-schedules", gated(entitlements.FeatureClasses, classesHandler.CreateSchedule))
+	mux.Handle("GET /api/v1/class-schedules", gated(entitlements.FeatureClasses, classesHandler.ListSchedules))
+	mux.Handle("POST /api/v1/class-schedules/generate", gated(entitlements.FeatureClasses, classesHandler.GenerateUpcomingSessions))
 
-	mux.Handle("POST /api/v1/class-sessions", jwt(http.HandlerFunc(classesHandler.CreateAdHocSession)))
-	mux.Handle("GET /api/v1/class-sessions", jwt(http.HandlerFunc(classesHandler.ListSessions)))
-	mux.Handle("GET /api/v1/class-sessions/{id}", jwt(http.HandlerFunc(classesHandler.GetSession)))
-	mux.Handle("PUT /api/v1/class-sessions/{id}", jwt(http.HandlerFunc(classesHandler.UpdateSession)))
-	mux.Handle("POST /api/v1/class-sessions/{id}/cancel", jwt(http.HandlerFunc(classesHandler.CancelSession)))
-	mux.Handle("POST /api/v1/class-sessions/{id}/complete", jwt(http.HandlerFunc(classesHandler.CompleteSession)))
+	mux.Handle("POST /api/v1/class-sessions", gated(entitlements.FeatureClasses, classesHandler.CreateAdHocSession))
+	mux.Handle("GET /api/v1/class-sessions", gated(entitlements.FeatureClasses, classesHandler.ListSessions))
+	mux.Handle("GET /api/v1/class-sessions/{id}", gated(entitlements.FeatureClasses, classesHandler.GetSession))
+	mux.Handle("PUT /api/v1/class-sessions/{id}", gated(entitlements.FeatureClasses, classesHandler.UpdateSession))
+	mux.Handle("POST /api/v1/class-sessions/{id}/cancel", gated(entitlements.FeatureClasses, classesHandler.CancelSession))
+	mux.Handle("POST /api/v1/class-sessions/{id}/complete", gated(entitlements.FeatureClasses, classesHandler.CompleteSession))
 
-	mux.Handle("POST /api/v1/class-sessions/{id}/bookings", jwt(http.HandlerFunc(classesHandler.Book)))
-	mux.Handle("GET /api/v1/class-sessions/{id}/bookings", jwt(http.HandlerFunc(classesHandler.SessionBookings)))
-	mux.Handle("POST /api/v1/bookings/{id}/cancel", jwt(http.HandlerFunc(classesHandler.CancelBooking)))
-	mux.Handle("POST /api/v1/bookings/{id}/attendance", jwt(http.HandlerFunc(classesHandler.MarkAttendance)))
-	mux.Handle("GET /api/v1/members/{member_id}/bookings", jwt(http.HandlerFunc(classesHandler.MemberBookings)))
+	mux.Handle("POST /api/v1/class-sessions/{id}/bookings", gated(entitlements.FeatureClasses, classesHandler.Book))
+	mux.Handle("GET /api/v1/class-sessions/{id}/bookings", gated(entitlements.FeatureClasses, classesHandler.SessionBookings))
+	mux.Handle("POST /api/v1/bookings/{id}/cancel", gated(entitlements.FeatureClasses, classesHandler.CancelBooking))
+	mux.Handle("POST /api/v1/bookings/{id}/attendance", gated(entitlements.FeatureClasses, classesHandler.MarkAttendance))
+	mux.Handle("GET /api/v1/members/{member_id}/bookings", gated(entitlements.FeatureClasses, classesHandler.MemberBookings))
 
 	// ── Visitors (walk-ins) ─────────────────────────────────────────────────
 	mux.Handle("POST /api/v1/visitors/check-in", jwt(http.HandlerFunc(visitorsHandler.CheckIn)))
@@ -529,30 +562,34 @@ func main() {
 	mux.Handle("PUT /api/v1/trainers/{id}", jwt(http.HandlerFunc(trainersHandler.Update)))
 
 	// ── PT packages & appointments ──────────────────────────────────────────
-	mux.Handle("POST /api/v1/pt-packages", jwt(http.HandlerFunc(ptHandler.CreatePackage)))
-	mux.Handle("GET /api/v1/pt-packages", jwt(http.HandlerFunc(ptHandler.ListPackages)))
-	mux.Handle("PATCH /api/v1/pt-packages/{id}/status", jwt(http.HandlerFunc(ptHandler.UpdatePackageStatus)))
-	mux.Handle("GET /api/v1/members/{member_id}/pt-packages", jwt(http.HandlerFunc(ptHandler.MemberPackages)))
-	mux.Handle("POST /api/v1/pt-appointments", jwt(http.HandlerFunc(ptHandler.Book)))
-	mux.Handle("GET /api/v1/pt-appointments", jwt(http.HandlerFunc(ptHandler.ListAppointments)))
-	mux.Handle("POST /api/v1/pt-appointments/{id}/outcome", jwt(http.HandlerFunc(ptHandler.SetOutcome)))
+	// Medium plan and up (pricing sheet: "PT packages & appointments").
+	mux.Handle("POST /api/v1/pt-packages", gated(entitlements.FeaturePTPackages, ptHandler.CreatePackage))
+	mux.Handle("GET /api/v1/pt-packages", gated(entitlements.FeaturePTPackages, ptHandler.ListPackages))
+	mux.Handle("PATCH /api/v1/pt-packages/{id}/status", gated(entitlements.FeaturePTPackages, ptHandler.UpdatePackageStatus))
+	mux.Handle("GET /api/v1/members/{member_id}/pt-packages", gated(entitlements.FeaturePTPackages, ptHandler.MemberPackages))
+	mux.Handle("POST /api/v1/pt-appointments", gated(entitlements.FeaturePTPackages, ptHandler.Book))
+	mux.Handle("GET /api/v1/pt-appointments", gated(entitlements.FeaturePTPackages, ptHandler.ListAppointments))
+	mux.Handle("POST /api/v1/pt-appointments/{id}/outcome", gated(entitlements.FeaturePTPackages, ptHandler.SetOutcome))
 
 	// PT feedback. One log, author_role tells whose words they are — both
 	// member and trainer notes are staff-transcribed, since trainers have no
-	// login (FR-03).
-	mux.Handle("POST /api/v1/pt/feedback", jwt(http.HandlerFunc(ptFeedbackHandler.Create)))
-	mux.Handle("GET /api/v1/members/{id}/feedback", jwt(http.HandlerFunc(ptFeedbackHandler.ByMember)))
-	mux.Handle("GET /api/v1/trainers/{id}/feedback", jwt(http.HandlerFunc(ptFeedbackHandler.ByTrainer)))
+	// login (FR-03). Medium plan and up (pricing sheet: "Trainer management
+	// + feedback"); pt-report (Phase 2) reads the same feedback log, so it's
+	// gated identically.
+	mux.Handle("POST /api/v1/pt/feedback", gated(entitlements.FeatureTrainerFeedback, ptFeedbackHandler.Create))
+	mux.Handle("GET /api/v1/members/{id}/feedback", gated(entitlements.FeatureTrainerFeedback, ptFeedbackHandler.ByMember))
+	mux.Handle("GET /api/v1/trainers/{id}/feedback", gated(entitlements.FeatureTrainerFeedback, ptFeedbackHandler.ByTrainer))
 
 	// PT reports (Phase 2). Read-only compositions over pt, ptfeedback and
 	// rhythm — the member and trainer sides are answered independently.
-	mux.Handle("GET /api/v1/members/{id}/pt-report", jwt(http.HandlerFunc(ptReportHandler.Member)))
-	mux.Handle("GET /api/v1/trainers/{id}/pt-report", jwt(http.HandlerFunc(ptReportHandler.Trainer)))
+	mux.Handle("GET /api/v1/members/{id}/pt-report", gated(entitlements.FeatureTrainerFeedback, ptReportHandler.Member))
+	mux.Handle("GET /api/v1/trainers/{id}/pt-report", gated(entitlements.FeatureTrainerFeedback, ptReportHandler.Trainer))
 
 	// Private member recognition (Phase 3). Always a human reason, never a
-	// score or a rank — same discipline as FR-13 §1.
-	mux.Handle("POST /api/v1/members/{id}/recognitions", jwt(http.HandlerFunc(recognitionHandler.Create)))
-	mux.Handle("GET /api/v1/members/{id}/recognitions", jwt(http.HandlerFunc(recognitionHandler.ByMember)))
+	// score or a rank — same discipline as FR-13 §1. Medium plan and up
+	// (pricing sheet: "Recognition").
+	mux.Handle("POST /api/v1/members/{id}/recognitions", gated(entitlements.FeatureRecognition, recognitionHandler.Create))
+	mux.Handle("GET /api/v1/members/{id}/recognitions", gated(entitlements.FeatureRecognition, recognitionHandler.ByMember))
 
 	// ── Invoicing & discounts ──────────────────────────────────────────────
 	mux.Handle("POST /api/v1/invoices", jwt(http.HandlerFunc(invoicingHandler.Create)))
@@ -575,36 +612,45 @@ func main() {
 	mux.Handle("PUT /api/v1/billing-settings", jwt(http.HandlerFunc(invoicingHandler.UpdateSettings)))
 
 	// ── Retail: products, stock, sales ─────────────────────────────────────
-	mux.Handle("POST /api/v1/products", jwt(http.HandlerFunc(posHandler.CreateProduct)))
-	mux.Handle("GET /api/v1/products", jwt(http.HandlerFunc(posHandler.ListProducts)))
-	mux.Handle("PUT /api/v1/products/{id}", jwt(http.HandlerFunc(posHandler.UpdateProduct)))
-	mux.Handle("DELETE /api/v1/products/{id}", jwt(http.HandlerFunc(posHandler.DeleteProduct)))
-	mux.Handle("POST /api/v1/products/{id}/stock", jwt(http.HandlerFunc(posHandler.AdjustStock)))
-	mux.Handle("GET /api/v1/products/{id}/stock-history", jwt(http.HandlerFunc(posHandler.StockHistory)))
-	mux.Handle("POST /api/v1/sales", jwt(http.HandlerFunc(posHandler.RecordSale)))
-	mux.Handle("GET /api/v1/sales", jwt(http.HandlerFunc(posHandler.ListSales)))
-	mux.Handle("GET /api/v1/sales/{id}", jwt(http.HandlerFunc(posHandler.GetSale)))
-	mux.Handle("POST /api/v1/sales/{id}/refund", jwt(http.HandlerFunc(posHandler.Refund)))
-	mux.Handle("GET /api/v1/retail/summary", jwt(http.HandlerFunc(posHandler.Summary)))
+	// Shop / POS. Medium plan and up (pricing sheet: "Shop / POS", "Stock &
+	// restock management", "Sales history / refunds").
+	mux.Handle("POST /api/v1/products", gated(entitlements.FeatureShopPOS, posHandler.CreateProduct))
+	mux.Handle("GET /api/v1/products", gated(entitlements.FeatureShopPOS, posHandler.ListProducts))
+	mux.Handle("PUT /api/v1/products/{id}", gated(entitlements.FeatureShopPOS, posHandler.UpdateProduct))
+	mux.Handle("DELETE /api/v1/products/{id}", gated(entitlements.FeatureShopPOS, posHandler.DeleteProduct))
+	mux.Handle("POST /api/v1/products/{id}/stock", gated(entitlements.FeatureShopPOS, posHandler.AdjustStock))
+	mux.Handle("GET /api/v1/products/{id}/stock-history", gated(entitlements.FeatureShopPOS, posHandler.StockHistory))
+	mux.Handle("POST /api/v1/sales", gated(entitlements.FeatureShopPOS, posHandler.RecordSale))
+	mux.Handle("GET /api/v1/sales", gated(entitlements.FeatureShopPOS, posHandler.ListSales))
+	mux.Handle("GET /api/v1/sales/{id}", gated(entitlements.FeatureShopPOS, posHandler.GetSale))
+	mux.Handle("POST /api/v1/sales/{id}/refund", gated(entitlements.FeatureShopPOS, posHandler.Refund))
+	mux.Handle("GET /api/v1/retail/summary", gated(entitlements.FeatureShopPOS, posHandler.Summary))
 
 	// ── Member wallet ──────────────────────────────────────────────────────
-	mux.Handle("GET /api/v1/members/{member_id}/wallet", jwt(http.HandlerFunc(walletHandler.Get)))
-	mux.Handle("POST /api/v1/members/{member_id}/wallet/topup", jwt(http.HandlerFunc(walletHandler.TopUp)))
-	mux.Handle("POST /api/v1/members/{member_id}/wallet/spend", jwt(http.HandlerFunc(walletHandler.Spend)))
-	mux.Handle("POST /api/v1/members/{member_id}/wallet/adjust", jwt(http.HandlerFunc(walletHandler.Adjust)))
+	// Medium plan and up (pricing sheet: "Digital Wallet").
+	mux.Handle("GET /api/v1/members/{member_id}/wallet", gated(entitlements.FeatureDigitalWallet, walletHandler.Get))
+	mux.Handle("POST /api/v1/members/{member_id}/wallet/topup", gated(entitlements.FeatureDigitalWallet, walletHandler.TopUp))
+	mux.Handle("POST /api/v1/members/{member_id}/wallet/spend", gated(entitlements.FeatureDigitalWallet, walletHandler.Spend))
+	mux.Handle("POST /api/v1/members/{member_id}/wallet/adjust", gated(entitlements.FeatureDigitalWallet, walletHandler.Adjust))
 
 	// ── Branches & organizations ───────────────────────────────────────────
+	// MyBranches and Switch stay ungated on every plan — a standalone gym
+	// is one branch in one organization (branches.Organization's own
+	// comment), so every tier needs to know which branch it's looking at.
+	// Everything below is the actual multi-branch cluster the pricing
+	// sheet calls Premium: adding a second location, cross-branch staff
+	// access, chain-wide comparisons, targets, and transfers.
 	mux.Handle("GET /api/v1/branches", jwt(http.HandlerFunc(branchesHandler.MyBranches)))
-	mux.Handle("POST /api/v1/branches", jwt(http.HandlerFunc(branchesHandler.CreateBranch)))
 	mux.Handle("POST /api/v1/branches/switch", jwt(http.HandlerFunc(branchesHandler.Switch)))
-	mux.Handle("POST /api/v1/branches/access", jwt(http.HandlerFunc(branchesHandler.GrantAccess)))
-	mux.Handle("DELETE /api/v1/branches/{gym_id}/access/{user_id}", jwt(http.HandlerFunc(branchesHandler.RevokeAccess)))
-	mux.Handle("GET /api/v1/org/summary", jwt(http.HandlerFunc(branchesHandler.ChainSummary)))
-	mux.Handle("GET /api/v1/org/report", jwt(http.HandlerFunc(branchesHandler.PeriodReport)))
-	mux.Handle("PUT /api/v1/branches/{gym_id}/targets", jwt(http.HandlerFunc(branchesHandler.SetTargets)))
-	mux.Handle("POST /api/v1/branches/transfer-member", jwt(http.HandlerFunc(branchesHandler.TransferMember)))
-	mux.Handle("POST /api/v1/branches/transfer-staff", jwt(http.HandlerFunc(branchesHandler.TransferStaff)))
-	mux.Handle("POST /api/v1/branches/transfer-trainer", jwt(http.HandlerFunc(branchesHandler.TransferTrainer)))
+	mux.Handle("POST /api/v1/branches", gated(entitlements.FeatureMultiBranch, branchesHandler.CreateBranch))
+	mux.Handle("POST /api/v1/branches/access", gated(entitlements.FeatureMultiBranch, branchesHandler.GrantAccess))
+	mux.Handle("DELETE /api/v1/branches/{gym_id}/access/{user_id}", gated(entitlements.FeatureMultiBranch, branchesHandler.RevokeAccess))
+	mux.Handle("GET /api/v1/org/summary", gated(entitlements.FeatureMultiBranch, branchesHandler.ChainSummary))
+	mux.Handle("GET /api/v1/org/report", gated(entitlements.FeatureMultiBranch, branchesHandler.PeriodReport))
+	mux.Handle("PUT /api/v1/branches/{gym_id}/targets", gated(entitlements.FeatureMultiBranch, branchesHandler.SetTargets))
+	mux.Handle("POST /api/v1/branches/transfer-member", gated(entitlements.FeatureMultiBranch, branchesHandler.TransferMember))
+	mux.Handle("POST /api/v1/branches/transfer-staff", gated(entitlements.FeatureMultiBranch, branchesHandler.TransferStaff))
+	mux.Handle("POST /api/v1/branches/transfer-trainer", gated(entitlements.FeatureMultiBranch, branchesHandler.TransferTrainer))
 
 	// ── Data import ────────────────────────────────────────────────────────
 	mux.Handle("POST /api/v1/imports", jwt(http.HandlerFunc(importerHandler.Validate)))

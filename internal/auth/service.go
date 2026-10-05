@@ -317,10 +317,11 @@ func toUserDTO(u *users.User) UserDTO {
 
 func toGymDTO(g *gyms.Gym) GymDTO {
 	return GymDTO{
-		ID:     g.ID,
-		Name:   g.Name,
-		City:   g.City,
-		State:  g.State,
-		Status: string(g.Status),
+		ID:       g.ID,
+		Name:     g.Name,
+		City:     g.City,
+		State:    g.State,
+		Status:   string(g.Status),
+		PlanTier: g.PlanTier,
 	}
 }

@@ -81,6 +81,11 @@ type GymDTO struct {
 	City   string `json:"city"`
 	State  string `json:"state"`
 	Status string `json:"status"`
+	// PlanTier is "normal" / "medium" / "premium" — see
+	// internal/entitlements. Included here (login, register, and /auth/me
+	// all return a GymDTO) so the Flutter app knows which nav items and
+	// screens to show without a separate round trip.
+	PlanTier string `json:"plan_tier"`
 }
 
 // MeResponse is returned by GET /api/v1/auth/me.
