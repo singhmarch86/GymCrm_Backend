@@ -244,30 +244,34 @@ class _MemberDetailPanelState extends State<MemberDetailPanel> {
                 ),
               ),
 
-              AppSpacing.gapXxl,
+              // Moving a member between branches is a multi-branch (Premium)
+              // action; the server 403s it below that plan.
+              if (EntitlementsService.has(Feature.multiBranch)) ...[
+                AppSpacing.gapXxl,
 
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.swap_horiz, size: 18),
-                  label: const Text('Move to another branch'),
-                  onPressed: () async {
-                    final moved = await showTransferToBranchDialog(
-                      context,
-                      kind: TransferKind.member,
-                      entityId: widget.member.id,
-                      entityName:
-                          '${widget.member.firstName} ${widget.member.lastName}',
-                    );
-                    // The member no longer belongs to this branch, so the panel
-                    // is showing something that is no longer here — close it and
-                    // let the list refresh.
-                    if (moved == true && context.mounted) {
-                      Navigator.pop(context, 'changed');
-                    }
-                  },
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.swap_horiz, size: 18),
+                    label: const Text('Move to another branch'),
+                    onPressed: () async {
+                      final moved = await showTransferToBranchDialog(
+                        context,
+                        kind: TransferKind.member,
+                        entityId: widget.member.id,
+                        entityName:
+                            '${widget.member.firstName} ${widget.member.lastName}',
+                      );
+                      // The member no longer belongs to this branch, so the panel
+                      // is showing something that is no longer here — close it and
+                      // let the list refresh.
+                      if (moved == true && context.mounted) {
+                        Navigator.pop(context, 'changed');
+                      }
+                    },
+                  ),
                 ),
-              ),
+              ],
 
               AppSpacing.gapXxl,
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/lead_pipeline.dart';
 import '../../models/retention_alert.dart';
+import '../../services/entitlements_service.dart';
 import '../../services/lead_service.dart';
 import '../../services/retention_service.dart';
 import '../../theme/app_colors.dart';
@@ -41,10 +42,37 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   /// API three times for views nobody looked at.
   final Set<int> _visited = {0};
 
+  /// Retention and Staff read Medium+ data (the server 403s them below that),
+  /// so a lower plan simply doesn't get those two tabs. Business and Leads
+  /// stay for everyone.
+  late final List<(Tab, Widget)> _entries = [
+    (
+      const Tab(icon: Icon(Icons.insights_rounded, size: 18), text: 'Business'),
+      const ReportsBody(),
+    ),
+    (
+      const Tab(icon: Icon(Icons.filter_alt_rounded, size: 18), text: 'Leads'),
+      const _LeadsAnalyticsTab(),
+    ),
+    if (EntitlementsService.has(Feature.retentionSignals))
+      (
+        const Tab(
+          icon: Icon(Icons.health_and_safety_rounded, size: 18),
+          text: 'Retention',
+        ),
+        const _RetentionAnalyticsTab(),
+      ),
+    if (EntitlementsService.has(Feature.staffWork))
+      (
+        const Tab(icon: Icon(Icons.badge_rounded, size: 18), text: 'Staff'),
+        const StaffWorkScreen(),
+      ),
+  ];
+
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 4, vsync: this)
+    _tabs = TabController(length: _entries.length, vsync: this)
       ..addListener(() {
         if (_tabs.indexIsChanging) return;
         if (_visited.add(_tabs.index)) setState(() {});
@@ -72,24 +100,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           labelColor: AppColors.primary,
           unselectedLabelColor: Colors.grey,
           indicatorColor: AppColors.primary,
-          tabs: const [
-            Tab(icon: Icon(Icons.insights_rounded, size: 18), text: 'Business'),
-            Tab(icon: Icon(Icons.filter_alt_rounded, size: 18), text: 'Leads'),
-            Tab(
-              icon: Icon(Icons.health_and_safety_rounded, size: 18),
-              text: 'Retention',
-            ),
-            Tab(icon: Icon(Icons.badge_rounded, size: 18), text: 'Staff'),
-          ],
+          tabs: [for (final e in _entries) e.$1],
         ),
       ),
       body: TabBarView(
         controller: _tabs,
         children: [
-          const ReportsBody(),
-          _lazy(1, const _LeadsAnalyticsTab()),
-          _lazy(2, const _RetentionAnalyticsTab()),
-          _lazy(3, const StaffWorkScreen()),
+          for (final (i, e) in _entries.indexed) i == 0 ? e.$2 : _lazy(i, e.$2),
         ],
       ),
     );

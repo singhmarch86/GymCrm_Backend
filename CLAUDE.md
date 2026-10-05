@@ -31,8 +31,10 @@ service doc comment before describing a feature.
    (default 'premium' so existing gyms lose nothing), `plan_tier` returned in the auth GymDTO.
    Flutter mirror: `app/lib/services/entitlements_service.dart` — its Feature list and min-tier map
    MUST stay in sync with `features.go`. Flutter hides gated More-screen tiles, the At Risk tab,
-   and wallet / PT report / feedback / recognition on the member page.
-   Deliberately NOT gated yet (user wants to tag these one by one): Reports/Analytics sub-features,
+   the Analytics Retention/Staff sub-tabs, and wallet / PT report / feedback / recognition /
+   move-to-branch on the member page; the Today screen skips the retention summary below Medium.
+   Verified in the browser on Normal, Medium and Premium (2026-10-05).
+   Deliberately NOT gated yet (user wants to tag these one by one): Reports/Analytics Business-tab sections,
    Leads basic-vs-advanced split, "advanced staff controls", Premium-only buttons inside Branches.
 2. **Per-gym public advertisement page** — migration 036 (slug, tagline, description, cover photo,
    amenities, public phone, `published` default false). Done: `GET /api/v1/public/gyms/{slug}`

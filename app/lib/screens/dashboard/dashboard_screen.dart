@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../login_screen.dart';
 import '../../models/dashboard_response.dart';
 import '../../models/retention_alert.dart';
+import '../../services/entitlements_service.dart';
 import '../../services/api_response.dart';
 import '../../services/auth_service.dart';
 import '../../services/dashboard_service.dart';
@@ -75,14 +76,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Future exception (this crashed the app during testing — a 401 on
       // one request left the other's error with no listener). Future.wait
       // attaches to both immediately regardless of which settles first.
-      final results = await Future.wait<Object>([
+      //
+      // The retention summary is a Medium+ feature: on a lower plan the
+      // server answers 403, and since Future.wait fails as a whole that one
+      // call would blank the entire Today screen. Skip it instead.
+      final results = await Future.wait<Object?>([
         DashboardService().getDashboard(),
         PaymentService().getRevenueSummary(),
-        RetentionService().getSummary(),
+        EntitlementsService.has(Feature.retentionSignals)
+            ? RetentionService().getSummary()
+            : Future<RetentionSummary?>.value(null),
       ]);
       final dashboard = results[0] as DashboardResponse;
       final revenue = results[1] as Map<String, dynamic>;
-      final retention = results[2] as RetentionSummary;
+      final retention = results[2] as RetentionSummary?;
 
       if (!mounted) return;
 
@@ -100,7 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         inactive14Days = dashboard.inactive14Days;
         inactive30Days = dashboard.inactive30Days;
         renewalsToday = dashboard.renewalsToday;
-        atRiskHigh = retention.high;
+        atRiskHigh = retention?.high ?? 0;
 
         todayRevenuePaise = revenue['today_revenue_in_paise'] as int? ?? 0;
         monthRevenuePaise = revenue['month_revenue_in_paise'] as int? ?? 0;
