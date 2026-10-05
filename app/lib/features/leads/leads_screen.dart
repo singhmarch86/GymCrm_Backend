@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/lead.dart';
 import '../../models/lead_pipeline.dart';
 import '../../services/api_response.dart';
+import '../../services/entitlements_service.dart';
 import '../../services/lead_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/error_banner.dart';
@@ -27,6 +28,10 @@ import 'leads_body.dart';
 ///
 /// Each tab owns its own fetch and loads lazily on first visit, so opening the
 /// screen costs exactly one request rather than four.
+/// The sub-tabs, in their canonical order. LeadsScreen.initialTab and the
+/// boardTab/workflowTab constants still count in this order.
+enum _LeadTab { list, board, workflow, followUps, analytics }
+
 class LeadsScreen extends StatefulWidget {
   /// Which sub-tab to open on: 0 List, 1 Board, 2 Follow-ups, 3 Analytics.
   final int initialTab;
@@ -48,6 +53,18 @@ class LeadsScreen extends StatefulWidget {
 class _LeadsScreenState extends State<LeadsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabs;
+
+  /// The tabs this gym's plan includes. List (the basic CRM) is always there;
+  /// the rest are Medium+ and their endpoints 403 below that.
+  late final List<_LeadTab> _visible = [
+    _LeadTab.list,
+    if (EntitlementsService.has(Feature.leadsBoard)) _LeadTab.board,
+    if (EntitlementsService.has(Feature.leadsWorkflow)) _LeadTab.workflow,
+    if (EntitlementsService.has(Feature.leadsFollowUps)) _LeadTab.followUps,
+    if (EntitlementsService.has(Feature.leadAnalytics)) _LeadTab.analytics,
+  ];
+
+  _LeadTab get _current => _visible[_tabs.index];
 
   // List / Board
   bool _isLoading = true;
@@ -80,9 +97,12 @@ class _LeadsScreenState extends State<LeadsScreen>
   @override
   void initState() {
     super.initState();
+    // initialTab counts in canonical order; a tab this plan doesn't include
+    // falls back to List rather than landing on a different one.
+    final wanted = _LeadTab.values[widget.initialTab.clamp(0, 4)];
     _tabs = TabController(
-      length: 5,
-      initialIndex: widget.initialTab.clamp(0, 4),
+      length: _visible.length,
+      initialIndex: _visible.contains(wanted) ? _visible.indexOf(wanted) : 0,
       vsync: this,
     )..addListener(_onTabChanged);
     _load();
@@ -100,9 +120,9 @@ class _LeadsScreenState extends State<LeadsScreen>
   void _onTabChanged() {
     if (_tabs.indexIsChanging) return;
     // Fetch on first visit only; pull-to-refresh and mutations handle the rest.
-    if (_tabs.index == 2 && _workflow == null) _loadWorkflow();
-    if (_tabs.index == 3 && _followUps == null) _loadFollowUps();
-    if (_tabs.index == 4 && _analytics == null) _loadAnalytics();
+    if (_current == _LeadTab.workflow && _workflow == null) _loadWorkflow();
+    if (_current == _LeadTab.followUps && _followUps == null) _loadFollowUps();
+    if (_current == _LeadTab.analytics && _analytics == null) _loadAnalytics();
   }
 
   // ─── Loads ──────────────────────────────────────────────────────────────────
@@ -228,9 +248,9 @@ class _LeadsScreenState extends State<LeadsScreen>
     _workflow = null;
     _followUps = null;
     _analytics = null;
-    if (_tabs.index == 2) _loadWorkflow();
-    if (_tabs.index == 3) _loadFollowUps();
-    if (_tabs.index == 4) _loadAnalytics();
+    if (_current == _LeadTab.workflow) _loadWorkflow();
+    if (_current == _LeadTab.followUps) _loadFollowUps();
+    if (_current == _LeadTab.analytics) _loadAnalytics();
   }
 
   Future<void> _refreshAll() async {
@@ -598,29 +618,39 @@ class _LeadsScreenState extends State<LeadsScreen>
             unselectedLabelColor: Colors.grey,
             indicatorColor: AppColors.primary,
             tabs: [
-              const Tab(icon: Icon(Icons.list_rounded, size: 18), text: 'List'),
-              const Tab(
-                icon: Icon(Icons.view_kanban_rounded, size: 18),
-                text: 'Board',
-              ),
-              Tab(
-                icon: const Icon(Icons.checklist_rounded, size: 18),
-                // The unattended count rides on the tab because it is the one
-                // number somebody should react to without opening anything.
-                text: _workflow != null && _workflow!.unattended > 0
-                    ? 'Workflow (${_workflow!.unattended})'
-                    : 'Workflow',
-              ),
-              Tab(
-                icon: const Icon(Icons.notifications_active_rounded, size: 18),
-                text: _followUps != null && _followUps!.actionableCount > 0
-                    ? 'Follow-ups (${_followUps!.actionableCount})'
-                    : 'Follow-ups',
-              ),
-              const Tab(
-                icon: Icon(Icons.insights_rounded, size: 18),
-                text: 'Analytics',
-              ),
+              for (final t in _visible)
+                switch (t) {
+                  _LeadTab.list => const Tab(
+                    icon: Icon(Icons.list_rounded, size: 18),
+                    text: 'List',
+                  ),
+                  _LeadTab.board => const Tab(
+                    icon: Icon(Icons.view_kanban_rounded, size: 18),
+                    text: 'Board',
+                  ),
+                  _LeadTab.workflow => Tab(
+                    icon: const Icon(Icons.checklist_rounded, size: 18),
+                    // The unattended count rides on the tab because it is the
+                    // one number somebody should react to without opening
+                    // anything.
+                    text: _workflow != null && _workflow!.unattended > 0
+                        ? 'Workflow (${_workflow!.unattended})'
+                        : 'Workflow',
+                  ),
+                  _LeadTab.followUps => Tab(
+                    icon: const Icon(
+                      Icons.notifications_active_rounded,
+                      size: 18,
+                    ),
+                    text: _followUps != null && _followUps!.actionableCount > 0
+                        ? 'Follow-ups (${_followUps!.actionableCount})'
+                        : 'Follow-ups',
+                  ),
+                  _LeadTab.analytics => const Tab(
+                    icon: Icon(Icons.insights_rounded, size: 18),
+                    text: 'Analytics',
+                  ),
+                },
             ],
           ),
         ),
@@ -636,11 +666,14 @@ class _LeadsScreenState extends State<LeadsScreen>
           child: TabBarView(
             controller: _tabs,
             children: [
-              _listTab(),
-              _boardTab(),
-              _workflowTab(),
-              _followUpsTab(),
-              _analyticsTab(),
+              for (final t in _visible)
+                switch (t) {
+                  _LeadTab.list => _listTab(),
+                  _LeadTab.board => _boardTab(),
+                  _LeadTab.workflow => _workflowTab(),
+                  _LeadTab.followUps => _followUpsTab(),
+                  _LeadTab.analytics => _analyticsTab(),
+                },
             ],
           ),
         ),

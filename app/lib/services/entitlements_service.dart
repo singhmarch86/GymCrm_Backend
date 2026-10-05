@@ -31,10 +31,10 @@ Tier _parseTier(String? raw) => switch (raw) {
 /// [_minTier] in exact sync with that file's catalog; a Feature missing
 /// there is a bug the same way it is server-side.
 ///
-/// Deliberately NOT here yet, for the same reason the backend doesn't gate
-/// them: Reports/Analytics, the Leads split, and "Advanced staff
-/// controls" — all still one undivided screen in the code, not yet split
-/// per pricing-sheet bullet.
+/// Reports and Leads were tagged piece by piece with the owner: Revenue and
+/// Members reports and the basic Leads CRM are on every plan (no Feature);
+/// the rest below are Medium. Still not here: "Owner-level reports", "Full
+/// audit / history" and "Advanced staff controls" (not mapped to a screen).
 enum Feature {
   retentionSignals,
   counterPrompts,
@@ -48,6 +48,13 @@ enum Feature {
   staffWork,
   multiBranch,
   advancedPayouts,
+  reportPayments,
+  reportRenewals,
+  reportPlans,
+  leadsBoard,
+  leadsWorkflow,
+  leadsFollowUps,
+  leadAnalytics,
 }
 
 const Map<Feature, Tier> _minTier = {
@@ -63,6 +70,13 @@ const Map<Feature, Tier> _minTier = {
   Feature.staffWork: Tier.medium,
   Feature.multiBranch: Tier.premium,
   Feature.advancedPayouts: Tier.premium,
+  Feature.reportPayments: Tier.medium,
+  Feature.reportRenewals: Tier.medium,
+  Feature.reportPlans: Tier.medium,
+  Feature.leadsBoard: Tier.medium,
+  Feature.leadsWorkflow: Tier.medium,
+  Feature.leadsFollowUps: Tier.medium,
+  Feature.leadAnalytics: Tier.medium,
 };
 
 /// The one place the app asks "does this gym's plan include X". A plain

@@ -3,18 +3,14 @@ package entitlements
 // Feature is one line item from the pricing sheet, mapped to whichever
 // existing module actually implements it.
 //
-// Deliberately NOT here yet: Reports/Analytics ("Basic reports", "Basic
-// dashboard", "Advanced business analytics", "More detailed reports",
-// "Owner-level reports", "Full audit / history"), the Leads split ("Basic
-// leads / CRM" in Normal vs "Leads pipeline + follow-up" / "Lead
-// conversion analytics" in Medium), and "Advanced staff controls" — all
-// of these currently live as one undivided screen in the code (internal/
-// reports, internal/dashboard, internal/leads, internal/users), not one
-// screen per pricing-sheet bullet. Gating them here would either gate the
-// wrong thing or require splitting the screen first — worth doing
-// deliberately, tag by tag, rather than guessing. "Priority support" and
-// "Data migration / onboarding" aren't software at all (human service),
-// so they have no Feature and never will.
+// Reports and Leads were tagged piece by piece with the owner (2026-10-05):
+// Revenue and Members reports plus the basic Leads CRM (list, add/edit,
+// assign, stage moves, convert) stay on every plan, so they have no Feature;
+// the pieces below are Medium. Still NOT here: "Owner-level reports", "Full
+// audit / history" and "Advanced staff controls", which have not been mapped
+// to a concrete screen yet. "Priority support" and "Data migration /
+// onboarding" aren't software at all (human service), so they have no
+// Feature and never will.
 type Feature string
 
 const (
@@ -29,6 +25,14 @@ const (
 	FeatureTrainerFeedback  Feature = "trainer_feedback"  // "Trainer management + feedback"
 	FeatureRecognition      Feature = "recognition"       // "Recognition"
 	FeatureStaffWork        Feature = "staff_work"        // "Staff Work"
+
+	FeatureReportPayments Feature = "report_payments" // Reports: payment-mode distribution
+	FeatureReportRenewals Feature = "report_renewals" // Reports: renewal success rate + trend
+	FeatureReportPlans    Feature = "report_plans"    // Reports: plan distribution + per-plan performance
+	FeatureLeadsBoard     Feature = "leads_board"     // Leads pipeline board — UI only: it reads GET /leads like the list does, so no route can carry the gate
+	FeatureLeadsWorkflow  Feature = "leads_workflow"  // Leads workflow queue, next-step options and setting a next step
+	FeatureLeadsFollowUps Feature = "leads_followups" // Leads follow-up queue
+	FeatureLeadAnalytics  Feature = "lead_analytics"  // Lead funnel, sources, lost reasons, conversion
 
 	// ── Premium ──────────────────────────────────────────────────────────
 	// Every multi-branch bullet on the sheet (management, switching,
@@ -55,6 +59,13 @@ var minTier = map[Feature]Tier{
 	FeatureTrainerFeedback:  TierMedium,
 	FeatureRecognition:      TierMedium,
 	FeatureStaffWork:        TierMedium,
+	FeatureReportPayments:   TierMedium,
+	FeatureReportRenewals:   TierMedium,
+	FeatureReportPlans:      TierMedium,
+	FeatureLeadsBoard:       TierMedium,
+	FeatureLeadsWorkflow:    TierMedium,
+	FeatureLeadsFollowUps:   TierMedium,
+	FeatureLeadAnalytics:    TierMedium,
 
 	FeatureMultiBranch:     TierPremium,
 	FeatureAdvancedPayouts: TierPremium,

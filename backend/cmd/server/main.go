@@ -264,6 +264,14 @@ func main() {
 		_, _ = w.Write([]byte(swaggerHTML))
 	})
 
+	// gated wraps a route with a pricing-tier check — see
+	// internal/entitlements. Chains after jwt for the same reason owner
+	// does: the tenant context (which gym is calling) must already exist
+	// before a feature gate can look up that gym's plan.
+	gated := func(feature entitlements.Feature, h http.HandlerFunc) http.Handler {
+		return jwt(entitlements.RequireFeature(gymsRepo, feature)(h))
+	}
+
 	// ── Auth — public ──────────────────────────────────────────────────────
 	mux.HandleFunc("POST /api/v1/auth/register", authHandler.Register)
 	mux.HandleFunc("POST /api/v1/auth/login", authHandler.Login)
@@ -329,16 +337,16 @@ func main() {
 	mux.Handle("POST /api/v1/leads", jwt(http.HandlerFunc(leadsHandler.Create)))
 	mux.Handle("GET /api/v1/leads", jwt(http.HandlerFunc(leadsHandler.List)))
 	mux.Handle("GET /api/v1/leads/summary", jwt(http.HandlerFunc(leadsHandler.Summary)))
-	mux.Handle("GET /api/v1/leads/followups", jwt(http.HandlerFunc(leadsHandler.FollowUps)))
-	mux.Handle("GET /api/v1/leads/analytics", jwt(http.HandlerFunc(leadsHandler.Analytics)))
+	mux.Handle("GET /api/v1/leads/followups", gated(entitlements.FeatureLeadsFollowUps, leadsHandler.FollowUps))
+	mux.Handle("GET /api/v1/leads/analytics", gated(entitlements.FeatureLeadAnalytics, leadsHandler.Analytics))
 	mux.Handle("GET /api/v1/leads/assignees", jwt(http.HandlerFunc(leadsHandler.Assignees)))
 
 	// The lead workflow (FR-18). Registered before /leads/{id} so the literal
 	// paths win — Go's mux prefers the more specific pattern, but keeping them
 	// adjacent makes that visible rather than incidental.
-	mux.Handle("GET /api/v1/leads/workflow", jwt(http.HandlerFunc(leadsHandler.Workflow)))
-	mux.Handle("GET /api/v1/leads/next-steps", jwt(http.HandlerFunc(leadsHandler.NextStepOptions)))
-	mux.Handle("PATCH /api/v1/leads/{id}/next-step", jwt(http.HandlerFunc(leadsHandler.SetNextStep)))
+	mux.Handle("GET /api/v1/leads/workflow", gated(entitlements.FeatureLeadsWorkflow, leadsHandler.Workflow))
+	mux.Handle("GET /api/v1/leads/next-steps", gated(entitlements.FeatureLeadsWorkflow, leadsHandler.NextStepOptions))
+	mux.Handle("PATCH /api/v1/leads/{id}/next-step", gated(entitlements.FeatureLeadsWorkflow, leadsHandler.SetNextStep))
 	mux.Handle("GET /api/v1/leads/{id}/activities", jwt(http.HandlerFunc(leadsHandler.ListActivities)))
 	mux.Handle("POST /api/v1/leads/{id}/activities", jwt(http.HandlerFunc(leadsHandler.AddActivity)))
 	mux.Handle("PATCH /api/v1/leads/{id}/assign", jwt(http.HandlerFunc(leadsHandler.Assign)))
@@ -356,13 +364,6 @@ func main() {
 		return jwt(middleware.OwnerOnly(h))
 	}
 
-	// gated wraps a route with a pricing-tier check — see
-	// internal/entitlements. Chains after jwt for the same reason owner
-	// does: the tenant context (which gym is calling) must already exist
-	// before a feature gate can look up that gym's plan.
-	gated := func(feature entitlements.Feature, h http.HandlerFunc) http.Handler {
-		return jwt(entitlements.RequireFeature(gymsRepo, feature)(h))
-	}
 	mux.Handle("GET /api/v1/users", owner(usersHandler.List))
 	mux.Handle("POST /api/v1/users", owner(usersHandler.Create))
 	mux.Handle("PUT /api/v1/users/{id}", owner(usersHandler.Update))
@@ -663,9 +664,9 @@ func main() {
 	// ── Reports ────────────────────────────────────────────────────────────
 	mux.Handle("GET /api/v1/reports/revenue", jwt(http.HandlerFunc(reportsHandler.Revenue)))
 	mux.Handle("GET /api/v1/reports/members", jwt(http.HandlerFunc(reportsHandler.Members)))
-	mux.Handle("GET /api/v1/reports/payments", jwt(http.HandlerFunc(reportsHandler.Payments)))
-	mux.Handle("GET /api/v1/reports/renewals", jwt(http.HandlerFunc(reportsHandler.Renewals)))
-	mux.Handle("GET /api/v1/reports/plans", jwt(http.HandlerFunc(reportsHandler.Plans)))
+	mux.Handle("GET /api/v1/reports/payments", gated(entitlements.FeatureReportPayments, reportsHandler.Payments))
+	mux.Handle("GET /api/v1/reports/renewals", gated(entitlements.FeatureReportRenewals, reportsHandler.Renewals))
+	mux.Handle("GET /api/v1/reports/plans", gated(entitlements.FeatureReportPlans, reportsHandler.Plans))
 
 	// ── Server ────────────────────────────────────────────────────────────
 	// CORS wraps the whole mux so preflight OPTIONS requests are answered before

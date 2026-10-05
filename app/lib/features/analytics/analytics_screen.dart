@@ -43,17 +43,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   final Set<int> _visited = {0};
 
   /// Retention and Staff read Medium+ data (the server 403s them below that),
-  /// so a lower plan simply doesn't get those two tabs. Business and Leads
-  /// stay for everyone.
+  /// so a lower plan simply doesn't get those two tabs. Business stays
+  /// for everyone; Leads needs lead analytics (Medium+).
   late final List<(Tab, Widget)> _entries = [
     (
       const Tab(icon: Icon(Icons.insights_rounded, size: 18), text: 'Business'),
       const ReportsBody(),
     ),
-    (
-      const Tab(icon: Icon(Icons.filter_alt_rounded, size: 18), text: 'Leads'),
-      const _LeadsAnalyticsTab(),
-    ),
+    if (EntitlementsService.has(Feature.leadAnalytics))
+      (
+        const Tab(
+          icon: Icon(Icons.filter_alt_rounded, size: 18),
+          text: 'Leads',
+        ),
+        const _LeadsAnalyticsTab(),
+      ),
     if (EntitlementsService.has(Feature.retentionSignals))
       (
         const Tab(

@@ -34,8 +34,12 @@ service doc comment before describing a feature.
    the Analytics Retention/Staff sub-tabs, and wallet / PT report / feedback / recognition /
    move-to-branch on the member page; the Today screen skips the retention summary below Medium.
    Verified in the browser on Normal, Medium and Premium (2026-10-05).
-   Deliberately NOT gated yet (user wants to tag these one by one): Reports/Analytics Business-tab sections,
-   Leads basic-vs-advanced split, "advanced staff controls", Premium-only buttons inside Branches.
+   Reports and Leads were tagged with the owner piece by piece (2026-10-05): Revenue + Members
+   reports and the basic Leads CRM (list/add/edit/assign/stage/convert) are on every plan;
+   Payments/Renewals/Plans reports and the Leads Board/Workflow/Follow-ups/Analytics are Medium.
+   (The Board is UI-only gated — it reads the same GET /leads as the list.)
+   Still NOT gated: "owner-level reports", "full audit/history", "advanced staff controls" (not
+   mapped to a screen yet) and Premium-only buttons inside the Branches screen.
 2. **Per-gym public advertisement page** — migration 036 (slug, tagline, description, cover photo,
    amenities, public phone, `published` default false). Done: `GET /api/v1/public/gyms/{slug}`
    (no auth) and owner-only `GET/PATCH /api/v1/gyms/public-profile`. NOT done: the server-rendered

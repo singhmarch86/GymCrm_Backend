@@ -5,6 +5,7 @@ import '../../models/payment_report.dart';
 import '../../models/plan_report.dart';
 import '../../models/renewal_report.dart';
 import '../../models/revenue_report.dart';
+import '../../services/entitlements_service.dart';
 import '../../services/report_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_spacing.dart';
@@ -87,12 +88,14 @@ class _ReportsBodyState extends State<ReportsBody> {
     }
 
     // All 5 fire simultaneously — no serial blocking
+    // Payments, Renewals and Plans are Medium+ reports: below that the server
+    // answers 403, so they are neither fetched nor shown.
     await Future.wait([
       _loadRevenue(),
       _loadMembers(),
-      _loadPayments(),
-      _loadRenewals(),
-      _loadPlans(),
+      if (EntitlementsService.has(Feature.reportPayments)) _loadPayments(),
+      if (EntitlementsService.has(Feature.reportRenewals)) _loadRenewals(),
+      if (EntitlementsService.has(Feature.reportPlans)) _loadPlans(),
     ]);
   }
 
@@ -213,44 +216,50 @@ class _ReportsBodyState extends State<ReportsBody> {
             builder: (data) => MemberGrowthChart(report: data),
           ),
 
-          AppSpacing.gapLg,
+          if (EntitlementsService.has(Feature.reportPayments)) ...[
+            AppSpacing.gapLg,
 
-          // ── Payments ────────────────────────────────────────────────────
-          ReportSection<PaymentReport>(
-            title: 'Payments',
-            icon: Icons.payment_rounded,
-            color: Colors.deepPurple,
-            data: _payData,
-            isLoading: _payLoading,
-            error: _payError,
-            builder: (data) => PaymentDistributionChart(report: data),
-          ),
+            // ── Payments ────────────────────────────────────────────────────
+            ReportSection<PaymentReport>(
+              title: 'Payments',
+              icon: Icons.payment_rounded,
+              color: Colors.deepPurple,
+              data: _payData,
+              isLoading: _payLoading,
+              error: _payError,
+              builder: (data) => PaymentDistributionChart(report: data),
+            ),
+          ],
 
-          AppSpacing.gapLg,
+          if (EntitlementsService.has(Feature.reportRenewals)) ...[
+            AppSpacing.gapLg,
 
-          // ── Renewals ────────────────────────────────────────────────────
-          ReportSection<RenewalReport>(
-            title: 'Renewals',
-            icon: Icons.autorenew_rounded,
-            color: Colors.orange,
-            data: _renData,
-            isLoading: _renLoading,
-            error: _renError,
-            builder: (data) => RenewalTrendChart(report: data),
-          ),
+            // ── Renewals ────────────────────────────────────────────────────
+            ReportSection<RenewalReport>(
+              title: 'Renewals',
+              icon: Icons.autorenew_rounded,
+              color: Colors.orange,
+              data: _renData,
+              isLoading: _renLoading,
+              error: _renError,
+              builder: (data) => RenewalTrendChart(report: data),
+            ),
+          ],
 
-          AppSpacing.gapLg,
+          if (EntitlementsService.has(Feature.reportPlans)) ...[
+            AppSpacing.gapLg,
 
-          // ── Plans ───────────────────────────────────────────────────────
-          ReportSection<PlanReport>(
-            title: 'Membership Plans',
-            icon: Icons.workspace_premium_rounded,
-            color: Colors.teal,
-            data: _planData,
-            isLoading: _planLoading,
-            error: _planError,
-            builder: (data) => PlanDistributionChart(report: data),
-          ),
+            // ── Plans ───────────────────────────────────────────────────────
+            ReportSection<PlanReport>(
+              title: 'Membership Plans',
+              icon: Icons.workspace_premium_rounded,
+              color: Colors.teal,
+              data: _planData,
+              isLoading: _planLoading,
+              error: _planError,
+              builder: (data) => PlanDistributionChart(report: data),
+            ),
+          ],
 
           AppSpacing.gapXxl,
         ],
