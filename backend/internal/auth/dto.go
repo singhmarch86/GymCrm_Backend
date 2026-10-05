@@ -48,6 +48,9 @@ type AuthResponse struct {
 	TokenType    string  `json:"token_type"` // always "Bearer"
 	ExpiresIn    int     `json:"expires_in"` // access token TTL in seconds
 	User         UserDTO `json:"user"`
+	// Gym is set on login only (not on refresh) so the app learns the
+	// gym's plan_tier — which gates navigation — without a second call.
+	Gym *GymDTO `json:"gym,omitempty"`
 }
 
 // RegisterResponse is returned after successful gym registration.

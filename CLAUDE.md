@@ -39,8 +39,9 @@ service doc comment before describing a feature.
    (no auth) and owner-only `GET/PATCH /api/v1/gyms/public-profile`. NOT done: the server-rendered
    HTML page at `/g/{slug}` (SSR needed for SEO; Flutter web is client-rendered), the Flutter
    settings screen, downloadable QR code. Marketing only — no shop/products on it.
-3. Migrations 036/037 were written but not yet run against a live DB — run them first and fix
-   any failure.
+3. Migrations 036/037 verified on a fresh DB via setup.sh (2026-10-05); gating (403 below the
+   required tier) and the public-page endpoints were exercised live with curl. The page_url in the
+   settings response uses PUBLIC_BASE_URL (defaults to http://localhost:8080; not set in compose).
 
 ## Other projects
 This repo is GymCRM only. Archecommerce (multi-vendor e-commerce) is a separate project.

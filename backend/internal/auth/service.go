@@ -132,6 +132,7 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, e
 	if err != nil {
 		return nil, fmt.Errorf("login: issue tokens: %w", err)
 	}
+	gymDTO := toGymDTO(gym)
 
 	return &AuthResponse{
 		AccessToken:  pair.accessToken,
@@ -139,6 +140,7 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, e
 		TokenType:    "Bearer",
 		ExpiresIn:    int(middleware.AccessTokenTTL.Seconds()),
 		User:         toUserDTO(user),
+		Gym:          &gymDTO,
 	}, nil
 }
 

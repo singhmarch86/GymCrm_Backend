@@ -32,7 +32,7 @@ type Gym struct {
 	Tagline           *string  `gorm:"type:varchar(200)"                    json:"tagline,omitempty"`
 	PublicDescription *string  `gorm:"type:text"                            json:"public_description,omitempty"`
 	CoverPhotoURL     *string  `gorm:"type:text"                            json:"cover_photo_url,omitempty"`
-	Amenities         []string `gorm:"type:jsonb;serializer:json"           json:"amenities,omitempty"`
+	Amenities         []string `gorm:"type:jsonb;serializer:json;default:'[]'" json:"amenities,omitempty"`
 	PublicPhone       *string  `gorm:"type:varchar(20)"                     json:"public_phone,omitempty"`
 	Published         bool     `gorm:"not null;default:false"               json:"published"`
 }

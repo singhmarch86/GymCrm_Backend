@@ -2,6 +2,7 @@ package gyms
 
 import (
 	"context"
+	"encoding/json"
 
 	"gorm.io/gorm"
 )
@@ -78,6 +79,15 @@ func (r *Repository) SlugTaken(ctx context.Context, slug string, excludeGymID in
 func (r *Repository) UpdatePublicProfile(ctx context.Context, gymID int64, fields map[string]interface{}) error {
 	if len(fields) == 0 {
 		return nil
+	}
+	// A map update bypasses the model's JSON serializer, so a []string would
+	// reach Postgres as a record, not jsonb.
+	if a, ok := fields["amenities"].([]string); ok {
+		b, err := json.Marshal(a)
+		if err != nil {
+			return err
+		}
+		fields["amenities"] = gorm.Expr("?::jsonb", string(b))
 	}
 	return r.db.WithContext(ctx).Table("gyms").Where("id = ?", gymID).Updates(fields).Error
 }
