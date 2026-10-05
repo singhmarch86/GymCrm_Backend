@@ -3,7 +3,7 @@
 Monorepo: `backend/` (Go, net/http ServeMux + GORM + Postgres) and `app/` (Flutter; web is the
 supported target). Product: gym-management SaaS for independent gyms in Punjab, positioned on
 retention ("tells you when your regulars stop being regular"). Run `./setup.sh` on a fresh machine
-(see SETUP.md). Windows: `setup.ps1` (written but untested on Windows).
+(see SETUP.md). Windows: `install-prereqs.ps1` (admin, installs Git/Go/Chrome/Docker/Flutter) then `setup.ps1` — both written but untested on Windows.
 
 ## Backend conventions
 - Module layout: `internal/<name>/{model,repository,service,handler}.go`; routes are registered
