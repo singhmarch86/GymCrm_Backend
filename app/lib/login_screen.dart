@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'services/api_response.dart';
 import 'services/auth_service.dart';
@@ -74,6 +76,16 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     if (!mounted) return;
     setState(() => _isLoading = false);
+  }
+
+  /// The server hosts the Android build next to the web app (see
+  /// backend/deploy/gcp/deploy.sh). Resolved against the page's own address so
+  /// it works on any host without configuration.
+  Future<void> _downloadApk() async {
+    await launchUrl(
+      Uri.base.resolve('MOKA-CRM.apk'),
+      webOnlyWindowName: '_self',
+    );
   }
 
   @override
@@ -333,6 +345,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           ),
                         ),
+
+                        // Web visitors can install the Android app; it would make no
+                        // sense inside the Android app itself.
+                        if (kIsWeb)
+                          Center(
+                            child: TextButton.icon(
+                              onPressed: _downloadApk,
+                              icon: const Icon(Icons.android_rounded, size: 18),
+                              label: const Text('Download the Android app'),
+                            ),
+                          ),
 
                         const SizedBox(height: 16),
                       ],

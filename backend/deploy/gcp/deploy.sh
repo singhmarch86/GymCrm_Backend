@@ -34,6 +34,16 @@ log "building the web app (relative API URLs, same-origin)"
 STAGE="$(mktemp -d)"; trap 'rm -rf "$STAGE"' EXIT
 rsync -a --exclude .git --exclude backups --exclude bin "$REPO_ROOT/backend/" "$STAGE/"
 mkdir -p "$STAGE/deploy/web"; rsync -a "$REPO_ROOT/app/build/web/" "$STAGE/deploy/web/"
+
+# The Android app is built against THIS server's address and served from the
+# site itself (the login page links to /MOKA-CRM.apk). Rebuilt on every deploy
+# so it can never point at a previous GCP project's IP. SKIP_APK=1 to skip.
+if [ -z "${SKIP_APK:-}" ]; then
+  APK_HOST="http://$(vm_ip)"
+  log "building the Android app for $APK_HOST (about a minute)"
+  ( cd "$REPO_ROOT/app" && flutter build apk --release --dart-define=API_BASE_URL="$APK_HOST" >/dev/null )
+  cp "$REPO_ROOT/app/build/app/outputs/flutter-apk/app-release.apk" "$STAGE/deploy/web/MOKA-CRM.apk"
+fi
 cp "$ENV_FILE" "$STAGE/deploy/.env"
 tar czf "$STAGE.tgz" -C "$STAGE" .
 
