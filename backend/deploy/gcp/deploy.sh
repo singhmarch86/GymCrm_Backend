@@ -49,6 +49,8 @@ chmod 600 ~/moka/deploy/.env
 chmod +x ~/moka/deploy/backup.sh
 cd ~/moka
 sudo docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build
+# nginx reads its config only at start; pick up edits to nginx.conf.
+sudo docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env restart web
 ( crontab -l 2>/dev/null | grep -v moka-backup; echo "0 2 * * * cd ~/moka && ./deploy/backup.sh >> ~/moka-backup.log 2>&1 # moka-backup" ) | crontab -'
 
 IP="$(vm_ip)"

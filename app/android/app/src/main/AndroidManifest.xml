@@ -1,6 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Release builds get no INTERNET permission unless it is declared here
+         (the debug/profile manifests add it only for tooling). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- usesCleartextTraffic is TEMPORARY: the server is plain HTTP on a bare
+         IP. Remove it once the server is behind HTTPS (domain + the TLS
+         overlay in backend/deploy). -->
     <application
         android:label="MOKA CRM"
+        android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
