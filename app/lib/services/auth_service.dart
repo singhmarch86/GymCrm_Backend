@@ -32,6 +32,7 @@ class AuthService {
     required String state,
     required String address,
     required String email,
+    String inviteCode = '',
   }) async {
     final response = await guardRequest(
       () => http.post(
@@ -46,6 +47,9 @@ class AuthService {
           'state': state,
           'address': address,
           'email': email,
+          // Only sent when filled in: servers running in invite mode reject
+          // registration without it, open servers ignore it.
+          if (inviteCode.isNotEmpty) 'invite_code': inviteCode,
         }),
       ),
     );

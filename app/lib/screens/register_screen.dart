@@ -27,6 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final cityController = TextEditingController();
   final stateController = TextEditingController();
   final addressController = TextEditingController();
+  final inviteCodeController = TextEditingController();
 
   final _ownerNameFocus = FocusNode();
   final _phoneFocus = FocusNode();
@@ -35,6 +36,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _cityFocus = FocusNode();
   final _stateFocus = FocusNode();
   final _addressFocus = FocusNode();
+  final _inviteCodeFocus = FocusNode();
 
   bool isLoading = false;
   String? _error;
@@ -55,6 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         state: stateController.text.trim(),
         address: addressController.text.trim(),
         email: emailController.text.trim(),
+        inviteCode: inviteCodeController.text.trim(),
       );
 
       if (!mounted) return;
@@ -101,6 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     cityController.dispose();
     stateController.dispose();
     addressController.dispose();
+    inviteCodeController.dispose();
 
     _ownerNameFocus.dispose();
     _phoneFocus.dispose();
@@ -109,6 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _cityFocus.dispose();
     _stateFocus.dispose();
     _addressFocus.dispose();
+    _inviteCodeFocus.dispose();
     super.dispose();
   }
 
@@ -151,96 +156,110 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Register Gym')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              field(
-                gymNameController,
-                'Gym Name',
-                nextFocus: _ownerNameFocus,
-                validator: (v) => Validators.required(v, 'Gym name'),
-              ),
-              field(
-                ownerNameController,
-                'Owner Name',
-                focusNode: _ownerNameFocus,
-                nextFocus: _phoneFocus,
-                validator: (v) => Validators.required(v, 'Owner name'),
-              ),
-              field(
-                phoneController,
-                'Phone',
-                focusNode: _phoneFocus,
-                nextFocus: _passwordFocus,
-                keyboardType: TextInputType.phone,
-                validator: Validators.phone,
-              ),
-              field(
-                passwordController,
-                'Password',
-                obscure: true,
-                focusNode: _passwordFocus,
-                nextFocus: _emailFocus,
-                validator: (v) => Validators.required(v, 'Password'),
-              ),
-              field(
-                emailController,
-                'Email',
-                focusNode: _emailFocus,
-                nextFocus: _cityFocus,
-                keyboardType: TextInputType.emailAddress,
-                validator: Validators.emailOptional,
-              ),
-              field(
-                cityController,
-                'City',
-                focusNode: _cityFocus,
-                nextFocus: _stateFocus,
-              ),
-              field(
-                stateController,
-                'State',
-                focusNode: _stateFocus,
-                nextFocus: _addressFocus,
-              ),
-              field(
-                addressController,
-                'Address',
-                focusNode: _addressFocus,
-                textInputAction: TextInputAction.done,
-              ),
-
-              if (_error != null) ...[
-                const SizedBox(height: 4),
-                ErrorBanner.inline(message: _error!),
-              ],
-
-              const SizedBox(height: 16),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+      body: Center(
+        child: ConstrainedBox(
+          // Capped so the fields don't stretch edge to edge on a wide window.
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  field(
+                    gymNameController,
+                    'Gym Name',
+                    nextFocus: _ownerNameFocus,
+                    validator: (v) => Validators.required(v, 'Gym name'),
                   ),
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
-                          ),
-                        )
-                      : const Text('Register'),
-                ),
+                  field(
+                    ownerNameController,
+                    'Owner Name',
+                    focusNode: _ownerNameFocus,
+                    nextFocus: _phoneFocus,
+                    validator: (v) => Validators.required(v, 'Owner name'),
+                  ),
+                  field(
+                    phoneController,
+                    'Phone',
+                    focusNode: _phoneFocus,
+                    nextFocus: _passwordFocus,
+                    keyboardType: TextInputType.phone,
+                    validator: Validators.phone,
+                  ),
+                  field(
+                    passwordController,
+                    'Password',
+                    obscure: true,
+                    focusNode: _passwordFocus,
+                    nextFocus: _emailFocus,
+                    validator: (v) => Validators.required(v, 'Password'),
+                  ),
+                  field(
+                    emailController,
+                    'Email',
+                    focusNode: _emailFocus,
+                    nextFocus: _cityFocus,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: Validators.emailOptional,
+                  ),
+                  field(
+                    cityController,
+                    'City',
+                    focusNode: _cityFocus,
+                    nextFocus: _stateFocus,
+                  ),
+                  field(
+                    stateController,
+                    'State',
+                    focusNode: _stateFocus,
+                    nextFocus: _addressFocus,
+                  ),
+                  field(
+                    addressController,
+                    'Address',
+                    focusNode: _addressFocus,
+                    nextFocus: _inviteCodeFocus,
+                  ),
+                  // Needed only on servers that restrict who may create a gym.
+                  field(
+                    inviteCodeController,
+                    'Invite code (if your provider gave you one)',
+                    focusNode: _inviteCodeFocus,
+                    textInputAction: TextInputAction.done,
+                  ),
+
+                  if (_error != null) ...[
+                    const SizedBox(height: 4),
+                    ErrorBanner.inline(message: _error!),
+                  ],
+
+                  const SizedBox(height: 16),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : register,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : const Text('Register'),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
