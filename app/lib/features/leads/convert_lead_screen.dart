@@ -172,12 +172,12 @@ class _ConvertLeadScreenState extends State<ConvertLeadScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.12),
+                      color: AppColors.warning.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.person_add_rounded,
-                      color: Colors.orange,
+                      color: AppColors.warning,
                       size: 20,
                     ),
                   ),

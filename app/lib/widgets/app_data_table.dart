@@ -139,7 +139,7 @@ class AppDataTable<T> extends StatelessWidget {
     return Material(
       // Zebra striping rather than a divider per row: at this density a line
       // between every pair of rows is more ink than the data.
-      color: index.isEven ? Colors.white : const Color(0xFFFDFAF8),
+      color: index.isEven ? Colors.white : const Color(0xFFF9FAFD),
       child: InkWell(
         onTap: onRowTap == null ? null : () => onRowTap!(row),
         child: Container(

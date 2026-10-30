@@ -407,32 +407,26 @@ class _HeroSection extends StatelessWidget {
       return Container(
         width: double.infinity,
         color: AppColors.primaryLight,
-        padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+        // Top inset keeps the logo clear of the status bar / notch on phones.
+        padding: EdgeInsets.fromLTRB(
+          20,
+          28 + MediaQuery.of(context).padding.top,
+          20,
+          24,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.fitness_center_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
+                Image.asset('assets/images/moka_logo.png', width: 44, height: 44),
                 const SizedBox(width: 8),
                 RichText(
                   text: const TextSpan(
                     children: [
                       TextSpan(
-                        text: 'GYM',
+                        text: 'MOKA',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
@@ -445,7 +439,7 @@ class _HeroSection extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
-                          color: AppColors.primary,
+                          color: AppColors.accent,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -510,25 +504,13 @@ class _HeroSection extends StatelessWidget {
                   // Logo
                   Row(
                     children: [
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.fitness_center_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
+                      Image.asset('assets/images/moka_logo.png', width: 44, height: 44),
                       const SizedBox(width: 8),
                       RichText(
                         text: const TextSpan(
                           children: [
                             TextSpan(
-                              text: 'GYM',
+                              text: 'MOKA',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
@@ -541,7 +523,7 @@ class _HeroSection extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.primary,
+                                color: AppColors.accent,
                                 letterSpacing: 0.5,
                               ),
                             ),

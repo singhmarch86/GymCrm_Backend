@@ -94,7 +94,7 @@ class _DashboardRenewalsCardState extends State<DashboardRenewalsCard> {
         children: [
           Row(
             children: [
-              const Icon(Icons.autorenew_rounded, color: Colors.orange),
+              const Icon(Icons.autorenew_rounded, color: AppColors.warning),
               const SizedBox(width: 8),
               const Text(
                 "Renewals",

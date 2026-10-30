@@ -14,7 +14,7 @@ class GymCRMApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'GymCRM',
+      title: 'MOKA CRM',
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),
     );

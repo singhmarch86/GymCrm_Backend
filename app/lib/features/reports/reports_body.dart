@@ -238,7 +238,7 @@ class _ReportsBodyState extends State<ReportsBody> {
             ReportSection<RenewalReport>(
               title: 'Renewals',
               icon: Icons.autorenew_rounded,
-              color: Colors.orange,
+              color: AppColors.warning,
               data: _renData,
               isLoading: _renLoading,
               error: _renError,
