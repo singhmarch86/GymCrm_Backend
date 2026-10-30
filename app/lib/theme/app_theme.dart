@@ -23,29 +23,9 @@ class AppTheme {
 
     scaffoldBackgroundColor: AppColors.background,
 
-    // fromSeed derives the tonal surfaces; the brand colors are then pinned so
-    // the seed's tone-mapping can't shift navy/red to something off-logo.
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.light,
-    ).copyWith(
-      primary: AppColors.primary,
-      onPrimary: Colors.white,
-      primaryContainer: AppColors.primaryLight,
-      onPrimaryContainer: AppColors.primary,
-      secondary: AppColors.accent,
-      onSecondary: Colors.white,
-      tertiary: AppColors.highlight,
-      onTertiary: AppColors.primary,
-      error: AppColors.danger,
-      onError: Colors.white,
-    ),
-
-    // Several screens pin their FAB to primary; matching it here keeps the
-    // ones that don't from turning a different color.
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
     ),
 
     appBarTheme: const AppBarTheme(
@@ -64,8 +44,6 @@ class AppTheme {
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

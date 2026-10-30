@@ -21,7 +21,7 @@ const List<PipelineStage> kPipelineStages = [
   PipelineStage(
     status: 'new_lead',
     label: 'New Lead',
-    color: Color(0xFF2F3B86), // AppColors.primary (navy)
+    color: Color(0xFFEA580C), // AppColors.primary (coral)
     icon: Icons.person_add_rounded,
   ),
   PipelineStage(

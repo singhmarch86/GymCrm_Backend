@@ -439,7 +439,7 @@ class _HeroSection extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
-                          color: AppColors.accent,
+                          color: AppColors.primary,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -523,7 +523,7 @@ class _HeroSection extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.accent,
+                                color: AppColors.primary,
                                 letterSpacing: 0.5,
                               ),
                             ),
