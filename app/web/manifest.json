@@ -1,11 +1,11 @@
 {
-    "name": "gymcrm_app",
-    "short_name": "gymcrm_app",
+    "name": "GymCRM",
+    "short_name": "GymCRM",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#EA580C",
+    "theme_color": "#EA580C",
+    "description": "Gym management: members, payments, renewals, classes and reports.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -48,3 +48,21 @@ github.com/settings/keys). Without one, use HTTPS: `git clone https://github.com
 - Run `docker compose` from `backend\`. Stop/resume: `docker compose stop` / `start`. Never `down -v`.
 - If a Docker build fails on a download error, just re-run `setup.ps1`.
 - Not tested on a real Windows machine yet — if a step fails, give the error to Claude and fix the script.
+
+## Running on mobile and web
+
+**Android emulator** (backend running on this laptop; `10.0.2.2` is the emulator's alias for it):
+```bash
+cd app && flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:8089
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
+```
+Debug builds allow plain-http (`android/app/src/debug/AndroidManifest.xml`); release builds must use HTTPS.
+
+**Web build** (`app/build_web.sh`):
+```bash
+cd app
+./build_web.sh http://localhost:8089     # local dev, backend on another origin
+./build_web.sh https://api.example.com   # deployed API (backend needs CORS_ALLOWED_ORIGINS=<web origin>)
+./build_web.sh                           # API served from the same origin as the page (no CORS)
+python3 -m http.server 8765 --directory build/web
+```
