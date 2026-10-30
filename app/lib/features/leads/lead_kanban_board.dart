@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/lead.dart';
@@ -28,25 +29,50 @@ class LeadKanbanBoard extends StatelessWidget {
     required this.onMove,
   });
 
+  /// Column height when the parent gives no bound (e.g. inside a ListView).
+  static const double _fallbackHeight = 560;
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: kPipelineStages.map((stage) {
-          final stageLeads = leads
-              .where((l) => l.status == stage.status)
-              .toList();
-          return _StageColumn(
-            stage: stage,
-            leads: stageLeads,
-            onTap: onTap,
-            onMove: onMove,
-          );
-        }).toList(),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Fill the space the tab gives us, so each column scrolls inside it.
+        // A fixed height taller than a phone screen was clipped by the
+        // horizontal-only outer scroller, leaving cards unreachable.
+        final height = constraints.hasBoundedHeight
+            ? constraints.maxHeight - 12
+            : _fallbackHeight;
+        return ScrollConfiguration(
+          // Mouse and trackpad drag the board sideways too (web/desktop).
+          behavior: ScrollConfiguration.of(context).copyWith(
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+              PointerDeviceKind.stylus,
+            },
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: kPipelineStages.map((stage) {
+                final stageLeads = leads
+                    .where((l) => l.status == stage.status)
+                    .toList();
+                return _StageColumn(
+                  stage: stage,
+                  leads: stageLeads,
+                  height: height,
+                  onTap: onTap,
+                  onMove: onMove,
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -54,12 +80,14 @@ class LeadKanbanBoard extends StatelessWidget {
 class _StageColumn extends StatelessWidget {
   final PipelineStage stage;
   final List<Lead> leads;
+  final double height;
   final void Function(Lead) onTap;
   final void Function(Lead, String) onMove;
 
   const _StageColumn({
     required this.stage,
     required this.leads,
+    required this.height,
     required this.onTap,
     required this.onMove,
   });
@@ -68,6 +96,7 @@ class _StageColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 260,
+      height: height,
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
@@ -75,7 +104,6 @@ class _StageColumn extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Column header ──────────────────────────────────────────────
@@ -135,12 +163,8 @@ class _StageColumn extends StatelessWidget {
               ),
             )
           else
-            ConstrainedBox(
-              // Cap the column so a lopsided stage can't stretch the board to
-              // an unusable height; the column scrolls internally instead.
-              constraints: const BoxConstraints(maxHeight: 560),
+            Expanded(
               child: ListView.builder(
-                shrinkWrap: true,
                 padding: const EdgeInsets.all(8),
                 itemCount: leads.length,
                 itemBuilder: (_, i) => _KanbanCard(
