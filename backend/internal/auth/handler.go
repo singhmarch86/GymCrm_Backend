@@ -212,6 +212,15 @@ func (h *Handler) handleError(w http.ResponseWriter, err error) {
 	case errors.Is(err, ErrUserInactive):
 		response.Forbidden(w, "account is inactive, contact your gym owner")
 	case errors.Is(err, ErrGymInactive):
+		var sus *GymSuspendedError
+		if errors.As(err, &sus) {
+			msg := "This gym's account is suspended"
+			if sus.Reason != "" {
+				msg += " (" + sus.Reason + ")"
+			}
+			response.Forbidden(w, msg+". Your data is safe and nothing has been deleted — contact support to restore access.")
+			return
+		}
 		response.Forbidden(w, "gym account is inactive")
 	case errors.Is(err, ErrGymPhoneAlreadyRegistered):
 		response.Conflict(w, "a gym with this phone number is already registered")

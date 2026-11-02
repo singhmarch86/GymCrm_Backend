@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -31,6 +32,7 @@ import (
 	"gymcrm/internal/payments"
 	"gymcrm/internal/payouts"
 	"gymcrm/internal/plans"
+	"gymcrm/internal/platform"
 	"gymcrm/internal/pos"
 	"gymcrm/internal/pt"
 	"gymcrm/internal/ptfeedback"
@@ -93,6 +95,24 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalf("database: %v", err)
+	}
+
+	// ── Bootstrap: first platform admin (FR-12 §9) ────────────────────────
+	// A command on the server with database access, never an HTTP route — a
+	// public "create the first superadmin" endpoint is a permanent backdoor.
+	//   server create-platform-admin <email> <name...>
+	if len(os.Args) > 1 && os.Args[1] == "create-platform-admin" {
+		if len(os.Args) < 4 {
+			log.Fatal("usage: server create-platform-admin <email> <name>")
+		}
+		a, pw, err := platform.NewService(db, cfg.JWT.Secret).CreateAdmin(context.Background(), 0, os.Args[2], strings.Join(os.Args[3:], " "))
+		if err != nil {
+			log.Fatalf("create-platform-admin: %v", err)
+		}
+		log.Printf("created platform admin #%d <%s>", a.ID, a.Email)
+		log.Printf("one-time password (shown once): %s", pw)
+		log.Printf("log in at the vendor console to enrol two-factor; create a SECOND admin straight away")
+		return
 	}
 
 	// ── Dev seed ──────────────────────────────────────────────────────────
@@ -271,6 +291,14 @@ func main() {
 	gated := func(feature entitlements.Feature, h http.HandlerFunc) http.Handler {
 		return jwt(entitlements.RequireFeature(gymsRepo, feature)(h))
 	}
+
+	// ── Platform (vendor) console — FR-12 ──────────────────────────────────
+	// Separate token type, separate routes; gym routes reject platform tokens
+	// and these routes reject gym tokens.
+	platformHandler := platform.NewHandler(platform.NewService(db, cfg.JWT.Secret), cfg.JWT.Secret)
+	platformHandler.Register(mux)
+	// Gym-side half: an owner can see every time the vendor entered their account.
+	mux.Handle("GET /api/v1/gyms/support-access", jwt(http.HandlerFunc(platformHandler.SupportHistory)))
 
 	// ── Auth — public ──────────────────────────────────────────────────────
 	mux.HandleFunc("POST /api/v1/auth/register", authHandler.Register)

@@ -120,7 +120,7 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, e
 		return nil, fmt.Errorf("login: check gym: %w", err)
 	}
 	if gym == nil || gym.Status != gyms.GymStatusActive {
-		return nil, ErrGymInactive
+		return nil, gymInactiveErr(gym)
 	}
 
 	// Revoke all old tokens — only one session active at a time per user
@@ -175,6 +175,12 @@ func (s *Service) RefreshTokens(ctx context.Context, req RefreshRequest) (*AuthR
 	}
 	if user == nil || user.Status != users.UserStatusActive {
 		return nil, ErrUserInactive
+	}
+	// A suspended gym must not keep itself alive by refreshing (FR-12 §8).
+	if gym, gerr := s.repo.FindGymByID(ctx, user.GymID); gerr != nil {
+		return nil, fmt.Errorf("refresh: check gym: %w", gerr)
+	} else if gym == nil || gym.Status != gyms.GymStatusActive {
+		return nil, gymInactiveErr(gym)
 	}
 
 	pair, err := s.issueTokenPair(ctx, user)
@@ -326,4 +332,15 @@ func toGymDTO(g *gyms.Gym) GymDTO {
 		Status:   string(g.Status),
 		PlanTier: g.PlanTier,
 	}
+}
+
+func gymInactiveErr(g *gyms.Gym) error {
+	if g != nil && g.Status == gyms.GymStatusSuspended {
+		reason := ""
+		if g.SuspendedReason != nil {
+			reason = *g.SuspendedReason
+		}
+		return &GymSuspendedError{Reason: reason}
+	}
+	return ErrGymInactive
 }

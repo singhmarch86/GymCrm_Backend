@@ -89,6 +89,22 @@ class StorageService {
     await prefs.setString(planTierKey, planTier);
   }
 
+  // Set while a platform admin is viewing this gym through a support token
+  // (FR-12 §4). The token itself is read-only and expires in 30 minutes; this
+  // only tells the shell to show the banner and when it ends.
+  static const String supportExpiryKey = 'support_expiry';
+
+  static Future<void> saveSupportExpiry(DateTime at) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(supportExpiryKey, at.toIso8601String());
+  }
+
+  static Future<DateTime?> getSupportExpiry() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(supportExpiryKey);
+    return raw == null ? null : DateTime.tryParse(raw);
+  }
+
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

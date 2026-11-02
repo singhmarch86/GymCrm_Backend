@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'platform/platform_login_screen.dart';
 
 import 'services/api_response.dart';
 import 'services/auth_service.dart';
@@ -356,6 +357,23 @@ class _LoginScreenState extends State<LoginScreen> {
                               label: const Text('Download the Android app'),
                             ),
                           ),
+                        Center(
+                          child: TextButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PlatformLoginScreen(),
+                              ),
+                            ),
+                            child: Text(
+                              'Vendor console',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ),
+                        ),
 
                         const SizedBox(height: 16),
                       ],

@@ -16,6 +16,9 @@ type Claims struct {
 	UserID int64  `json:"user_id"`
 	GymID  int64  `json:"gym_id"`
 	Role   string `json:"role"`
+	// SupportAdminID is set only on a vendor support-access token (FR-12 §4):
+	// short-lived, one gym, and read-only. Zero on every ordinary token.
+	SupportAdminID int64 `json:"support_admin_id,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -34,6 +37,13 @@ func JWTMiddleware(jwtSecret string) func(http.Handler) http.Handler {
 			claims, err := parseAndValidate(tokenStr, jwtSecret)
 			if err != nil {
 				response.Unauthorized(w, "invalid or expired token")
+				return
+			}
+
+			// Support access is read-only (FR-12 §5): the vendor can look at a
+			// gym's screens but never change its data, whatever the route.
+			if claims.SupportAdminID != 0 && !isReadMethod(r.Method) {
+				response.Forbidden(w, "support access is read-only")
 				return
 			}
 
@@ -87,6 +97,33 @@ func GenerateAccessToken(userID, gymID int64, role, secret string) (string, erro
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
+}
+
+// SupportTokenTTL is how long a vendor "enter gym" token lives (FR-12 §4).
+const SupportTokenTTL = 30 * time.Minute
+
+// GenerateSupportToken mints a gym token for a platform admin entering one
+// gym. It is an ordinary gym token plus the admin id, which switches the
+// middleware to read-only. Acts as the gym's owner so every screen renders.
+func GenerateSupportToken(ownerID, gymID, adminID int64, secret string) (string, time.Time, error) {
+	exp := time.Now().Add(SupportTokenTTL)
+	claims := Claims{
+		UserID:         ownerID,
+		GymID:          gymID,
+		Role:           "owner",
+		SupportAdminID: adminID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(exp),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    "gymcrm",
+		},
+	}
+	tok, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
+	return tok, exp, err
+}
+
+func isReadMethod(m string) bool {
+	return m == http.MethodGet || m == http.MethodHead || m == http.MethodOptions
 }
 
 // ─── Private helpers ──────────────────────────────────────────────────────────

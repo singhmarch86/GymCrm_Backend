@@ -1,7 +1,14 @@
 # FR-12 — Platform Superadmin (Vendor Console)
 
 **This is the specification** — every rule and why. Plain language, but
-complete. Nothing here is built yet.
+complete.
+
+**Status (2026-10-30): built** — `backend/internal/platform`, migration 038, the
+`create-platform-admin` server command, and the Flutter console under
+`app/lib/platform/` (reached from the small "Vendor console" link on the login
+screen). Not yet applied to the live GCP server. Open decisions in §13 were taken
+as written: 2-hour session, 30-minute read-only support token, visibility (not
+notification) for the gym owner, no IP restriction.
 
 Read §3 and §6 before anything else. This feature deliberately punches a hole
 through the one boundary that keeps every customer's data separate, and the

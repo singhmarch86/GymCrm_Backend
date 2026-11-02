@@ -1,3 +1,4 @@
+import 'support_mode.dart';
 import 'package:flutter/material.dart';
 
 import '../features/analytics/analytics_screen.dart';
@@ -113,7 +114,10 @@ class _AppShellState extends State<AppShell> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      SupportBanner(child: _buildShell(context));
+
+  Widget _buildShell(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     // 900 matches Breakpoints.tablet, so the shell changes shape at the same
     // width the screens inside it already reflow at.

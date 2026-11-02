@@ -22,9 +22,19 @@ var (
 	// ErrGymInactive — gym has been suspended or deactivated.
 	ErrGymInactive = errors.New("gym account is inactive")
 
+	// ErrGymSuspended — the vendor suspended this gym (FR-12 §8). Carried as a
+	// type so the login response can say plainly why, not just "inactive".
+	// Nothing is deleted; the gym is restored by resuming it.
+
 	// ErrRefreshTokenInvalid — token not found, expired, or revoked.
 	ErrRefreshTokenInvalid = errors.New("refresh token is invalid or expired")
 
 	// ErrRefreshTokenRevoked — token was explicitly revoked.
 	ErrRefreshTokenRevoked = errors.New("refresh token has been revoked")
 )
+
+// GymSuspendedError is ErrGymInactive plus the reason the vendor recorded.
+type GymSuspendedError struct{ Reason string }
+
+func (e *GymSuspendedError) Error() string        { return ErrGymInactive.Error() }
+func (e *GymSuspendedError) Is(target error) bool { return target == ErrGymInactive }

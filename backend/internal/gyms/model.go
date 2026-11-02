@@ -23,6 +23,11 @@ type Gym struct {
 	// typed Tier so this package doesn't need to import entitlements.
 	PlanTier string `gorm:"type:varchar(20);not null;default:'premium'" json:"plan_tier"`
 
+	// Vendor-level fields (migration 038, FR-12 §8). Set only through the
+	// platform console; the gym's own users never write them.
+	SuspendedReason    *string `gorm:"type:text"                                       json:"-"`
+	SubscriptionStatus string  `gorm:"type:varchar(20);not null;default:'active'"      json:"-"`
+
 	// Public advertisement profile (migration 036) — everything below is
 	// meant to be shown to an anonymous visitor at /g/{PublicSlug}, unlike
 	// every other field on this struct. Nil/empty until a gym owner fills
